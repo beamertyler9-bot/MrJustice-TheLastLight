@@ -70,6 +70,10 @@ var camera_clock: float = 0.0
 # Camera feel: a smoothed pivot (lags vertically in the air), travel look-ahead,
 # collision distance that snaps in and eases out, organic shake and directional kicks.
 var _interaction_clock := 0.0
+const LOCK_RANGE := 30.0
+var cam_mode := -1
+var cam_blend := 0.0
+var cam_blend_from := Transform3D.IDENTITY
 var cam_pivot := Vector3.ZERO
 var cam_pivot_ready := false
 var cam_length := -1.0
@@ -318,7 +322,7 @@ func _physics_process(dt: float) -> void:
 		motion = "run" if run else "walk" if Vector2(velocity.x, velocity.z).length() > 0.12 else "idle"
 		if not is_on_floor():
 			motion = "jump"
-	if is_instance_valid(lock_target) and not ability_aiming and not climbing and hooking <= 0:
+	if is_instance_valid(lock_target) and not climbing and hooking <= 0 and not visual.grapple_active():
 		var toward: Vector3 = lock_target.global_position - global_position
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(-toward.x, -toward.z), 1.0 - exp(-dt * 18))
 	elif dodge_time > 0.0:
@@ -459,8 +463,16 @@ func update_camera(dt: float) -> void:
 	var desired_fov = lerpf(64.0 if motion == "run" and active else 60.0, 54.0, aim_blend)
 	camera.fov = lerpf(camera.fov, desired_fov, 1.0 - exp(-dt * 5))
 	var bag = visual.bag_progress if visual != null else 0.0
-	if is_instance_valid(lock_target) and active and not aiming_view and bag < 0.02:
+	var use_lock_view: bool = is_instance_valid(lock_target) and active and not aiming_view and bag < 0.02
+	var view_mode := 1 if use_lock_view else 0
+	if view_mode != cam_mode and cam_mode >= 0:
+		# Ease between the lock-on framing and the free/aim camera instead of cutting.
+		cam_blend_from = camera.global_transform
+		cam_blend = 1.0
+	cam_mode = view_mode
+	if use_lock_view:
 		update_lock_camera(smoothing)
+		_apply_camera_blend(dt)
 		return
 	var step := maxf(dt, 0.0)
 	var flat_velocity := Vector3(velocity.x, 0, velocity.z)
@@ -514,13 +526,22 @@ func update_camera(dt: float) -> void:
 	var roll: float = cam_noise.get_noise_2d(camera_clock * 16.0, 91.0) * trauma_sq * 0.04
 	if not shake_enabled: shake = Vector3.ZERO; roll = 0.0
 	var look_point = camera.global_position + forward * 10
-
-
+	# Aiming while locked on: keep the target under the reticle.
+	if is_instance_valid(lock_target) and aim_blend > 0.01 and not lock_suspended():
+		var enemy_focus: Vector3 = lock_target.global_position + Vector3.UP
+		var to_enemy: Vector3 = enemy_focus - camera.global_position
+		if to_enemy.length_squared() > 1.0:
+			look_point = look_point.lerp(camera.global_position + to_enemy.normalized() * 10.0, aim_blend)
 	look_point = look_point.lerp(target + right * (2.8 * HERO_RATIO), bag)
 	camera.look_at(look_point + shake, Vector3.UP.rotated(forward.normalized(), roll))
-
-
+	_apply_camera_blend(dt)
 	camera.set_cull_mask_value(2, true)
+
+func _apply_camera_blend(dt: float) -> void:
+	if cam_blend <= 0.0: return
+	cam_blend = maxf(0.0, cam_blend - maxf(dt, 0.0) * 3.6)
+	var weight := smoothstep(0.0, 1.0, 1.0 - cam_blend)
+	camera.global_transform = cam_blend_from.interpolate_with(camera.global_transform, weight)
 
 ## Push the camera briefly away along a direction (impacts, hits taken).
 func camera_kick(direction: Vector3, strength: float) -> void:
@@ -617,17 +638,19 @@ func lock_target_alive(target: Node3D) -> bool:
 func lock_sight_clear(target: Node3D) -> bool:
 	return ray(global_position + Vector3.UP * (1.15 * HERO_RATIO), target.global_position + Vector3.UP, 1 | 8).is_empty()
 
+## Lock-on stays through hand aiming, casting, beams and dodges; it only pauses its
+## steering while the grappling hook is carrying the hero.
 func lock_controls_available() -> bool:
-	if not active or visual == null or visual.grapple_active() or hooking > 0.0:
-		return false
+	return active and visual != null
 
-
-	return not ((ability_aiming or beam_charging or cast_time > 0.0) and ability_id != "beam")
+func lock_suspended() -> bool:
+	return visual == null or visual.grapple_active() or hooking > 0.0
 
 func beam_lock_point() -> Vector3:
-	if ability_id != "beam" or not is_instance_valid(lock_target):
+	# Every hand ability except the grappling hook (which needs a surface) aims at the lock.
+	if ability_id == "hook" or not is_instance_valid(lock_target):
 		return Vector3.INF
-	if not lock_target_alive(lock_target) or global_position.distance_to(lock_target.global_position) > 24.0:
+	if not lock_target_alive(lock_target) or global_position.distance_to(lock_target.global_position) > LOCK_RANGE:
 		clear_lock_on()
 		return Vector3.INF
 	if not lock_sight_clear(lock_target):
@@ -694,23 +717,29 @@ func update_lock_on(dt: float) -> void:
 	if not is_instance_valid(lock_target):
 		clear_lock_on()
 		return
-	if not lock_target_alive(lock_target) or not lock_controls_available() or global_position.distance_to(lock_target.global_position) > 24.0:
+	if not lock_target_alive(lock_target) or not lock_controls_available() or global_position.distance_to(lock_target.global_position) > LOCK_RANGE:
 		clear_lock_on()
 		return
+	if lock_suspended(): return
 	lock_occlusion = 0.0 if lock_sight_clear(lock_target) else lock_occlusion + dt
-	if lock_occlusion >= 0.6:
+	if lock_occlusion >= 1.5:
 		clear_lock_on()
 		return
 	var toward = lock_target.global_position - global_position
 	if Vector2(toward.x, toward.z).length_squared() > 0.001:
 		var target_yaw = atan2(-toward.x, -toward.z)
 		if ability_id == "beam" and (ability_aiming or beam_contact >= 0.0 or beam_charging):
-
-
-			var turn = maxf(0.0, dt) * 2.8
+			var turn = maxf(0.0, dt) * 4.2
 			yaw += clampf(angle_difference(yaw, target_yaw), -turn, turn)
+		elif dt > 0.0 and (ability_aiming or cast_time > 0.0 or dodge_time > 0.0):
+			# Smooth tracking while aiming, casting or rolling so the view never snaps.
+			yaw += angle_difference(yaw, target_yaw) * (1.0 - exp(-dt * 14.0))
 		else:
 			yaw = target_yaw
+		if ability_aiming and dt > 0.0:
+			var rise: float = (lock_target.global_position.y + 1.0) - (global_position.y + 1.25 * HERO_RATIO)
+			var wanted_pitch: float = clampf(-atan2(rise, Vector2(toward.x, toward.z).length()) + 0.12, -0.6, 0.7)
+			pitch = lerpf(pitch, wanted_pitch, 1.0 - exp(-dt * 6.0))
 
 func face_lock_target() -> void:
 	if is_instance_valid(lock_target) and lock_target_alive(lock_target):
@@ -1385,10 +1414,7 @@ func use_ability(power: float = 0.0) -> void:
 	if not state.has_ability(ability_id):
 		toast("This hand ability is not available.")
 		return
-	if ability_id == "hook":
-		clear_lock_on()
-	else:
-		update_lock_on(0.0)
+	update_lock_on(0.0)
 	visual.rotation.y = yaw
 
 
@@ -1487,8 +1513,6 @@ func begin_ability_aim(preserve_spell_concentration: bool = false) -> bool:
 		toast("This hand ability is not available.")
 		return false
 	if not preserve_spell_concentration: cancel_magic()
-	if ability_id != "beam" and not preserve_spell_concentration:
-		clear_lock_on()
 	cancel_melee()
 	ability_aiming = true
 	return true
