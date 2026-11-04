@@ -1,10 +1,12 @@
 shader_type spatial;
-render_mode unshaded, blend_mix, cull_disabled, depth_draw_never;
+render_mode unshaded, blend_mix, cull_disabled, depth_draw_never, shadows_disabled;
+// Void rifts: a flat dark hole ringed by bright inked bands. Replaces the old screen
+// refraction, which forced a full-screen copy every frame on phones.
+#include "res://shaders/magic/toon_magic.gdshaderinc"
 uniform vec4 body_color : source_color = vec4(0.15,0.06,0.28,1.0);
 uniform vec4 core_color : source_color = vec4(0.83,0.65,1.0,1.0);
 uniform vec4 rim_color : source_color = vec4(0.55,0.32,0.85,1.0);
 uniform vec4 trail_color : source_color = vec4(0.25,0.08,0.45,1.0);
-uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear;
 uniform float age = 0.0;
 uniform float opacity = 1.0;
 uniform float brightness = 1.0;
@@ -15,17 +17,18 @@ uniform float low_flash = 0.0;
 uniform float contact_flash = 0.0;
 uniform float is_contact = 0.0;
 void fragment() {
- vec2 p = UV*2.0-1.0; float r = length(p); float a = atan(p.y,p.x);
- float warp = sin(a*3.0+age*0.9)*0.028+sin(a*7.0-age*0.6)*0.012;
- float ring = exp(-pow((r-0.42-warp)*95.0,2.0));
- float outer = exp(-pow((r-0.60+warp*0.6)*110.0,2.0))*0.40;
- float inner = exp(-pow((r-0.30+warp)*95.0,2.0))*0.28;
- float arc = 0.35+0.65*smoothstep(-0.4,0.4,sin(a*2.0+age*0.38));
- float lens = smoothstep(0.68,0.30,r)*(1.0-smoothstep(0.0,0.16,r));
- vec2 bend = normalize(p+vec2(0.0001))*lens*0.007;
- vec3 background = textureLod(screen_texture,clamp(SCREEN_UV+bend,vec2(0.002),vec2(0.998)),0.0).rgb;
- float strokes = clamp((ring+outer+inner)*arc,0.0,1.0);
- ALBEDO = mix(background,body_color.rgb*0.05,0.025*lens);
- EMISSION = mix(rim_color.rgb,core_color.rgb,ring*0.28)*strokes*brightness*(0.36+contact_flash*0.24)*mix(1.0,0.65,low_flash);
- ALPHA = (strokes*0.40+lens*0.075)*opacity;
+	vec2 p = UV * 2.0 - 1.0;
+	float r = length(p);
+	float a = atan(p.y, p.x);
+	float warp = sin(a * 3.0 + age * 0.9) * 0.03 + sin(a * 7.0 - age * 0.6) * 0.015;
+	float rr = r + warp;
+	float hole = 1.0 - toon_aa(0.36, rr);
+	float ring = toon_aa(0.36, rr) * (1.0 - toon_aa(0.47, rr));
+	float outer = toon_aa(0.55, rr) * (1.0 - toon_aa(0.6, rr)) * step(0.0, sin(a * 2.0 + age * 0.38));
+	float swirl = step(0.75, fract(a * 0.954 + r * 3.0 - age * 0.25)) * hole * (1.0 - toon_aa(0.3, rr));
+	vec3 dark = body_color.rgb * 0.18;
+	vec3 col = mix(dark, toon_ink(trail_color.rgb) * 1.4, swirl);
+	col = mix(col, mix(rim_color.rgb, core_color.rgb, 0.4 + contact_flash * 0.3), max(ring, outer));
+	ALBEDO = col * mix(1.0, clamp(brightness, 0.6, 1.6), max(ring, outer));
+	ALPHA = clamp(hole * 0.85 + ring + outer * 0.8, 0.0, 1.0) * opacity * mix(1.0, 0.8, low_flash);
 }

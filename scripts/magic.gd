@@ -613,10 +613,17 @@ func _material(hex: String, soft: bool = false, glow: float = 1.0, opacity: floa
 	if _materials.size() >= MAX_MATERIALS: _materials.erase(_materials.keys()[0])
 	var material := StandardMaterial3D.new()
 	material.albedo_color = Color(hex)
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Cel-shaded like the world: banded toon diffuse, a coloured rim and only a light glow,
+	# so walls, summons and solid spell pieces read as objects instead of flat cut-outs.
+	material.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON
+	material.specular_mode = BaseMaterial3D.SPECULAR_TOON
+	material.roughness = 0.55
+	material.rim_enabled = true
+	material.rim = 0.55
+	material.rim_tint = 0.35
 	material.emission_enabled = true
 	material.emission = Color(hex)
-	material.emission_energy_multiplier = 0.7 * glow
+	material.emission_energy_multiplier = 0.22 * glow
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	if soft or opacity < 0.999:
 		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA

@@ -336,14 +336,66 @@ func wall(spell: Dictionary, origin: Vector3, target: Vector3, context: Dictiona
 	var node := StaticBody3D.new(); node.name = "TemporarySpellWall"; node.collision_layer = 1 | 16; node.collision_mask = 1 | 2 | 4 | 8 | 16
 	var col := CollisionShape3D.new(); col.shape = placement.shape; node.add_child(col)
 	runtime.add_child(node); node.global_transform = placement.transform; node.set_meta("temporary_magic", true)
-	var mesh := BoxMesh.new(); mesh.size = placement.shape.size
-	runtime._piece(node, mesh, runtime._spell_material(spell))
-	constructs.append({"node": node, "remaining": float(spell.duration), "context": context})
+	var art := _wall_art(node, placement.shape.size, spell)
+	constructs.append({"node": node, "remaining": float(spell.duration), "context": context, "art": art, "age": 0.0, "height": float(placement.shape.size.y)})
 	work(context, 1); runtime._glyph(node.global_position, spell, "wall", 0.5, float(spell.radius))
+
+## Stacked, slightly irregular blocks merged into one mesh (one draw call). Earth walls get
+## offset masonry courses; other elements get taller crystal-like slabs.
+func _wall_art(parent: Node3D, size: Vector3, spell: Dictionary) -> Node3D:
+	var art := Node3D.new(); art.name = "WallArt"; parent.add_child(art)
+	var rng := RandomNumberGenerator.new(); rng.seed = hash(str(spell.get("id", "wall"))) ^ int(parent.global_position.x * 7.0)
+	var earth := str(spell.get("element", "")) == "earth"
+	var rows := maxi(2, int(round(size.y / (0.5 if earth else 0.9))))
+	var tool := SurfaceTool.new(); tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var block := BoxMesh.new(); block.size = Vector3.ONE
+	for row in range(rows):
+		var h := size.y / rows
+		var y := -size.y * 0.5 + h * (row + 0.5)
+		var width := (0.62 if earth else 0.45) * (1.0 + rng.randf_range(-0.15, 0.15))
+		var cols := maxi(2, int(round(size.x / width)))
+		var offset := (0.5 if row % 2 == 1 and earth else 0.0)
+		for col in range(cols + (1 if offset > 0 else 0)):
+			var w := size.x / cols
+			var x := -size.x * 0.5 + w * (col + 0.5 - offset)
+			var left := maxf(x - w * 0.5, -size.x * 0.5); var right := minf(x + w * 0.5, size.x * 0.5)
+			if right - left < 0.08: continue
+			var dims := Vector3((right - left) * 0.94, h * (0.9 if earth else rng.randf_range(0.85, 1.15)), size.z * rng.randf_range(0.85, 1.12))
+			var basis := Basis.from_euler(Vector3(rng.randf_range(-0.04, 0.04), rng.randf_range(-0.05, 0.05), rng.randf_range(-0.05, 0.05))).scaled(dims)
+			tool.append_from(block, 0, Transform3D(basis, Vector3((left + right) * 0.5, y, rng.randf_range(-0.04, 0.04) * size.z)))
+	# A cap row of chunky crenels / shards along the top.
+	var caps := maxi(2, int(size.x / 0.55))
+	for c in range(caps):
+		if c % 2 == 1 and earth: continue
+		var cw := size.x / caps
+		var cap_h := rng.randf_range(0.18, 0.32) if earth else rng.randf_range(0.25, 0.6)
+		var cap_basis := Basis.from_euler(Vector3(0, 0, rng.randf_range(-0.12, 0.12))).scaled(Vector3(cw * 0.86, cap_h, size.z * 0.9))
+		tool.append_from(block, 0, Transform3D(cap_basis, Vector3(-size.x * 0.5 + cw * (c + 0.5), size.y * 0.5 + cap_h * 0.5, 0)))
+	tool.generate_normals()
+	var mesh := MeshInstance3D.new(); mesh.mesh = tool.commit()
+	mesh.material_override = runtime._spell_material(spell)
+	mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	art.add_child(mesh)
+	art.scale = Vector3(1, 0.02, 1); art.position.y = -size.y * 0.5
+	return art
+
+func _wall_pose(data: Dictionary) -> void:
+	var art = data.get("art")
+	if not is_instance_valid(art): return
+	var h: float = data.height
+	var rise := clampf(data.age / 0.28, 0.0, 1.0)
+	# Pop up with a small overshoot, then sink back into the ground in the last half second.
+	var grow := 1.0 + sin(rise * PI) * 0.12 * (1.0 - rise * 0.5) if rise < 1.0 else 1.0
+	var s := ease(rise, 0.45) * grow * clampf(data.remaining / 0.45, 0.0, 1.0)
+	s = maxf(s, 0.02)
+	art.scale = Vector3(1.0, s, 1.0)
+	art.position.y = -h * 0.5 * (1.0 - s)
 
 func _tick_constructs(dt: float) -> void:
 	for i in range(constructs.size() - 1, -1, -1):
 		var data: Dictionary = constructs[i]; data.remaining -= dt
+		data.age = float(data.get("age", 0.0)) + dt
+		_wall_pose(data)
 		if data.remaining <= 0 or not is_instance_valid(data.node):
 			if is_instance_valid(data.node): data.node.free()
 			constructs.remove_at(i); work(data.context, -1)

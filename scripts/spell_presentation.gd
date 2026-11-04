@@ -556,7 +556,8 @@ func _lightning(piece: MeshInstance3D, seed: float, unit: float, clock: float, a
 		var point := start.lerp(end, fraction)
 		var jag := Vector3(sin(float(i) * 23.7 + step_clock * 2.9 + seed) * 0.16, sin(float(i) * 13.4 - step_clock * 3.3 + seed) * 0.12, 0)
 		point += jag * sin(fraction * PI); points.append(point * unit)
-	var paths: Array = [points]; var widths: Array = [unit * (0.057 if seed == 0 else 0.025)]
+	# Bolder strokes so the cel-shaded bolt (ink edge + bright core) stays readable on phones.
+	var paths: Array = [points]; var widths: Array = [unit * (0.095 if seed == 0 else 0.045)]
 
 
 	for branch in range(2 if seed < 1.0 else 1):
@@ -569,7 +570,7 @@ func _lightning(piece: MeshInstance3D, seed: float, unit: float, clock: float, a
 			var point := branch_start.lerp(branch_end, fraction)
 			point += Vector3(sin(float(i) * 17.1 + step_clock + seed), cos(float(i) * 11.7 + step_clock), 0) * sin(fraction * PI) * unit * 0.055
 			fork.append(point)
-		paths.append(fork); widths.append(unit * 0.013)
+		paths.append(fork); widths.append(unit * 0.026)
 	_strip_paths(piece, paths, widths)
 	piece.set_meta("lightning_paths", paths.size())
 	piece.set_meta("lightning_step", step_clock)
@@ -792,7 +793,7 @@ func beam(start: Vector3, end: Vector3, spell: Dictionary, life: float, width: f
 	var node := Node3D.new(); node.name = "SpellBeam"; runtime.add_child(node)
 	node.global_transform = Transform3D(Basis.IDENTITY, start)
 	var data := _record(node, spell, SURFACE); data.kind = "beam"; data.life = clampf(life, 0.04, 4.0)
-	data.start = start; data.end = end; data.width = clampf(width, 0.015, 1.0) * _number(spell, "trail_width", 1.0, 0.3, 2.0)
+	data.start = start; data.end = end; data.width = clampf(width * 1.4, 0.06, 1.0) * _number(spell, "trail_width", 1.0, 0.3, 2.0)
 	data.light = false
 	for i in range(3):
 		var strip := MeshInstance3D.new(); strip.name = "BeamCore" if i == 0 else "BeamFilament%d" % i
@@ -822,7 +823,7 @@ func _animate_beam(data: Dictionary) -> void:
 			points.append(point)
 
 		points[0] = Vector3.ZERO; points[points.size() - 1] = delta
-		var width := float(data.width) * (0.6 if seed == 0 else 0.2) * (1.0 - progress * 0.5)
+		var width := float(data.width) * (0.95 if seed == 0 else 0.32) * (1.0 - progress * 0.5)
 		if storm:
 			var fork := PackedVector3Array(); var branch_start := points[8 + int(seed)]
 			for i in range(6):
