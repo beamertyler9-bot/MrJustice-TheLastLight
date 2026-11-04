@@ -1,0 +1,37 @@
+[
+  {
+    "id": "hero-box",
+    "args": {
+      "referenced_image_paths": [
+        "/workspace/scratch/75aa0128892c/generated_images/exec-eccfdcd1-5c3a-417b-8945-3788655902ba.png"
+      ],
+      "transparent_background": false,
+      "prompt": "Use case: precise-object-edit. Refine this Mr. Justice concept sheet. Change ONLY the lantern head geometry in every full-body view and the glass closeup: an unmistakable rectangular BOX with four flat planar clear glass faces, four straight square corner posts, a square base and a flat square silver cap with tiny softened edge bevels. Its plan view is square, not circular, oval, cylindrical, octagonal or tapered; show distinct right-angle corners especially in side/back/three-quarter views. Maintain the real orange flame visible through glass. Preserve the compact hero proportions, slim rounded articulated limbs, broad feet, three fingers and one thumb, polished spotless silver, tidy scarlet cape, poses, layout, labels, background and other material macro panels. No eyes/face/screen or added shoulder/hip armor. This is a high-quality fantasy game character concept sheet; no new text."
+    }
+  },
+  {
+    "id": "stone",
+    "kind": "stone",
+    "brief": "neutral warm grey natural limestone/slate, irregular fine mineral grains, thin shallow fissures, subtle granular surface, restrained weathering, no distinct masonry blocks"
+  },
+  {
+    "id": "timber",
+    "kind": "timber",
+    "brief": "neutral grey-brown wood with long fine vertical timber grain, soft irregular growth lines and fine pores, a few understated knots, natural bark-like shallow ridges suitable for wooden beams and trunks"
+  },
+  {
+    "id": "cloth",
+    "kind": "cloth",
+    "brief": "neutral ivory-grey tightly woven linen/wool fabric, regular tiny fine crossing threads with subtle natural thread variation, clean well-kept textile, completely flat without folds"
+  },
+  {
+    "id": "leather",
+    "kind": "leather",
+    "brief": "neutral medium grey-taupe fine-grain leather, supple natural pebbled pores, high-quality cared-for leather, no cracks, scratches, stitches, seams, folds, straps or borders"
+  },
+  {
+    "id": "ground",
+    "kind": "ground",
+    "brief": "neutral earthy brown forest ground, fine compact soil, scattered small pebbles, very subtle sparse tiny moss flecks and dry leaf fragments, restrained uniform distribution, no large recognizable objects or paths"
+  }
+]

@@ -1,0 +1,6878 @@
+[
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_barrel_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_barrel_03.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_bench_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_box_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			0,
+			3
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_brazier.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_bridge_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_bridge_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			2
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_bridge_wood_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_clay_vase_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_clay_vase_03.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_clay_vase_04.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_fence_wood_door_gate.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4,
+			1
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_fence_wood_door_h_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1,
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_fence_wood_door_h_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			1
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_fence_wood_door_h_03.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1,
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_fence_wood_door_h_04.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			1,
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_fence_wood_h_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_foliage_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_foundation_wood_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_foundation_wood_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_foundation_wood_03.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_ladder.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			0,
+			1
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_market_03.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_railing_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_railing_03.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_rock_medium.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_rock_small.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			1,
+			1,
+			1,
+			1,
+			0,
+			2
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_streetlamp_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			2
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_stylized_hut_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			2
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_stylized_hut_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			0,
+			1
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_trunk_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_trunk_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			6
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_trunk_04.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_wall_stone_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_wall_stone_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_wall_stone_03.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_wall_stone_04.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_wall_stone_05.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_wheel_l.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/avra_allassets_with_texture_wheel_r.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/curio_key_low.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			2,
+			2
+		],
+		"path": "res://assets/imported/models/curio_keyattach_low.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4,
+			4,
+			4,
+			4
+		],
+		"path": "res://assets/imported/models/curio_magestaff_low.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			5
+		],
+		"path": "res://assets/imported/models/curio_padlock_low.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			3,
+			2
+		],
+		"path": "res://assets/imported/models/curio_wrench_low.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_banner_patterna_blue.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_banner_patterna_green.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_banner_patterna_red.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_banner_patternb_brown.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_banner_patternc_white.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_banner_shield_blue.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_barrel_large_decorated.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_barrel_small_stack.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_bed_decorated.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_bottle_a_green.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_box_stacked.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_candle_triple.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_chair.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_chest.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_chest_gold.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_coin_stack_large.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_column.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/dungeon_keyring_hanging.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_pillar.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_pillar_decorated.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/dungeon_plate_food_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/dungeon_plate_food_b.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_rubble_half.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_rubble_large.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_shelf_small_candles.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_shelves.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_sword_shield.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_sword_shield_broken.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_table_long_decorated_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_table_medium_tablecloth.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_torch_mounted.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_trunk_medium_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/dungeon_wall_archedwindow_gated.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_wall_pillar.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/dungeon_wall_shelves.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			1,
+			0,
+			3,
+			1,
+			1,
+			0,
+			1,
+			1,
+			0,
+			2,
+			1,
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/farm_barn.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1,
+			0,
+			3,
+			1,
+			1,
+			0,
+			1,
+			1,
+			0,
+			2,
+			1,
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/farm_big_barn.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			1,
+			0,
+			2
+		],
+		"path": "res://assets/imported/models/farm_chicken_coop.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/farm_fence.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/farm_fence_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1,
+			1,
+			1,
+			2
+		],
+		"path": "res://assets/imported/models/farm_open_barn.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			2,
+			0,
+			1,
+			4
+		],
+		"path": "res://assets/imported/models/farm_silo.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			3,
+			0,
+			1,
+			1,
+			1,
+			0
+		],
+		"path": "res://assets/imported/models/farm_silo_house.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1,
+			0,
+			2,
+			1,
+			1,
+			0,
+			2,
+			1,
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/farm_small_barn.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1,
+			0,
+			1,
+			0,
+			9,
+			0,
+			1
+		],
+		"path": "res://assets/imported/models/farm_tower_windmill.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			3,
+			3
+		],
+		"path": "res://assets/imported/models/farm_water_tower.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1,
+			1,
+			1,
+			2
+		],
+		"path": "res://assets/imported/models/farm_well.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			1,
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/farm_windmill.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_altar_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_anvil_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_bed_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			7
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_bench_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_candle_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_cauldron_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			6
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_chair_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_chest_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_chest_lid_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_curtain_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_cushion_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_flame_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_flame_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_lantern_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_painting_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_pew_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_pot_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_potcrane_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_pottedplant_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_rug_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_shelf_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_table_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_walltorch_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_woodpile_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/interior_mdvl_interiors_workbench_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_anvil.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_axe.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_blueprint.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_blueprint_stacked.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			3
+		],
+		"path": "res://assets/imported/models/kaykit_bucket_metal.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_chisel.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1,
+			3,
+			0
+		],
+		"path": "res://assets/imported/models/kaykit_compass_base.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1,
+			1,
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_drafting_compass.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_file.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_grindstone.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_hammer.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/kaykit_handdrill.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_handplane.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_journal_closed.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_journal_open.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_knife.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			0,
+			4
+		],
+		"path": "res://assets/imported/models/kaykit_lantern.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			4
+		],
+		"path": "res://assets/imported/models/kaykit_magnifying_glass.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/kaykit_mallet.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_map.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_map_empty.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/kaykit_map_rolled.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_nail.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/kaykit_pencil_a_long.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/kaykit_pencil_a_short.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_pencil_b_long.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_pencil_b_short.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_pickaxe.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/kaykit_rope_bundle_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/kaykit_rope_bundle_b.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_saw.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			3
+		],
+		"path": "res://assets/imported/models/kaykit_scissors.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/kaykit_screw_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_screw_b.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_screwdriver_a_long.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_screwdriver_a_long_color.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_screwdriver_a_short.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_screwdriver_a_short_color.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_screwdriver_b_long.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_screwdriver_b_long_color.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_screwdriver_b_short.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_screwdriver_b_short_color.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_shovel.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_tongs.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_torch.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_torch_burnt.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_trowel.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/kaykit_wrench_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/kaykit_wrench_b.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/modular_prop_boat_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/modular_prop_broom.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/modular_prop_hay_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/nature_grass_p_002.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/nature_grass_p_004.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/nature_rock.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/nature_rock_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/nature_rock_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/nature_rock_03.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/nature_rock_04.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/nature_rock_05.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/nature_rock_06.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/nature_rock_07.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/nature_rock_08.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/nature_rock_09.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/nature_rock_10.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/nature_tree.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			1
+		],
+		"path": "res://assets/imported/models/nature_tree_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/nature_tree_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/nature_tree_03.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/nature_tree_04.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/nature_tree_05.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/nature_tree_06.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5,
+			2,
+			0
+		],
+		"path": "res://assets/imported/models/nature_tree_07.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/nature_tree_08.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4,
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/nature_tree_09.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/nature_tree_b.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/nature_trunk.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/nature_trunk_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/nature_trunk_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			1,
+			3
+		],
+		"path": "res://assets/imported/models/potion_basic_bottle.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			0,
+			3
+		],
+		"path": "res://assets/imported/models/potion_heart_bottle.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			0,
+			2
+		],
+		"path": "res://assets/imported/models/potion_poison_bottle.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4,
+			3,
+			2
+		],
+		"path": "res://assets/imported/models/potion_round_bottle.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			0,
+			2
+		],
+		"path": "res://assets/imported/models/potion_square_bottle.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4,
+			2,
+			4
+		],
+		"path": "res://assets/imported/models/potion_tube_bottle.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qnat_bush_common.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/qnat_bush_common_flowers.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qnat_clover_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qnat_clover_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			0
+		],
+		"path": "res://assets/imported/models/qnat_commontree_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			0
+		],
+		"path": "res://assets/imported/models/qnat_commontree_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			0
+		],
+		"path": "res://assets/imported/models/qnat_commontree_3.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			0
+		],
+		"path": "res://assets/imported/models/qnat_commontree_4.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			0
+		],
+		"path": "res://assets/imported/models/qnat_commontree_5.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qnat_deadtree_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qnat_deadtree_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qnat_deadtree_3.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qnat_deadtree_4.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qnat_deadtree_5.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qnat_fern_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			0
+		],
+		"path": "res://assets/imported/models/qnat_flower_3_group.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			0
+		],
+		"path": "res://assets/imported/models/qnat_flower_3_single.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			1
+		],
+		"path": "res://assets/imported/models/qnat_flower_4_group.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			1
+		],
+		"path": "res://assets/imported/models/qnat_flower_4_single.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qnat_grass_common_short.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qnat_grass_common_tall.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qnat_grass_wispy_short.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qnat_grass_wispy_tall.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qnat_mushroom_common.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			7
+		],
+		"path": "res://assets/imported/models/qnat_mushroom_laetiporus.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/qnat_pebble_round_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qnat_pebble_round_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qnat_pebble_round_3.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/qnat_pebble_round_4.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/qnat_pebble_round_5.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qnat_pebble_square_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qnat_pebble_square_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qnat_pebble_square_3.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qnat_pebble_square_4.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qnat_pebble_square_5.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qnat_pebble_square_6.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qnat_petal_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qnat_petal_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qnat_petal_3.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qnat_petal_4.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qnat_petal_5.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			1
+		],
+		"path": "res://assets/imported/models/qnat_pine_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			1
+		],
+		"path": "res://assets/imported/models/qnat_pine_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			1
+		],
+		"path": "res://assets/imported/models/qnat_pine_3.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/qnat_pine_4.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			1
+		],
+		"path": "res://assets/imported/models/qnat_pine_5.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qnat_plant_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qnat_plant_1_big.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qnat_plant_7.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qnat_plant_7_big.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qnat_rock_medium_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qnat_rock_medium_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qnat_rock_medium_3.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			8
+		],
+		"path": "res://assets/imported/models/qnat_rockpath_round_small_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			8
+		],
+		"path": "res://assets/imported/models/qnat_rockpath_round_small_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			8
+		],
+		"path": "res://assets/imported/models/qnat_rockpath_round_small_3.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			9
+		],
+		"path": "res://assets/imported/models/qnat_rockpath_round_thin.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			10
+		],
+		"path": "res://assets/imported/models/qnat_rockpath_round_wide.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qnat_rockpath_square_small_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qnat_rockpath_square_small_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qnat_rockpath_square_small_3.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qnat_rockpath_square_thin.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qnat_rockpath_square_wide.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			0
+		],
+		"path": "res://assets/imported/models/qnat_twistedtree_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			0
+		],
+		"path": "res://assets/imported/models/qnat_twistedtree_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			0
+		],
+		"path": "res://assets/imported/models/qnat_twistedtree_3.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			0
+		],
+		"path": "res://assets/imported/models/qnat_twistedtree_4.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			0
+		],
+		"path": "res://assets/imported/models/qnat_twistedtree_5.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/qprop_anvil.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			3,
+			4
+		],
+		"path": "res://assets/imported/models/qprop_anvil_log.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qprop_axe_bronze.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			6,
+			2
+		],
+		"path": "res://assets/imported/models/qprop_bag.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			3,
+			1
+		],
+		"path": "res://assets/imported/models/qprop_banner_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			1
+		],
+		"path": "res://assets/imported/models/qprop_banner_1_cloth.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			3,
+			1
+		],
+		"path": "res://assets/imported/models/qprop_banner_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			1
+		],
+		"path": "res://assets/imported/models/qprop_banner_2_cloth.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/qprop_barrel.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1,
+			9
+		],
+		"path": "res://assets/imported/models/qprop_barrel_apples.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/qprop_barrel_holder.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			2,
+			4
+		],
+		"path": "res://assets/imported/models/qprop_bed_twin1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			2,
+			4
+		],
+		"path": "res://assets/imported/models/qprop_bed_twin2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			3
+		],
+		"path": "res://assets/imported/models/qprop_bench.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qprop_book_5.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			2
+		],
+		"path": "res://assets/imported/models/qprop_book_7.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qprop_book_simplified_single.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qprop_book_stack_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			2
+		],
+		"path": "res://assets/imported/models/qprop_book_stack_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			3
+		],
+		"path": "res://assets/imported/models/qprop_bookcase_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qprop_bookgroup_medium_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qprop_bookgroup_medium_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qprop_bookgroup_medium_3.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qprop_bookgroup_small_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qprop_bookgroup_small_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qprop_bookgroup_small_3.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qprop_bookstand.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/qprop_bottle_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qprop_bucket_metal.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			5
+		],
+		"path": "res://assets/imported/models/qprop_bucket_wooden_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			2
+		],
+		"path": "res://assets/imported/models/qprop_cabinet.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qprop_cage_small.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qprop_candle_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qprop_candle_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/qprop_candlestick.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			2
+		],
+		"path": "res://assets/imported/models/qprop_candlestick_stand.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			4
+		],
+		"path": "res://assets/imported/models/qprop_candlestick_triple.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/qprop_carrot.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qprop_cauldron.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qprop_chain_coil.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			2
+		],
+		"path": "res://assets/imported/models/qprop_chair_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qprop_chalice.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			4,
+			2
+		],
+		"path": "res://assets/imported/models/qprop_chandelier.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			2,
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/qprop_chest_wood.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qprop_coin.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qprop_coin_pile.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qprop_coin_pile_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			2
+		],
+		"path": "res://assets/imported/models/qprop_crate_metal.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			3
+		],
+		"path": "res://assets/imported/models/qprop_crate_wooden.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			2,
+			4
+		],
+		"path": "res://assets/imported/models/qprop_dummy.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			3,
+			10
+		],
+		"path": "res://assets/imported/models/qprop_farmcrate_apple.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			1,
+			3
+		],
+		"path": "res://assets/imported/models/qprop_farmcrate_carrot.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			3
+		],
+		"path": "res://assets/imported/models/qprop_farmcrate_empty.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qprop_key_gold.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qprop_key_metal.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qprop_lantern_wall.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/qprop_mug.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qprop_nightstand_shelf.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			1
+		],
+		"path": "res://assets/imported/models/qprop_peg_rack.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qprop_pickaxe_bronze.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qprop_pot_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qprop_pot_1_lid.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qprop_potion_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/qprop_potion_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qprop_potion_4.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			2
+		],
+		"path": "res://assets/imported/models/qprop_pouch_large.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			6
+		],
+		"path": "res://assets/imported/models/qprop_rope_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			6
+		],
+		"path": "res://assets/imported/models/qprop_rope_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			6
+		],
+		"path": "res://assets/imported/models/qprop_rope_3.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			3
+		],
+		"path": "res://assets/imported/models/qprop_scroll_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			4
+		],
+		"path": "res://assets/imported/models/qprop_scroll_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/qprop_shelf_arch.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qprop_shelf_simple.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/qprop_shelf_small_bottles.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			2,
+			5
+		],
+		"path": "res://assets/imported/models/qprop_shield_wooden.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qprop_smallbottle.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qprop_smallbottles_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1,
+			3
+		],
+		"path": "res://assets/imported/models/qprop_stall_cart_empty.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			0,
+			2
+		],
+		"path": "res://assets/imported/models/qprop_stall_empty.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qprop_stool.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qprop_sword_bronze.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qprop_table_fork.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qprop_table_knife.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/qprop_table_large.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qprop_table_plate.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qprop_table_spoon.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qprop_torch_metal.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qprop_vase_2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qprop_vase_4.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qprop_vase_rubble_medium.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			3
+		],
+		"path": "res://assets/imported/models/qprop_weaponstand.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			2,
+			4
+		],
+		"path": "res://assets/imported/models/qprop_whetstone.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			2
+		],
+		"path": "res://assets/imported/models/qprop_workbench.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/qprop_workbench_drawers.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qv_balcony_cross_straight.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qv_balcony_simple_straight.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/qv_doorframe_flat_brick.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/qv_doorframe_round_wooddark.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4,
+			0
+		],
+		"path": "res://assets/imported/models/qv_prop_chimney.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/qv_prop_chimney2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qv_prop_crate.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/qv_prop_metalfence_ornament.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qv_prop_support.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qv_prop_vine1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qv_prop_vine2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qv_prop_vine4.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qv_prop_wagon.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qv_prop_woodenfence_extension1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qv_prop_woodenfence_single.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0,
+			2
+		],
+		"path": "res://assets/imported/models/qv_roof_dormer_roundtile.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			3
+		],
+		"path": "res://assets/imported/models/qv_roof_roundtiles_6x10.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			3
+		],
+		"path": "res://assets/imported/models/qv_roof_roundtiles_6x8.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			3
+		],
+		"path": "res://assets/imported/models/qv_roof_roundtiles_8x8.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1,
+			2,
+			3
+		],
+		"path": "res://assets/imported/models/qv_roof_tower_roundtiles.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/qv_wall_arch.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/qv_window_thin_round1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/qv_window_wide_flat1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qv_windowshutters_wide_flat_open.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/qv_windowshutters_wide_round_open.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/resource_copper_bar.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/resource_copper_bars.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/resource_copper_bars_stack_small.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/resource_copper_nugget_small.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/resource_copper_nuggets.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/resource_gold_bar.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/resource_gold_bars.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/resource_gold_bars_stack_small.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/resource_gold_nugget_small.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/resource_gold_nuggets.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/resource_iron_bar.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/resource_iron_bars.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/resource_iron_bars_stack_small.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/resource_iron_nugget_small.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/resource_iron_nuggets.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/resource_stone_brick.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/resource_stone_bricks_stack_small.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/resource_stone_chunks_small.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/resource_wood_log_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/resource_wood_log_b.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/resource_wood_log_stack.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/resource_wood_planks_stack_small.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/retro_bag.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/retro_cooker.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/retro_lantern.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/retro_pan_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/retro_pan_b.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/retro_tent.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/rpg_arrow_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/rpg_ax_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/rpg_bow_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/rpg_dagger_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/rpg_hammer_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/rpg_shield_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/rpg_sword_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_altar.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_ancientcoinamethyst.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_ancientcoinemerald.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_ancientcoinruby.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_blockcrackmd.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_blockcrackxl.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_blockcrackxs.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_blockmossmd.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_blockmossxl.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_blockmossxs.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_blocknormalmd.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_blocknormalxl.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_blocknormalxs.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_chestbase.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_chestbasegold.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_chestcover.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_corner.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_cornertight.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_fence.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_gate.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_groundmossmd.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_groundmossxl.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_groundmossxs.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_line.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_mossmd.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_mossxl.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_mossxs.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_pillarround.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_pillarroundcut.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_pillarsquare.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_pillarsquarecut.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/ruin_skely.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/ruin_skelydraugr.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/ruin_skelypoison.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_skull.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_skullcracked.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_slope.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_stairbridge.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_stairsmd.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_stairsxl.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_vase.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_wallbrokenmd.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/ruin_wallbrokenmddes.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_wallbrokenxl.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/ruin_wallbrokenxldes.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_wallbrokenxs.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/ruin_wallbrokenxsdes.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_wallend.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_wallend2.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_walllight.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_wallnormalmd.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/ruin_wallnormalmddes.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_wallnormalxl.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/ruin_wallnormalxldes.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/ruin_wallnormalxs.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/ruin_wallnormalxsdes.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/small_bag_1_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/small_bag_2_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/small_bag_3_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/small_basin_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			7
+		],
+		"path": "res://assets/imported/models/small_boatframe_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/small_broom_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			0
+		],
+		"path": "res://assets/imported/models/small_bucket_1_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1,
+			1,
+			2
+		],
+		"path": "res://assets/imported/models/small_cart_1_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/small_cutedwood_1_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/small_driedfish_1_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/small_fireplace_1_1_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			0
+		],
+		"path": "res://assets/imported/models/small_fireplace_1_2_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/small_fishingrod_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			3
+		],
+		"path": "res://assets/imported/models/small_grinder_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			2
+		],
+		"path": "res://assets/imported/models/small_hammer_1_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/small_ivory_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			3
+		],
+		"path": "res://assets/imported/models/small_laundry_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/small_manequin_1_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			3
+		],
+		"path": "res://assets/imported/models/small_manequin_2_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/small_nail_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			1
+		],
+		"path": "res://assets/imported/models/small_pitchfork_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/small_practicetarget_1_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/small_practicetarget_2_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/small_rope_1_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/small_skinhang_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/small_stool_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			1
+		],
+		"path": "res://assets/imported/models/small_trough_1_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2,
+			1
+		],
+		"path": "res://assets/imported/models/small_trough_2_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			1
+		],
+		"path": "res://assets/imported/models/small_trough_3_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			2
+		],
+		"path": "res://assets/imported/models/small_wheel_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_bank_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_birch_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_boulder_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_bridge_plank_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_bush_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_cave_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_cliff_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_cliff_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_cliff_03.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_cliff_corner_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_cobble_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_deadtree_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_fern_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_flowers_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			6
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_grass_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_ivy_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_kerb_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_lilypad_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_log_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_mound_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_mushrooms_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_oak_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_oak_sapling_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_path_corner_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_path_dirt_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_path_end_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_paving_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_pebbles_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_pine_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_pine_sapling_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_riverbed_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_rock_mossy_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_rocks_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_slab_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_steppingstones_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_steps_dirt_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_streamrock_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_stump_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_walkway_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/terrain_mdvl_nature_worn_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			1
+		],
+		"path": "res://assets/imported/models/treasure_low_poly_chest_2_0_gltf.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/treat_baguette.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/treat_bread.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			6
+		],
+		"path": "res://assets/imported/models/treat_bread_roll.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/treat_cake_chocolate.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/treat_cake_chocolate_slice.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/treat_cake_strawberry.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/treat_cookie.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/treat_croissant.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/treat_donut.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/treat_muffin.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_castle_bridge_draw.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_castle_bridge_straight.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_castle_bridge_straight_pillar.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/u29_castle_flag_wide.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_castle_gate.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_castle_metal_gate.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/u29_castle_rocks_large.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_castle_stairs_stone.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/u29_castle_tower_hexagon_base.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/u29_castle_tower_hexagon_mid.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/u29_castle_tower_hexagon_roof.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_castle_tower_hexagon_roof_secondary.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_castle_tower_hexagon_top.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_castle_tower_square_arch.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_castle_tower_square_base.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_castle_tower_square_mid.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_castle_tower_square_mid_door.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_castle_tower_square_mid_windows.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_castle_tower_square_roof.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_castle_tower_square_top.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_castle_tower_square_top_roof_high.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_castle_wall.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_castle_wall_corner.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_castle_wall_doorway.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_castle_wall_half.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_castle_wall_narrow.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_castle_wall_narrow_gate.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_castle_wall_narrow_stairs_rail.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_castle_wall_narrow_wood_fence.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_castle_wall_pillar.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_castle_wall_stud.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_bridge_stone.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_bridge_stoneround.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_cactus_short.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_cactus_tall.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_campfire_stones.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_cliff_blockcave_rock.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_cliff_half_rock.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_cliff_rock.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_cliff_stone.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_cliff_top_rock.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_flower_purplea.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_mushroom_tangroup.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_plant_bushdetailed.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_rock_largea.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_rock_largeb.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_rock_talla.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_rock_tallb.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_rock_tallc.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_rock_talld.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_nature_sign.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3,
+			2
+		],
+		"path": "res://assets/imported/models/u29_survival_bedroll.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/u29_survival_bedroll_packed.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_survival_bucket.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_survival_campfire_fishing_stand.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_survival_campfire_pit.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_survival_campfire_stand.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_survival_resource_planks.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/u29_survival_resource_stone.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_survival_resource_wood.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_survival_rock_flat.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_survival_rock_sand_a.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_survival_rock_sand_b.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_survival_rock_sand_c.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_survival_signpost.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_survival_signpost_single.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/u29_survival_structure_canvas.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0,
+			0
+		],
+		"path": "res://assets/imported/models/u29_survival_structure_roof.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_survival_tent.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_survival_tent_canvas.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_survival_tent_canvas_half.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/u29_survival_tool_axe.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/u29_survival_tool_hammer.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/u29_survival_tree_log.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/u29_survival_tree_log_small.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			2
+		],
+		"path": "res://assets/imported/models/u29_survival_workbench_anvil.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			2
+		],
+		"path": "res://assets/imported/models/u29_survival_workbench_grind.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/replacements/sign_board.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			4
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_beam_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_ceiling_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_ceiling_beam_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_chimney_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_cottage_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_dirt_light_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_door_plank_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_fire_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_fire_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_floor_wood_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_hearth_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_inwall_door_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_inwall_plain_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			6
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_ladder_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_sign_inn_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			8
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_stair_rail_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_stair_wood_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_stall_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_thatch_ridge_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_thatch_ridge_end_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_thatch_straight_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			5
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_thatch_verge_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_wall_corner_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_wall_door_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_wall_gable_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_wall_plain_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_wall_quoin_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_wall_window_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_well_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_window_box_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			6
+		],
+		"path": "res://assets/imported/models/village_mdvl_village_window_open_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/weapons_anvil_hammer.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/weapons_arming_sword.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/weapons_bat.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_bearded_axe.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_big_rock.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_blunt_arrow.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_bone_shiv.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_bow.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_broadhead_arrow.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_bullet_arrow.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/weapons_crossbow.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_cutlass.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_dagger.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/weapons_double_axe.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/weapons_double_hammer.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/weapons_falchion.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/weapons_flared_spear.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/weapons_great_sword.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_halberd.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/weapons_hatchet.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/weapons_kopesh.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_kriegmesser.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/weapons_kukri.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/weapons_leaf_blade.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/imported/models/weapons_macuahuitl.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/weapons_offset_sword.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_orc_sword.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_pebble.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_piercing_arrow.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_pitchfork.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_rock.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/weapons_scimitar.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/weapons_spear.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_spiked_club.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/weapons_war_hammer.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/weapons_wizard_staff.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/zappy_bottle_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/zappy_bottle_06.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			3
+		],
+		"path": "res://assets/imported/models/zappy_bowl_04.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/zappy_bowl_05.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1,
+			2
+		],
+		"path": "res://assets/imported/models/zappy_box_04_animation.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/zappy_box_05.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/zappy_candlestick_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/zappy_crystal.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/zappy_ladle_02.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/zappy_paper_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/zappy_pot_03.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/zappy_shelf_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/imported/models/zappy_stool_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			1
+		],
+		"path": "res://assets/imported/models/zappy_table_01.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/mobile_lods/stone_0.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/mobile_lods/stone_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/mobile_lods/stick_0.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			0
+		],
+		"path": "res://assets/mobile_lods/stick_1.res",
+		"shared_opaque_shadow": false
+	},
+	{
+		"base_faces_exact": true,
+		"base_vertex_attributes_preserved": true,
+		"levels": [
+			2
+		],
+		"path": "res://assets/mobile_lods/stick_2.res",
+		"shared_opaque_shadow": false
+	}
+]

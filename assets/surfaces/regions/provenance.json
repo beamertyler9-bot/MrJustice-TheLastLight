@@ -1,0 +1,17 @@
+{
+  "version": 32,
+  "generator": "tools/generate_regional_ground.py",
+  "license": "Project-authored",
+  "tile_pixels": 256,
+  "wrapped_gutter": 16,
+  "relief_channels": "RGB tangent normal, A roughness",
+  "regions": [
+    "Mosswake moss and leaf litter",
+    "S'morewood rose blades and cocoa litter",
+    "Windbell straw fibers and seeds",
+    "Sunspire wind ripples and grit",
+    "Ashfall basalt chips and copper grit",
+    "Haunted pale leaves and damp violet humus",
+    "Prism opal facets and mica"
+  ]
+}

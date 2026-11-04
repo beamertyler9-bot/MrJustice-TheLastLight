@@ -1,0 +1,31 @@
+shader_type spatial;
+render_mode unshaded, blend_mix, cull_disabled, depth_draw_never;
+uniform vec4 body_color : source_color = vec4(0.15,0.06,0.28,1.0);
+uniform vec4 core_color : source_color = vec4(0.83,0.65,1.0,1.0);
+uniform vec4 rim_color : source_color = vec4(0.55,0.32,0.85,1.0);
+uniform vec4 trail_color : source_color = vec4(0.25,0.08,0.45,1.0);
+uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear;
+uniform float age = 0.0;
+uniform float opacity = 1.0;
+uniform float brightness = 1.0;
+uniform float edge_noise = 0.5;
+uniform float style = 0.0;
+uniform float family = 10.0;
+uniform float low_flash = 0.0;
+uniform float contact_flash = 0.0;
+uniform float is_contact = 0.0;
+void fragment() {
+ vec2 p = UV*2.0-1.0; float r = length(p); float a = atan(p.y,p.x);
+ float warp = sin(a*3.0+age*0.9)*0.028+sin(a*7.0-age*0.6)*0.012;
+ float ring = exp(-pow((r-0.42-warp)*95.0,2.0));
+ float outer = exp(-pow((r-0.60+warp*0.6)*110.0,2.0))*0.40;
+ float inner = exp(-pow((r-0.30+warp)*95.0,2.0))*0.28;
+ float arc = 0.35+0.65*smoothstep(-0.4,0.4,sin(a*2.0+age*0.38));
+ float lens = smoothstep(0.68,0.30,r)*(1.0-smoothstep(0.0,0.16,r));
+ vec2 bend = normalize(p+vec2(0.0001))*lens*0.007;
+ vec3 background = textureLod(screen_texture,clamp(SCREEN_UV+bend,vec2(0.002),vec2(0.998)),0.0).rgb;
+ float strokes = clamp((ring+outer+inner)*arc,0.0,1.0);
+ ALBEDO = mix(background,body_color.rgb*0.05,0.025*lens);
+ EMISSION = mix(rim_color.rgb,core_color.rgb,ring*0.28)*strokes*brightness*(0.36+contact_flash*0.24)*mix(1.0,0.65,low_flash);
+ ALPHA = (strokes*0.40+lens*0.075)*opacity;
+}

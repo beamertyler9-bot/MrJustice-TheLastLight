@@ -1,0 +1,86 @@
+[
+	{
+		"albedo_sha256": "2219dd85d9f34930b77bf28e294968cdbf50abd820c5c3321271fbf51aa721cf",
+		"far_lighting": "Captured view normals, lit by live scene lights",
+		"near_geometry": "Shared installed 3D regional source",
+		"normal_sha256": "8e66d3e439a747de04f9008a08b2254f2094b758196196f6be8be187e995e362",
+		"orthographic_span": 1.4,
+		"region": 9,
+		"source": "qnat_commontree_1",
+		"source_sha256": "e7ef3fb305325fd002f608b9763bcbb23ed6392cdc384a4f55308b139d9510bc",
+		"view_pixels": 512,
+		"views": 4
+	},
+	{
+		"albedo_sha256": "16f19dd82804afa272bbd8ad2b9dcde15324bbfe2e4308492ad1d98975435b96",
+		"far_lighting": "Captured view normals, lit by live scene lights",
+		"near_geometry": "Shared installed 3D regional source",
+		"normal_sha256": "970ca18f2d9e9d762b4832a766ba49824aae9609ebfedcf57118014f33b2da48",
+		"orthographic_span": 1.4,
+		"region": 10,
+		"source": "qnat_commontree_5",
+		"source_sha256": "ad8ebeb469207fc606a9c28bdd345194ead7b3051563db5daa511f1ef8e59810",
+		"view_pixels": 512,
+		"views": 4
+	},
+	{
+		"albedo_sha256": "d929fb32d13be6a6af9bfae8089cc825612da737a59db85d1ede6f72a0ebaf58",
+		"far_lighting": "Captured view normals, lit by live scene lights",
+		"near_geometry": "Shared installed 3D regional source",
+		"normal_sha256": "6e5fcd6e86b88a612667cde800d8decfeddcdedca76084413d358c03b35e00e2",
+		"orthographic_span": 1.4,
+		"region": 11.0,
+		"source": "qnat_pine_3",
+		"source_sha256": "3c1370bd3574351a95b48d069c21c8a93745e0d577135c4e215c8dd6f08ba78f",
+		"view_pixels": 512.0,
+		"views": 4.0
+	},
+	{
+		"albedo_sha256": "d9ba9243415d011bb32ceb9805988f7f5cee834979b1bb74828d5c62c9df6b1d",
+		"far_lighting": "Captured view normals, lit by live scene lights",
+		"near_geometry": "Shared installed 3D regional source",
+		"normal_sha256": "13ab8cb3c2c943ba77275eefedacdec85f75ff7a83a88007ab2683e09d6d86ae",
+		"orthographic_span": 1.4,
+		"region": 12.0,
+		"source": "sunspire_cactus",
+		"source_sha256": "aa364cee6b935cfa109c36dca4fae09fbb48603ac71eaf219396cb8d21258d16",
+		"view_pixels": 512.0,
+		"views": 4.0
+	},
+	{
+		"albedo_sha256": "4b1353672628d5a7a9c3d0a43bdf9e3033cd43534293e4a589d5df812f4859ad",
+		"far_lighting": "Captured view normals, lit by live scene lights",
+		"near_geometry": "Shared installed 3D regional source",
+		"normal_sha256": "26a42f9a36d48447aacf1333ea9a0809261bc92c26cd5435538535cab45f3b8d",
+		"orthographic_span": 1.4,
+		"region": 13.0,
+		"source": "qnat_deadtree_2",
+		"source_sha256": "8cbfee886fdd1b87fddfdd8136afc044b18274fb27fb5531a95820bc3cb02fdc",
+		"view_pixels": 512.0,
+		"views": 4.0
+	},
+	{
+		"albedo_sha256": "4db25c11672e750ba56efa671c31375c6422142d0b9e03fc4d718e861f347157",
+		"far_lighting": "Captured view normals, lit by live scene lights",
+		"near_geometry": "Shared installed 3D regional source",
+		"normal_sha256": "56cb6a209ba462a833bbdb4d8a03ce0a236acaa898e483c196ee19e092a4aabe",
+		"orthographic_span": 1.4,
+		"region": 14.0,
+		"source": "qnat_twistedtree_4",
+		"source_sha256": "4b744cd023951fd154761da5033b2620df2b4c40a9890cd1e1fedd0aee7fb26c",
+		"view_pixels": 512.0,
+		"views": 4.0
+	},
+	{
+		"albedo_sha256": "1b5cfd49e03d28bd8601c2f8d192e47c1d0376e54c41dea86991ddb8dc28e3f0",
+		"far_lighting": "Captured view normals, lit by live scene lights",
+		"near_geometry": "Shared installed 3D regional source",
+		"normal_sha256": "cf825e5cd73fba2cb3ba89d6b5057cee06494ccfde2e5b6f840c0bd1e56e95e0",
+		"orthographic_span": 1.4,
+		"region": 15.0,
+		"source": "prism_spires",
+		"source_sha256": "520c031f3dfc2555326ffdc780684572b334fd45898e41f047c266eb22d2255f",
+		"view_pixels": 512.0,
+		"views": 4.0
+	}
+]

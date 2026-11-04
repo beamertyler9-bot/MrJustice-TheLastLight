@@ -1,0 +1,25 @@
+extends RefCounted
+
+const ITEMS: Dictionary = {
+	"quest_seed_satchel": {"name": "Juniper’s seed satchel", "description": "A stitched green seed pouch, tied with Juniper’s leaf clasp. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "satchel", "color": "#719951"},
+	"quest_lost_spindle": {"name": "Lethiel’s silver spindle", "description": "A narrow silver spindle with her mother’s blue ribbon. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "spindle", "color": "#7dbbdd"},
+	"quest_market_manifest": {"name": "Mara’s market ledger", "description": "A red leather ledger with numbered brass corners. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "book", "color": "#b9524d"},
+	"quest_forgotten_pattern": {"name": "Ilyra’s pattern case", "description": "An indigo scroll tube holding winter sketches. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "tube", "color": "#777eb7"},
+	"quest_rowans_locket": {"name": "Rowan’s copper locket", "description": "A heart shaped copper keepsake with a small portrait. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "locket", "color": "#d09164"},
+	"quest_tuning_fork": {"name": "Ilyra’s tuning fork", "description": "A brass two pronged fork, wrapped in violet loom thread. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "fork", "color": "#c3a76b"},
+	"quest_pantry_beans": {"name": "Rowan’s whistling kettle", "description": "A copper travel kettle lost on the north road; its whistle welcomes tired travelers. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "kettle", "color": "#b97a55"},
+	"quest_forge_fuel": {"name": "Bramm’s hearth bellows", "description": "The smith’s red bellows, with the little forge stamp on its nozzle. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "bellows", "color": "#b04f3f"},
+	"quest_garden_wall": {"name": "Tansy’s mason plumb", "description": "A brass plumb bob and waxed green cord for the village wall. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "plumb", "color": "#b1b96a"},
+	"quest_camp_supper": {"name": "Nim’s star cake tin", "description": "A scalloped tin shaped like the baker’s festival star. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "star", "color": "#e1c58b"},
+	"quest_willow_remedy": {"name": "Sable’s remedy press", "description": "A jade herb press that measures remedies safely for the watch. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "press", "color": "#6da58b"},
+	"quest_hesters_alloy": {"name": "Hester’s alloy die", "description": "A square steel test die etched with a bright copper sun. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "die", "color": "#8eaab5"},
+	"quest_warm_cups": {"name": "Pella’s dawn cup", "description": "A blue cup with a crescent handle, missing from the apprentices’ tray. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "cup", "color": "#7caec7"},
+	"quest_core_for_bramm": {"name": "Bramm’s core tongs", "description": "Long iron tongs with a red insulated grip for old guardian cores. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "tongs", "color": "#bc7857"},
+	"quest_provisions_for_the_pass": {"name": "Gorrin’s trail compass", "description": "A brass compass with a green north needle for the relief crew. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "compass", "color": "#9ab77b"},
+	"quest_scrapper_voice_coil": {"name": "Stolen dawn voice coil", "description": "A glass sound spool holding the village dawn bell; Dissonance marked it for a drone. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "coil", "color": "#bb82df"},
+	"quest_scrapper_quarry_chime": {"name": "Dori’s quarry chime", "description": "A three tube copper chime used to signal stonecutters home. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "chime", "color": "#daaf67"},
+	"quest_scrapper_fen_whistle": {"name": "Juniper’s reed whistle", "description": "A green reed whistle with two finger holes, taken while the garden fell silent. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "whistle", "color": "#89bd82"},
+	"quest_scrapper_ash_musicbox": {"name": "Pella’s ember music box", "description": "A blackened red music box with a brass winding key; a lullaby survived inside. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "musicbox", "color": "#d47769"},
+}
+static func is_quest(id: String) -> bool: return ITEMS.has(id)
+static func item_for(request_id: String) -> String: return "quest_" + request_id

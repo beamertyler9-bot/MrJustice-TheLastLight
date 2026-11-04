@@ -1,0 +1,11 @@
+{
+  "author": "Mr. Justice project",
+  "generator": "tools/author_replacement_surfaces.py",
+  "purpose": "Seamless tile relief and baked plaster; runtime has no image generation.",
+  "retained": "Original stone, timber, cloth, leather and ground art and resolution.",
+  "files": {
+    "roof.png": "a9f9cfee2185034f307ead3f61fd0f5fafdeefd455ebe9ab637e1da309c7b4c9",
+    "roof_normal.png": "d5f117763b521d66789dfef63614a4f3e79b40516f7953a581bae14054d035af",
+    "plaster.png": "a5d76faa4e4b4e1944a56b4935b4b6e6412cca2364a5053f5d1fd0516385994c"
+  }
+}

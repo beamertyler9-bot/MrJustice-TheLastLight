@@ -1,0 +1,68 @@
+[
+	{
+		"backface_culling": true,
+		"clusters": 16,
+		"crown_triangles": 768,
+		"opaque_crown": true,
+		"original_crown_triangles": 1920,
+		"path": "res://assets/forest_canopies/qnat_commontree_1.res",
+		"runtime_geometry_preparation": false,
+		"trunk_compressed_bytes_exact": true,
+		"trunk_triangles": 4345
+	},
+	{
+		"backface_culling": true,
+		"clusters": 16,
+		"crown_triangles": 768,
+		"opaque_crown": true,
+		"original_crown_triangles": 1338,
+		"path": "res://assets/forest_canopies/qnat_commontree_2.res",
+		"runtime_geometry_preparation": false,
+		"trunk_compressed_bytes_exact": true,
+		"trunk_triangles": 4310
+	},
+	{
+		"backface_culling": true,
+		"clusters": 16,
+		"crown_triangles": 768,
+		"opaque_crown": true,
+		"original_crown_triangles": 1800,
+		"path": "res://assets/forest_canopies/qnat_commontree_3.res",
+		"runtime_geometry_preparation": false,
+		"trunk_compressed_bytes_exact": true,
+		"trunk_triangles": 1705
+	},
+	{
+		"backface_culling": true,
+		"clusters": 16,
+		"crown_triangles": 768,
+		"opaque_crown": true,
+		"original_crown_triangles": 786,
+		"path": "res://assets/forest_canopies/qnat_commontree_4.res",
+		"runtime_geometry_preparation": false,
+		"trunk_compressed_bytes_exact": true,
+		"trunk_triangles": 3280
+	},
+	{
+		"backface_culling": true,
+		"clusters": 16,
+		"crown_triangles": 768,
+		"opaque_crown": true,
+		"original_crown_triangles": 1300,
+		"path": "res://assets/forest_canopies/qnat_commontree_5.res",
+		"runtime_geometry_preparation": false,
+		"trunk_compressed_bytes_exact": true,
+		"trunk_triangles": 1882
+	},
+	{
+		"backface_culling": true,
+		"clusters": 16,
+		"crown_triangles": 768,
+		"opaque_crown": true,
+		"original_crown_triangles": 1300,
+		"path": "res://assets/regional_trees/qnat_commontree_5.res",
+		"runtime_geometry_preparation": false,
+		"trunk_compressed_bytes_exact": true,
+		"trunk_triangles": 1882
+	}
+]

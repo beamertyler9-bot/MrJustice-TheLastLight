@@ -1,0 +1,39 @@
+{
+  "version": "0.36.27",
+  "kind": "Soundfoundry campsite fix and nine-actor roster",
+  "engine": "Godot 4.5.1 standard",
+  "renderer": "Compatibility GLES",
+  "base_source_commit": "893f842e946da317be886abcfa6f5f66d32b939d",
+  "coverage": "docs/validation-v03627",
+  "apk_built": false,
+  "windows_build_created": false,
+  "next_android_version_code": 66,
+  "package": "org.christina.mrjustice.worldpreview",
+  "physical_phone_tested": false,
+  "physical_windows_pc_tested": false,
+  "changes": [
+    "Use the actual fortress footprint to keep exterior personal camps and the Soundfoundry loaded together",
+    "Reject placements that overlap a Scrapper camp before consuming the kit or table",
+    "Five retained bandits, one Scout drone, one Sound-Blast walker, one Echo drone, and Dissonance",
+    "Keep defeated actors and reconcile cleared status for saves made with a larger roster",
+    "The Echo hovers with a twin-loop antenna and fires three swept sound pulses"
+  ],
+  "prepared_surfaces": {
+    "scrapper_scout": 16,
+    "scrapper_bruiser": 18,
+    "scrapper_slinger": 19,
+    "dissonance": 17,
+    "dissonant_scout_hover": 8,
+    "dissonant_blast_hover": 9,
+    "dissonant_scout_walker": 16,
+    "dissonant_blast_walker": 17,
+    "dissonant_echo_hover": 8
+  },
+  "validation_status": "All 293 source suites and 56,851 checks passed. The native preview decodes fully.",
+  "tests": {
+    "active_suites": 293,
+    "accepted_source_checks": 56851,
+    "passed": true,
+    "fresh_userdata": true
+  }
+}
