@@ -61,6 +61,51 @@ func setup_loading(context, progress: Callable) -> void:
 	await get_tree().process_frame
 	_castle_silhouette()
 
+## Distant impostor forests are grouped into large cells: each cell is one draw call, and
+## the near trees are still masked out per pixel by the forest shader, so bigger cells cost
+## far fewer draws for the same picture. (Was 192 m, ~1,400 draws across the map.)
+const FOREST_CELL := 768.0
+const FOREST_RANGE := 1400.0
+
+## Merge every mesh under a purely decorative far proxy into one draw per material.
+static func flatten_static(root: Node3D) -> int:
+	var JointBatches = load("res://scripts/joint_draw_batches.gd")
+	var tools: Dictionary = {}
+	var materials: Dictionary = {}
+	var sources: Array = []
+	var inverse := root.global_transform.affine_inverse()
+	for geometry in root.find_children("*", "GeometryInstance3D", true, false):
+		var mesh: Mesh = null
+		var frames: Array = []
+		var base: Transform3D = inverse * geometry.global_transform
+		if geometry is MeshInstance3D and geometry.mesh != null:
+			mesh = geometry.mesh; frames = [base]
+		elif geometry is MultiMeshInstance3D and geometry.multimesh != null and geometry.multimesh.mesh != null:
+			mesh = geometry.multimesh.mesh
+			for i in geometry.multimesh.instance_count: frames.append(base * geometry.multimesh.get_instance_transform(i))
+		else: continue
+		var ok := true
+		for surface in mesh.get_surface_count():
+			var paint = geometry.material_override if geometry.material_override != null else (geometry.get_surface_override_material(surface) if geometry is MeshInstance3D else null)
+			if paint == null: paint = mesh.surface_get_material(surface)
+			if paint == null or not JointBatches.merge_safe(paint) or (mesh is ArrayMesh and mesh.surface_get_primitive_type(surface) != Mesh.PRIMITIVE_TRIANGLES): ok = false; break
+		if not ok: continue
+		for surface in mesh.get_surface_count():
+			var paint = geometry.material_override if geometry.material_override != null else (geometry.get_surface_override_material(surface) if geometry is MeshInstance3D else null)
+			if paint == null: paint = mesh.surface_get_material(surface)
+			if not tools.has(paint):
+				var tool := SurfaceTool.new(); tool.begin(Mesh.PRIMITIVE_TRIANGLES); tools[paint] = tool
+			for frame in frames: tools[paint].append_from(mesh, surface, frame)
+		sources.append(geometry)
+	if sources.size() < 2: return 0
+	for paint in tools:
+		var merged := MeshInstance3D.new(); merged.name = "FlattenedSilhouette"
+		merged.mesh = tools[paint].commit(); merged.material_override = paint
+		merged.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		root.add_child(merged)
+	for geometry in sources: geometry.queue_free()
+	return sources.size() - tools.size()
+
 func _castle_silhouette() -> void:
 
 	var proxy = Node3D.new(); proxy.name = "CastleSilhouette"; add_child(proxy)
@@ -70,6 +115,7 @@ func _castle_silhouette() -> void:
 	load("res://scripts/landmark_art.gd").castle(proxy, false); B.batch_static(proxy)
 	for mesh in proxy.find_children("*", "GeometryInstance3D", true, false):
 		mesh.visibility_range_begin = 0; mesh.visibility_range_end = 0; mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	flatten_static(proxy)
 
 func _process(dt: float) -> void:
 	clock += dt
@@ -151,11 +197,11 @@ func _forest_group(group: Dictionary, variants: Dictionary) -> void:
 	var cells = {}; var source_origin = Vector3(group.cell.x * 1024, 0, group.cell.y * 1024)
 	for saved in group.transforms:
 		var frame: Transform3D = saved; frame.origin += source_origin
-		var cell = Vector2i(floori(frame.origin.x / 192.0), floori(frame.origin.z / 192.0))
+		var cell = Vector2i(floori(frame.origin.x / FOREST_CELL), floori(frame.origin.z / FOREST_CELL))
 		if not cells.has(cell): cells[cell] = []
-		frame.origin -= Vector3(cell.x * 192, 0, cell.y * 192); cells[cell].append(frame)
+		frame.origin -= Vector3(cell.x * FOREST_CELL, 0, cell.y * FOREST_CELL); cells[cell].append(frame)
 	for cell in cells:
-		var holder = Node3D.new(); holder.name = "RegionalForest_%d_%d_%d" % [region, cell.x, cell.y]; holder.position = Vector3(cell.x * 192, 0, cell.y * 192); add_child(holder)
+		var holder = Node3D.new(); holder.name = "RegionalForest_%d_%d_%d" % [region, cell.x, cell.y]; holder.position = Vector3(cell.x * FOREST_CELL, 0, cell.y * FOREST_CELL); add_child(holder)
 		var transforms: Array[Transform3D] = []
 		transforms.assign(cells[cell])
 		B.instances(holder, transforms, variants[region], null)
@@ -164,6 +210,8 @@ func _forest_group(group: Dictionary, variants: Dictionary) -> void:
 		var bounds = transforms[0] * source_bounds
 		for frame in transforms: bounds = bounds.merge(frame * source_bounds)
 		batch.custom_aabb = bounds
+		# Beyond this the fog has fully swallowed the impostors.
+		batch.visibility_range_end = FOREST_RANGE
 
 func _lake(lake: Dictionary) -> void:
 	var mesh = preload("res://scripts/water_profile.gd").lake_mesh(lake)
