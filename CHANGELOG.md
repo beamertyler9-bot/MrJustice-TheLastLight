@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.38.0 — Lighting, camera and game-feel pass (2026-11-04)
+
+### Camera
+- Smoothed follow pivot that lags vertically while airborne, so jumps no longer jerk the view
+  (vertical camera travel over a run-and-jump test: 6.6 -> 5.6).
+- Orbit responds instantly to input; only the follow is smoothed, so turning no longer cuts
+  corners or changes the camera distance.
+- Collision distance snaps in when something blocks the view and eases back out, removing pops.
+- Slight look-ahead toward the direction of travel.
+- Gentle auto-follow: after 1.4 s without camera input, the camera swings in behind a running
+  hero (never while aiming, in the bag view, or when running toward the camera).
+- Noise-based shake with a little roll, plus directional kicks on hits given and taken.
+  All of it respects the existing Camera Shake setting.
+
+### Game feel (`scripts/game_feel.gd`)
+- Hit stop: 55 ms on melee hits, 95 ms on the combo finisher, 130 ms on a defeating blow,
+  75 ms when hurt, and a lighter, damage-scaled freeze on spell hits. Real-time timed and
+  never active outside gameplay.
+- Phone vibration on hits, spell release, hard landings and damage (Android; follows the
+  Camera Shake setting).
+- Squash-and-stretch pop on enemies when struck (skipped on defeating blows).
+- Hard landings add camera trauma.
+
+### Lighting
+- Golden hour: warmer, punchier low sun, violet-tinted ambient, and fog that glows toward the sun.
+- Night: cooler moonlit ambient and softer shadows.
+- The hero's lantern is subtle in daylight (no more midday spotlight on the ground) and blooms
+  at night and indoors.
+- High quality: soft glow so spell cores, flames and the lantern bloom slightly.
+
 ## 0.37.0 — Remaster pass (2026-11-04)
 
 Measured in the Bellcrown/Brindlewick start area with the default (Balanced) quality.

@@ -509,6 +509,13 @@ func _elemental_hit(enemy: Node3D, spell: Dictionary, context: Dictionary, chain
 		context.pool.reactions -= 1; damage += mini(3, maxi(1, int(spell.power) / 2)); weave.remove_status(enemy, "frozen")
 		_glyph(position, spell, "shatter", 0.55, 0.7)
 	enemy.take_damage(damage)
+	# Spell impacts get a lighter version of melee feedback, scaled by damage.
+	if game != null and game.get("feel") != null:
+		var heavy := clampf(float(damage) / 4.0, 0.25, 1.0)
+		game.feel.hit_stop(0.025 + 0.045 * heavy if _live(enemy) else 0.1)
+		game.feel.rumble(int(12 + 18 * heavy), 0.35 + 0.4 * heavy)
+		game.feel.squash(enemy, 0.5 + 0.4 * heavy)
+		if is_instance_valid(game.player): game.player.camera_trauma = minf(1.0, game.player.camera_trauma + 0.1 + 0.15 * heavy)
 	if not _live(enemy): return
 	match spell.element:
 		"water":

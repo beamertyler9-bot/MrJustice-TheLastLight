@@ -31,6 +31,8 @@ var cape: MeshInstance3D
 var backpack: Node3D
 var lid: Node3D
 var _bag_straps: Array = [[], []]
+## Set by the lighting grade: the lantern stays subtle in daylight and blooms in the dark.
+var lantern_gain := 1.0
 var _bag_hand_origins: Array[Transform3D] = [Transform3D.IDENTITY, Transform3D.IDENTITY]
 var _bag_elbow_origins: Array[Vector3] = [Vector3.ZERO, Vector3.ZERO]
 var flame: MeshInstance3D
@@ -1872,7 +1874,8 @@ func _update_secondary(dt: float) -> void:
 	flame.rotation.z = sin(time * 5.0) * 0.1
 	flame.rotation.x = sin(time * 4.2) * 0.055
 	inner_flame.scale.y = 0.24 + sin(time * 12.0) * 0.018
-	lantern.light_energy = 2.3 + sin(time * 8.0) * 0.1 + sin(time * 13.7) * 0.035
+	lantern.light_energy = (2.3 + sin(time * 8.0) * 0.1 + sin(time * 13.7) * 0.035) * lantern_gain
+	lantern.omni_range = lerpf(4.2, 6.5, clampf(lantern_gain, 0.0, 1.0))
 	cape.scale.y = lerpf(1.0, 0.43, _dodge_tuck)
 	cape.rotation.x = _dodge_tuck * 0.22
 	var body_frame := torso.global_transform * Transform3D(Basis.IDENTITY, Vector3(0, 1.46 - TORSO_PIVOT, 0))

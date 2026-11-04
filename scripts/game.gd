@@ -61,6 +61,7 @@ var motes: MultiMeshInstance3D
 var _sandstorm_warned := false
 var clouds: MultiMeshInstance3D
 var effects: Node3D
+var feel
 var backdrop: MeshInstance3D
 var modal_parents: Dictionary = {}
 var mode_age: float = 0.0
@@ -159,6 +160,9 @@ func _ready() -> void:
 	effects = Effects.new()
 	effects.configure(state.settings)
 	add_child(effects)
+	feel = preload("res://scripts/game_feel.gd").new()
+	feel.setup(self)
+	add_child(feel)
 	if not defer_world_until_journey: build_world()
 	if dev_tools == null:
 		dev_tools = DevTools.new(); dev_tools.setup(self)
@@ -1048,6 +1052,7 @@ func _weather() -> void:
 		environment.environment.ambient_light_energy = 0.28
 		environment.environment.ambient_light_color = Color("#718f9e")
 		environment.environment.fog_density = 0.003
+	_grade_lighting(daylight, height, indoors)
 	if world.water != null:
 		world.water.material_override.set_shader_parameter("world_time", clock)
 	if rain.visible:
@@ -1064,6 +1069,27 @@ func _weather() -> void:
 			scale_value = 2.2 if biome == 12 else 1.3
 		motes.multimesh.set_instance_transform(i, Transform3D(Basis.from_scale(Vector3.ONE * scale_value), p))
 
+## Lighting grade layered on top of the per-biome weather above: golden-hour warmth and
+## sun-tinted fog when the sun is low, a cool moonlit night, and a hero lantern that only
+## blooms when it is actually dark.
+func _grade_lighting(daylight: float, sun_height: float, indoors: bool) -> void:
+	var env: Environment = environment.environment
+	var golden := (1.0 - smoothstep(0.06, 0.42, sun_height)) * smoothstep(-0.1, 0.04, sun_height)
+	var night := 1.0 - smoothstep(-0.22, 0.06, sun_height)
+	if not indoors:
+		sunlight.light_color = sunlight.light_color.lerp(Color("#ff9d55"), golden * 0.7)
+		sunlight.light_energy *= lerpf(1.0, 1.2, golden)
+		sunlight.shadow_opacity = lerpf(1.0, 0.7, night)
+		env.ambient_light_color = env.ambient_light_color.lerp(Color("#b08aa6"), golden * 0.45).lerp(Color("#56689f"), night * 0.35)
+		env.fog_light_color = env.fog_light_color.lerp(Color("#eba06a"), golden * 0.4)
+		env.fog_sun_scatter = lerpf(0.04, 0.5, golden)
+	else:
+		sunlight.shadow_opacity = 1.0
+		env.fog_sun_scatter = 0.0
+	if is_instance_valid(player) and player.visual != null and player.visual.get("lantern_gain") != null:
+		var dark := clampf(1.0 - daylight + night * 0.3 + (0.55 if indoors else 0.0), 0.0, 1.0)
+		player.visual.lantern_gain = lerpf(0.3, 1.15, dark)
+
 func apply_settings() -> void:
 	var quality = int(state.settings.quality)
 	load("res://scripts/imported_assets.gd").set_quality(quality)
@@ -1076,6 +1102,11 @@ func apply_settings() -> void:
 	RenderingServer.directional_shadow_atlas_set_size(2048 if quality > 0 else 1024, true)
 	get_viewport().scaling_3d_scale = [0.7, 0.85, 1.0][quality]
 	get_viewport().msaa_3d = Viewport.MSAA_2X if quality == 2 else Viewport.MSAA_DISABLED
+	# High quality: a soft glow so spell cores, lanterns and flames bloom slightly.
+	var env: Environment = environment.environment
+	env.glow_enabled = quality == 2
+	env.glow_intensity = 0.55; env.glow_strength = 0.9; env.glow_bloom = 0.0
+	env.glow_hdr_threshold = 0.92; env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
 	for detail in get_tree().get_nodes_in_group("world_detail"):
 		detail.visibility_range_end = [50.0, 65.0, 85.0][quality]
 	_save_current_state()

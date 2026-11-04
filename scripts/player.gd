@@ -67,6 +67,15 @@ var magic_contact: float = -1.0
 var camera_trauma: float = 0.0
 var landing_offset: float = 0.0
 var camera_clock: float = 0.0
+# Camera feel: a smoothed pivot (lags vertically in the air), travel look-ahead,
+# collision distance that snaps in and eases out, organic shake and directional kicks.
+var cam_pivot := Vector3.ZERO
+var cam_pivot_ready := false
+var cam_length := -1.0
+var cam_lookahead := Vector3.ZERO
+var cam_kick := Vector3.ZERO
+var cam_noise: FastNoiseLite
+const CAMERA_FOLLOW_DELAY := 1.4
 var hook_rope: MeshInstance3D
 var hook_anchor: WeakRef
 var hook_local_point: Vector3
@@ -196,6 +205,7 @@ func _physics_process(dt: float) -> void:
 				if runtime != null:
 					if runtime.release():
 						camera_trauma = minf(0.24, camera_trauma + 0.1)
+						feel_rumble(14, 0.3)
 					elif runtime.get("last_release_error") is String and not str(runtime.last_release_error).is_empty():
 						toast(str(runtime.last_release_error))
 	if melee_contact >= 0:
@@ -326,6 +336,9 @@ func _physics_process(dt: float) -> void:
 	if is_on_floor() and not was_grounded and last_vertical < -3.0:
 		var impact = clampf(-last_vertical / 12.0, 0.15, 1.0)
 		landing_offset = -impact * 0.15
+		if impact > 0.4:
+			camera_trauma = minf(1.0, camera_trauma + impact * 0.22)
+			feel_rumble(int(lerpf(12.0, 40.0, impact)), impact * 0.6)
 		visual_action("land", impact)
 		cue("land", lerpf(1.12, 0.88, impact))
 		if game != null and game.has_method("foot_effect"):
@@ -444,34 +457,76 @@ func update_camera(dt: float) -> void:
 	if is_instance_valid(lock_target) and active and not aiming_view and bag < 0.02:
 		update_lock_camera(smoothing)
 		return
+	var step := maxf(dt, 0.0)
+	var flat_velocity := Vector3(velocity.x, 0, velocity.z)
+	# Gentle auto-follow: after the player stops steering the camera, swing it in behind a
+	# running hero. Never while aiming, carrying the bag view, or running toward the camera.
+	if active and camera_idle > CAMERA_FOLLOW_DELAY and aim_blend < 0.1 and bag < 0.02 and flat_velocity.length() > 2.2 and not climbing:
+		var heading: float = atan2(-flat_velocity.x, -flat_velocity.z)
+		var turn: float = angle_difference(yaw, heading)
+		if absf(turn) < 2.1:
+			yaw += turn * (1.0 - exp(-step * 0.85)) * clampf((flat_velocity.length() - 2.2) / 4.0, 0.0, 1.0)
 	var camera_yaw = lerp_angle(yaw, bag_yaw, smoothstep(0, 1, bag))
-	var target = global_position + Vector3(0, lerpf(1.38, 1.25, aim_blend) * HERO_RATIO + landing_offset, 0)
+	var raw_target = global_position + Vector3(0, lerpf(1.38, 1.25, aim_blend) * HERO_RATIO + landing_offset, 0)
+	if not cam_pivot_ready or cam_pivot.distance_to(raw_target) > 6.0:
+		cam_pivot = raw_target; cam_pivot_ready = true; cam_length = -1.0
+	var grounded: bool = is_on_floor() or climbing or swimming
+	var vertical_rate: float = 10.0 if grounded else (3.5 if velocity.y > -7.0 else 11.0)
+	var follow_h := 1.0 - exp(-step * 9.0)
+	var follow_v := 1.0 - exp(-step * vertical_rate)
+	cam_pivot = Vector3(lerpf(cam_pivot.x, raw_target.x, follow_h), lerpf(cam_pivot.y, raw_target.y, follow_v), lerpf(cam_pivot.z, raw_target.z, follow_h))
+	cam_pivot.y = clampf(cam_pivot.y, raw_target.y - 0.9, raw_target.y + 0.55)
+	var ahead: Vector3 = flat_velocity.limit_length(7.0) * 0.075 * (1.0 - aim_blend) * (1.0 - bag)
+	cam_lookahead = cam_lookahead.lerp(ahead, 1.0 - exp(-step * 2.6))
+	var target = cam_pivot + cam_lookahead
 	var aimed_distance = 3.1 + (camera_distance - DEFAULT_CAMERA_DISTANCE) * 0.7
 	var distance = lerpf(lerpf(camera_distance, aimed_distance, aim_blend), 3.8 * HERO_RATIO, bag)
 	var view_pitch = lerpf(pitch, 0.1, smoothstep(0, 1, bag))
 	var forward = Vector3(-sin(camera_yaw) * cos(view_pitch), -sin(view_pitch), -cos(camera_yaw) * cos(view_pitch))
 	var right = Vector3(cos(camera_yaw), 0, -sin(camera_yaw))
 	var shoulder = lerpf(lerpf(0.72, 1.4, aim_blend) * HERO_RATIO, 0.0, bag)
-	var desired = target - forward * distance + right * shoulder
-	var hit = ray(target, desired, 1 | 8)
+	# Orbit responds instantly to input; only the collision distance is smoothed:
+	# snap in when something blocks the view, ease back out when it clears (no popping).
+	var offset: Vector3 = -forward * distance + right * shoulder
+	var full_length: float = offset.length()
+	var allowed: float = full_length
+	var hit = ray(target, target + offset, 1 | 8)
 	if not hit.is_empty():
-		desired = hit.position + hit.normal * 0.22
-	camera.global_position = camera.global_position.lerp(desired, smoothing)
-
-
+		allowed = maxf(0.3, target.distance_to(hit.position) - 0.22)
+	if cam_length < 0.0 or allowed < cam_length: cam_length = allowed
+	else: cam_length = lerpf(cam_length, allowed, 1.0 - exp(-step * 3.2))
+	var shake_enabled: bool = state == null or bool(state.settings.get("camera_shake", true))
+	cam_kick *= exp(-step * 11.0)
+	camera.global_position = target + offset.normalized() * minf(cam_length, full_length) + (cam_kick if shake_enabled else Vector3.ZERO)
 	var blocked = ray(target, camera.global_position, 1 | 8)
 	if not blocked.is_empty():
 		camera.global_position = blocked.position + blocked.normal * 0.22
-	var shake = (right * sin(camera_clock * 73) + Vector3.UP * cos(camera_clock * 91) * 0.5) * camera_trauma * camera_trauma * lerpf(0.065, 0.018, aim_blend)
-	if state != null and not bool(state.settings.get("camera_shake", true)): shake = Vector3.ZERO
+	if cam_noise == null:
+		cam_noise = FastNoiseLite.new(); cam_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX; cam_noise.frequency = 1.0
+	var trauma_sq = camera_trauma * camera_trauma
+	var amplitude = lerpf(0.09, 0.025, aim_blend) * trauma_sq
+	var shake = (right * cam_noise.get_noise_2d(camera_clock * 22.0, 3.0) + Vector3.UP * cam_noise.get_noise_2d(camera_clock * 22.0, 47.0) * 0.7) * amplitude
+	var roll: float = cam_noise.get_noise_2d(camera_clock * 16.0, 91.0) * trauma_sq * 0.04
+	if not shake_enabled: shake = Vector3.ZERO; roll = 0.0
 	var look_point = camera.global_position + forward * 10
 
 
 	look_point = look_point.lerp(target + right * (2.8 * HERO_RATIO), bag)
-	camera.look_at(look_point + shake, Vector3.UP)
+	camera.look_at(look_point + shake, Vector3.UP.rotated(forward.normalized(), roll))
 
 
 	camera.set_cull_mask_value(2, true)
+
+## Push the camera briefly away along a direction (impacts, hits taken).
+func camera_kick(direction: Vector3, strength: float) -> void:
+	if direction.length_squared() < 1e-6: return
+	cam_kick = (cam_kick + direction.normalized() * strength).limit_length(0.35)
+
+func feel_hit_stop(duration: float) -> void:
+	if game != null and game.get("feel") != null: game.feel.hit_stop(duration)
+
+func feel_rumble(ms: int, strength: float) -> void:
+	if game != null and game.get("feel") != null: game.feel.rumble(ms, strength)
 
 func camera_input_allowed() -> bool:
 	return active or (game != null and str(game.get("mode")) in ["rest", "sleep"])
@@ -1311,6 +1366,11 @@ func resolve_melee() -> void:
 			if enemy.has_method("receive_impulse"):
 				enemy.receive_impulse(facing * (3.6 if combo_step == 2 else 2.1))
 			camera_trauma = minf(1.0, camera_trauma + (0.48 if combo_step == 2 else 0.32))
+			camera_kick(facing, 0.07 if combo_step == 2 else 0.04)
+			var defeated: bool = enemy.get("health") != null and int(enemy.get("health")) <= 0
+			feel_hit_stop(0.13 if defeated else (0.095 if combo_step == 2 else 0.055))
+			feel_rumble(38 if combo_step == 2 else 22, 0.85 if combo_step == 2 else 0.55)
+			if game != null and game.get("feel") != null: game.feel.squash(enemy, 1.0 if combo_step == 2 else 0.65)
 			if game != null:
 				game.burst(enemy.global_position + Vector3.UP, Color("#ffd99a"))
 
@@ -1536,6 +1596,9 @@ func take_damage(amount: int) -> void:
 		game.hud.notify_damage(health_before, state.health, state.max_health)
 	visual_action("hurt", float(amount))
 	camera_trauma = minf(1, camera_trauma + 0.55)
+	camera_kick(visual.global_basis.z if visual != null else Vector3.BACK, 0.09)
+	feel_hit_stop(0.075)
+	feel_rumble(65, 1.0)
 	cue("hurt")
 	if game != null:
 		game.damage_flash = 0.5
