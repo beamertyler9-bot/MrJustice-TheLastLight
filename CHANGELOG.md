@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.39.0 — Smoothness pass (2026-11-04)
+
+Measured running through the start area (desktop CPU; phones are slower but the ratios hold):
+average frame 13.8 -> 9.9 ms, worst frame 370 -> 33 ms, frames over 50 ms 5 -> 0.
+
+### Hitches removed
+- Distant-house batch rebuilds bind incrementally within 1.5 ms per frame and keep the
+  16 MB housing-vistas library cached (was a 280-370 ms freeze when approaching towns).
+- Building a distant house only decides that house's visibility; the full pass runs once per
+  batch (was re-checking every distant house after each one).
+- New house templates merge with whole-array operations instead of per-corner SurfaceTool calls
+  (was 50-70 ms the first time each house style appeared).
+
+### Lighter every frame
+- HUD redraws at half rate during play, and at full rate whenever a finger is on the screen.
+- Interaction prompt search runs 10 times a second instead of every physics tick.
+- World streaming budget 1.5 ms per frame on phones.
+- Cape cloth steps at 30 Hz with 2 solver passes on Low/Balanced (High unchanged).
+
+### GPU
+- Adaptive resolution (`scripts/frame_governor.gd`): when the GPU is the bottleneck the 3D
+  view renders at a lower internal resolution (down to 50%) and climbs back when there is
+  headroom. Ceilings: Low 65%, Balanced 80%, High 100%.
+- Balanced: small props draw to 65 m (was 85) and shadows to 24 m (was 30).
+- Low quality holds a steady 30 fps.
+
 ## 0.38.0 — Lighting, camera and game-feel pass (2026-11-04)
 
 ### Camera
