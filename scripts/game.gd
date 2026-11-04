@@ -1069,7 +1069,11 @@ func apply_settings() -> void:
 	load("res://scripts/imported_assets.gd").set_quality(quality)
 	if effects != null: effects.configure(state.settings)
 	sunlight.shadow_enabled = quality > 0
-	sunlight.directional_shadow_max_distance = [24.0, 36.0, 56.0][quality]
+	# One shadow cascade on Balanced halves the shadow pass; High keeps two cascades.
+	sunlight.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS if quality == 2 else DirectionalLight3D.SHADOW_ORTHOGONAL
+	sunlight.directional_shadow_max_distance = [24.0, 30.0, 56.0][quality]
+	sunlight.directional_shadow_fade_start = 0.75
+	RenderingServer.directional_shadow_atlas_set_size(2048 if quality > 0 else 1024, true)
 	get_viewport().scaling_3d_scale = [0.7, 0.85, 1.0][quality]
 	get_viewport().msaa_3d = Viewport.MSAA_2X if quality == 2 else Viewport.MSAA_DISABLED
 	for detail in get_tree().get_nodes_in_group("world_detail"):

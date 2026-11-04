@@ -51,7 +51,14 @@ func _ready() -> void:
 	roast_pivot.hide()
 	_build_pick_power_grip()
 	_build_tool_support_grip()
-	load("res://scripts/prepared_hero_shadows.gd").apply(self)
+	var shadows = load("res://scripts/prepared_hero_shadows.gd")
+	# One skinned draw per material; falls back to the prebaked per-joint shadow proxies.
+	var loose: Array = shadows.excluded_sources(self)
+	var hard: Array = []
+	for key in ["flame", "inner_flame", "cape"]:
+		if is_instance_valid(get(key)): hard.append(get(key)); loose.erase(get(key))
+	if load("res://scripts/rigid_skin_batches.gd").apply(self, loose, hard) == null:
+		shadows.apply(self)
 
 func begin_camp_pose(action: String) -> void:
 	_show_pick_power_grip(false)

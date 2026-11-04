@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cn2ss1k5umko1"
-path="res://.godot/imported/fabric_pattern_07_rough_1k.jpg-030b740e572dacc4172db90ed8d79640.ctex"
+path.s3tc="res://.godot/imported/fabric_pattern_07_rough_1k.jpg-030b740e572dacc4172db90ed8d79640.s3tc.ctex"
+path.etc2="res://.godot/imported/fabric_pattern_07_rough_1k.jpg-030b740e572dacc4172db90ed8d79640.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/cast/fabric_pattern_07_rough_1k.jpg"
-dest_files=["res://.godot/imported/fabric_pattern_07_rough_1k.jpg-030b740e572dacc4172db90ed8d79640.ctex"]
+dest_files=["res://.godot/imported/fabric_pattern_07_rough_1k.jpg-030b740e572dacc4172db90ed8d79640.s3tc.ctex", "res://.godot/imported/fabric_pattern_07_rough_1k.jpg-030b740e572dacc4172db90ed8d79640.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
