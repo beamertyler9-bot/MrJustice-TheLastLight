@@ -52,23 +52,7 @@ static func bake(owner: Node3D, template_key: String = ""):
 		return result
 	var saved = []
 	for group in groups.values():
-		var builder = SurfaceTool.new(); builder.begin(Mesh.PRIMITIVE_TRIANGLES)
-		for piece in group.pieces:
-			var arrays = piece[0]; var frame: Transform3D = piece[1]; var normals = frame.basis.inverse().transposed(); var indices = arrays[Mesh.ARRAY_INDEX]
-			var order = indices if indices != null and not indices.is_empty() else range(arrays[Mesh.ARRAY_VERTEX].size())
-			for face in range(0, order.size(), 3):
-				var corners = [0, 2, 1] if frame.basis.determinant() < 0 else [0, 1, 2]
-				for corner in corners:
-					var index = order[face + corner]
-					builder.set_normal((normals * arrays[Mesh.ARRAY_NORMAL][index]).normalized())
-					builder.set_uv(arrays[Mesh.ARRAY_TEX_UV][index] if arrays[Mesh.ARRAY_TEX_UV] != null and not arrays[Mesh.ARRAY_TEX_UV].is_empty() else Vector2.ZERO)
-					builder.set_uv2(arrays[Mesh.ARRAY_TEX_UV2][index] if arrays[Mesh.ARRAY_TEX_UV2] != null and not arrays[Mesh.ARRAY_TEX_UV2].is_empty() else Vector2.ZERO)
-					builder.set_color(arrays[Mesh.ARRAY_COLOR][index] if arrays[Mesh.ARRAY_COLOR] != null and not arrays[Mesh.ARRAY_COLOR].is_empty() else Color.WHITE)
-					if arrays[Mesh.ARRAY_TANGENT] != null and not arrays[Mesh.ARRAY_TANGENT].is_empty():
-						var data = arrays[Mesh.ARRAY_TANGENT]; var tangent = (frame.basis * Vector3(data[index * 4], data[index * 4 + 1], data[index * 4 + 2])).normalized(); builder.set_tangent(Plane(tangent, data[index * 4 + 3] * signf(frame.basis.determinant())))
-					else: builder.set_tangent(Plane(1, 0, 0, 1))
-					builder.add_vertex(frame * arrays[Mesh.ARRAY_VERTEX][index])
-		builder.index(); var mesh = builder.commit(); mesh.surface_set_material(0, group.material)
+		var mesh = _merge_pieces(group.pieces); mesh.surface_set_material(0, group.material)
 		var geometry = MeshInstance3D.new(); geometry.name = "SharedArchitecturalSurface"; geometry.mesh = mesh; var source = group.source
 		geometry.layers = source.layers; geometry.cast_shadow = source.cast_shadow; geometry.visibility_range_begin = source.visibility_range_begin; geometry.visibility_range_end = source.visibility_range_end; geometry.visibility_range_begin_margin = source.visibility_range_begin_margin; geometry.visibility_range_end_margin = source.visibility_range_end_margin; geometry.visibility_range_fade_mode = source.visibility_range_fade_mode
 		if source.is_in_group("imported_detail"): geometry.add_to_group("imported_detail")
@@ -78,6 +62,61 @@ static func bake(owner: Node3D, template_key: String = ""):
 		saved.append({"mesh": mesh, "layers": geometry.layers, "shadow": geometry.cast_shadow, "visibility": visibility, "detail": geometry.is_in_group("imported_detail")})
 	if not template_key.is_empty(): templates[template_key] = saved
 	return result
+## Merge pieces into one surface with whole-array operations. Same result as the old
+## per-corner SurfaceTool path (all attributes present, defaults filled in), but built in
+## bulk so a new house template no longer costs 50-70 ms of GDScript on first use.
+static func _merge_pieces(pieces: Array) -> ArrayMesh:
+	var verts := PackedVector3Array(); var normals := PackedVector3Array(); var tangents := PackedFloat32Array()
+	var uvs := PackedVector2Array(); var uv2s := PackedVector2Array(); var colors := PackedColorArray(); var indices := PackedInt32Array()
+	for piece in pieces:
+		var arrays: Array = piece[0]; var frame: Transform3D = piece[1]
+		var src_v: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		var count := src_v.size()
+		if count == 0: continue
+		var base := verts.size()
+		verts.append_array(frame * src_v)
+		var normal_frame := Transform3D(frame.basis.inverse().transposed(), Vector3.ZERO)
+		var src_n = arrays[Mesh.ARRAY_NORMAL]
+		if src_n != null and src_n.size() == count: normals.append_array(normal_frame * PackedVector3Array(src_n))
+		else:
+			var up := PackedVector3Array(); up.resize(count); up.fill(Vector3.UP); normals.append_array(up)
+		var src_t = arrays[Mesh.ARRAY_TANGENT]
+		var flip_sign := signf(frame.basis.determinant())
+		if src_t != null and src_t.size() == count * 4:
+			for i in count:
+				var t: Vector3 = (frame.basis * Vector3(src_t[i * 4], src_t[i * 4 + 1], src_t[i * 4 + 2])).normalized()
+				tangents.append_array([t.x, t.y, t.z, src_t[i * 4 + 3] * flip_sign])
+		else:
+			for i in count: tangents.append_array([1.0, 0.0, 0.0, 1.0])
+		for slot in [Mesh.ARRAY_TEX_UV, Mesh.ARRAY_TEX_UV2]:
+			var src_uv = arrays[slot]
+			var target: PackedVector2Array = uvs if slot == Mesh.ARRAY_TEX_UV else uv2s
+			if src_uv != null and src_uv.size() == count: target.append_array(src_uv)
+			else:
+				var zero := PackedVector2Array(); zero.resize(count); target.append_array(zero)
+			if slot == Mesh.ARRAY_TEX_UV: uvs = target
+			else: uv2s = target
+		var src_c = arrays[Mesh.ARRAY_COLOR]
+		if src_c != null and src_c.size() == count: colors.append_array(src_c)
+		else:
+			var white := PackedColorArray(); white.resize(count); white.fill(Color.WHITE); colors.append_array(white)
+		var src_i = arrays[Mesh.ARRAY_INDEX]
+		var flip := frame.basis.determinant() < 0
+		if src_i != null and not src_i.is_empty():
+			for f in range(0, src_i.size(), 3):
+				if flip: indices.append_array([base + src_i[f], base + src_i[f + 2], base + src_i[f + 1]])
+				else: indices.append_array([base + src_i[f], base + src_i[f + 1], base + src_i[f + 2]])
+		else:
+			for f in range(0, count, 3):
+				if flip: indices.append_array([base + f, base + f + 2, base + f + 1])
+				else: indices.append_array([base + f, base + f + 1, base + f + 2])
+	var out := []; out.resize(Mesh.ARRAY_MAX)
+	out[Mesh.ARRAY_VERTEX] = verts; out[Mesh.ARRAY_NORMAL] = normals; out[Mesh.ARRAY_TANGENT] = tangents
+	out[Mesh.ARRAY_TEX_UV] = uvs; out[Mesh.ARRAY_TEX_UV2] = uv2s; out[Mesh.ARRAY_COLOR] = colors; out[Mesh.ARRAY_INDEX] = indices
+	var mesh := ArrayMesh.new()
+	if not verts.is_empty(): mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, out)
+	return mesh
+
 func _exit_tree():
 	for source in sources:
 		if is_instance_valid(source): source.show()
