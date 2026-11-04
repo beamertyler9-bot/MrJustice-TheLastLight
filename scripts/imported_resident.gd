@@ -2,6 +2,12 @@ extends RefCounted
 
 static var _scenes: Dictionary = {}
 const Appearance = preload("res://scripts/resident_appearance.gd")
+const Motions = preload("res://scripts/resident_motions.gd")
+## Motion-captured clips for this model (null falls back to the original idle/walk).
+var motions: AnimationLibrary
+var walk_ground_speed := 1.1
+var idle_clip := "natural/wait"
+var idle_switch := 0.0
 var profile: Dictionary = {}
 const MODELS = ["peasant_1", "peasant_2", "peasant_3", "peasant_4", "peasant_5", "peasant_6", "city_dwellers_1", "city_dwellers_2", "rich_citizzens_1", "rich_citizzens_2", "rich_citizzens_3", "rich_citizzens_4"]
 var skeleton: Skeleton3D
@@ -53,6 +59,13 @@ func attach(actor, coat: String = "#55776d") -> bool:
 	for alias in ["idle", "wait", "chat", "work", "arms"]: natural.add_animation(alias, player.get_animation("idle").duplicate())
 	player.add_animation_library("natural", natural)
 	initial_phase = float(posmod(hash(str(actor.name)), 1000)) * 0.001
+	if Motions.available():
+		motions = Motions.library_for(id, player, skeleton)
+		if motions != null:
+			player.add_animation_library("mocap", motions)
+			walk_ground_speed = Motions.ground_speed(motions)
+			idle_clip = "mocap/idle_a" if initial_phase < 0.5 else "mocap/idle_b"
+			idle_switch = 8.0 + initial_phase * 9.0
 	upper = skeleton.find_bone("Upperarm_R"); lower = skeleton.find_bone("Lowerarm_R"); hand = skeleton.find_bone("Hand_R")
 	neck = skeleton.find_bone("Neck_01"); head_bone = skeleton.find_bone("Head")
 	animate(0, false, false)
@@ -71,10 +84,18 @@ func animate(dt: float, moving: bool, greeting: bool) -> void:
 	if player == null or dt < 0: return
 	if dt == 0 and elapsed > 0: return
 	var next = "walk" if moving else "natural/wait"
+	if motions != null:
+		# Alternate between two idles every so often, and talk while greeting someone.
+		idle_switch -= dt
+		if idle_switch <= 0.0 and not moving:
+			idle_clip = "mocap/idle_b" if idle_clip == "mocap/idle_a" else "mocap/idle_a"
+			idle_switch = 9.0 + fposmod(initial_phase * 37.0 + elapsed, 7.0)
+		next = "mocap/walk" if moving else ("mocap/talk" if greeting else idle_clip)
 	if next != motion:
-		player.play(next, 0.18); motion = next
+		var blend := 0.18 if motions == null else (0.28 if moving or motion.ends_with("walk") else 0.55)
+		player.play(next, blend); motion = next
 		if elapsed == 0: player.seek(initial_phase * player.get_animation(next).length, true)
-	player.speed_scale = clampf(travel_speed / 1.1, 0.15, 2.5) if moving else 1.0
+	player.speed_scale = clampf(travel_speed / walk_ground_speed, 0.15, 2.5) if moving else 1.0
 	player.advance(dt); elapsed += dt
 	gaze_weight = lerpf(gaze_weight, 0.0 if moving or greeting else 1.0, 1 - exp(-dt * 6))
 	if gaze_weight > 0.0001:
