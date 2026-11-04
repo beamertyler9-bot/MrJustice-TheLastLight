@@ -62,6 +62,7 @@ var _sandstorm_warned := false
 var clouds: MultiMeshInstance3D
 var effects: Node3D
 var feel
+var governor
 var backdrop: MeshInstance3D
 var modal_parents: Dictionary = {}
 var mode_age: float = 0.0
@@ -1100,7 +1101,10 @@ func apply_settings() -> void:
 	sunlight.directional_shadow_max_distance = [24.0, 30.0, 56.0][quality]
 	sunlight.directional_shadow_fade_start = 0.75
 	RenderingServer.directional_shadow_atlas_set_size(2048 if quality > 0 else 1024, true)
-	get_viewport().scaling_3d_scale = [0.7, 0.85, 1.0][quality]
+	# The governor lowers this when the GPU can't keep up and restores it when it can.
+	if governor == null:
+		governor = preload("res://scripts/frame_governor.gd").new(); add_child(governor)
+	governor.set_ceiling([0.65, 0.8, 1.0][quality])
 	get_viewport().msaa_3d = Viewport.MSAA_2X if quality == 2 else Viewport.MSAA_DISABLED
 	# High quality: a soft glow so spell cores, lanterns and flames bloom slightly.
 	var env: Environment = environment.environment
