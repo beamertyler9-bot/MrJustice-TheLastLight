@@ -1,0 +1,301 @@
+[
+  {
+    "archive": "3D_Retro_World 0.01.zip",
+    "sha256": "7cb191ac1bfed3a78c897a2171e58f8ba452487374c83244d9d87804803025b0",
+    "bytes": 149025074,
+    "family": "retro",
+    "selected": 6,
+    "status": "curated"
+  },
+  {
+    "archive": "Fantasy Props MegaKit[Standard].zip",
+    "sha256": "8b6f7e806d222e585478f0e1bdc6b271bbc7bc6f84dd6af8ca703a7c64f0cb1e",
+    "bytes": 150213360,
+    "family": "qprop",
+    "selected": 94,
+    "status": "curated"
+  },
+  {
+    "archive": "Farm Buildings by Quaternius.zip",
+    "sha256": "12b3a6ad979895585f6b576e5aa90310afdc4247c3ccf8d1836bcb3a59865e97",
+    "bytes": 3569351,
+    "family": "prior_or_unselected",
+    "selected": 0,
+    "status": "already_in_v23",
+    "existing_archive": "Farm Buildings by Quaternius.zip"
+  },
+  {
+    "archive": "Free Medieval 3D People Low Poly Pack.zip",
+    "sha256": "64ff3eda88411da2f0c14d24c0d5ef8c05b421ee40ad8ff3a75cf8c2593ee7aa",
+    "bytes": 4104075,
+    "family": "prior_or_unselected",
+    "selected": 0,
+    "status": "already_in_v23",
+    "existing_archive": "Free Medieval 3D People Low Poly Pack.zip"
+  },
+  {
+    "archive": "FreeVersion.rar",
+    "sha256": "ed351a4f98023667a538d279ac64b82edd4c8ba0124a6f92194e74485717f772",
+    "bytes": 183991456,
+    "family": "avra",
+    "selected": 1,
+    "status": "curated"
+  },
+  {
+    "archive": "HitFXFree.zip",
+    "sha256": "65ddccb28c77c53d1e196e6fc86cff58e60811e2ce1783875332aef7581f584b",
+    "bytes": 40460,
+    "family": "prior_or_unselected",
+    "selected": 0,
+    "status": "alternate_or_unsuitable"
+  },
+  {
+    "archive": "Human Basic Motions FREE.zip",
+    "sha256": "063d5e1822f85549d14035ef342b1feae45bac37962499a8b478c7eb997200cd",
+    "bytes": 16657270,
+    "family": "prior_or_unselected",
+    "selected": 0,
+    "status": "already_in_v23",
+    "existing_archive": "Human Basic Motions FREE.zip"
+  },
+  {
+    "archive": "Interiors_Furniture_Free.zip",
+    "sha256": "664d8da9d0f558f7da984df10d48cd9788f61a9834f4e8c712b1709126eb463e",
+    "bytes": 959001,
+    "family": "interior",
+    "selected": 25,
+    "status": "curated"
+  },
+  {
+    "archive": "KayKit_Dungeon_Pack_1.1_FREE.zip",
+    "sha256": "6acb859d1aefae074f937d1e6f13656a7312b2bdb6d9f1232ebdade8d93d6a1c",
+    "bytes": 32868755,
+    "family": "dungeon",
+    "selected": 35,
+    "status": "curated"
+  },
+  {
+    "archive": "KayKit_RPGToolsBits_1.0_FREE.zip",
+    "sha256": "a17c2a54df93d525e90d960baf3c68638defb4f424e204ceead6ea1f89e9c7dd",
+    "bytes": 3885168,
+    "family": "prior_or_unselected",
+    "selected": 0,
+    "status": "already_in_v23",
+    "existing_archive": "KayKit_RPGToolsBits_1.0_FREE.zip"
+  },
+  {
+    "archive": "KayKit_ResourceBits_1.0_FREE.zip",
+    "sha256": "7056f1310896a4612a67703fd6d5af389fcccdeb46df0a89e2322aa8e3bcfcf7",
+    "bytes": 8520574,
+    "family": "resource",
+    "selected": 22,
+    "status": "curated"
+  },
+  {
+    "archive": "Low Poly Weapon Pack - by Kickin It Studios.zip",
+    "sha256": "cc195c88bf684a1cfb1182f531d38a298893aa37184e61b00e694dd4f0b4fce2",
+    "bytes": 2090335,
+    "family": "prior_or_unselected",
+    "selected": 0,
+    "status": "already_in_v23",
+    "existing_archive": "Low Poly Weapon Pack - by Kickin It Studios.zip"
+  },
+  {
+    "archive": "Low Poly Weapon Pack with Image Texture - by Kickin It Studios.zip",
+    "sha256": "4846a571b55941f7b757ac4684c15124ddc01f08c77b91055792e49729c8b70a",
+    "bytes": 1863052,
+    "family": "prior_or_unselected",
+    "selected": 0,
+    "status": "already_in_v23",
+    "existing_archive": "Low Poly Weapon Pack with Image Texture - by Kickin It Studios.zip"
+  },
+  {
+    "archive": "LowPolyRPGWeapons_Lite_FBX.zip",
+    "sha256": "2bb0b9a104544aab8f811219238de37d9d4dc27d12569f55b4f174065e92f587",
+    "bytes": 254578,
+    "family": "rpg",
+    "selected": 7,
+    "status": "curated"
+  },
+  {
+    "archive": "Low_Poly_Chest [2.0].zip",
+    "sha256": "7487f1125c40d6d98d6f709ac2792fe367c72552f8f067b82cff0698107dee7e",
+    "bytes": 3070508,
+    "family": "treasure",
+    "selected": 1,
+    "status": "curated"
+  },
+  {
+    "archive": "Medieval Village MegaKit[Standard].zip",
+    "sha256": "e60dea67c10f30dccccfbff92a7933f5ea5cfe99be0e2a0fa5118cceabeec5c4",
+    "bytes": 161003471,
+    "family": "qv",
+    "selected": 25,
+    "status": "curated"
+  },
+  {
+    "archive": "Nature_Terrain_Free.zip",
+    "sha256": "2b9652e27b145a269d08b37773aa91301d01c0e34b22327fba873326aa651e86",
+    "bytes": 3262634,
+    "family": "terrain",
+    "selected": 41,
+    "status": "curated"
+  },
+  {
+    "archive": "Potions_pack_v1.0.zip",
+    "sha256": "17fa870bb4dcdc33be6eb8e5df824da9974c7a668a89e28683f0347479de691b",
+    "bytes": 1760465,
+    "family": "potion",
+    "selected": 6,
+    "status": "curated"
+  },
+  {
+    "archive": "RandomObjects.zip",
+    "sha256": "0911da8da5b8fa46f3eb083a7de21b3735c430df4a078872cf106346e4a9f98e",
+    "bytes": 54026829,
+    "family": "curio",
+    "selected": 5,
+    "status": "curated"
+  },
+  {
+    "archive": "RuinsGLB.zip",
+    "sha256": "11adc0f7e8aad0ed6251b46128a82109d8f7a5bb5c886b33f45fd0452792ead7",
+    "bytes": 19142045,
+    "family": "ruin",
+    "selected": 56,
+    "status": "curated"
+  },
+  {
+    "archive": "RuinsGR.zip",
+    "sha256": "8fca3d1015357b622472aca2ff3fcbc6483d4d83167d3005cf13455cfb337b4a",
+    "bytes": 18350673,
+    "family": "prior_or_unselected",
+    "selected": 0,
+    "status": "alternate_or_unsuitable"
+  },
+  {
+    "archive": "Small Props Pack.7z",
+    "sha256": "91bd235d4381cec81c4e57668d1a8ec43ebc485aef02008702c01d0c835eef88",
+    "bytes": 22766267,
+    "family": "small",
+    "selected": 30,
+    "status": "curated"
+  },
+  {
+    "archive": "SourceCode (1).zip",
+    "sha256": "2550d3abe6be08c9c0dd55a424ce1dd96d463f512e6567916a824630136a3895",
+    "bytes": 6086,
+    "family": "prior_or_unselected",
+    "selected": 0,
+    "status": "already_in_v23",
+    "existing_archive": "SourceCode (1).zip"
+  },
+  {
+    "archive": "SourceCode (2).zip",
+    "sha256": "5a4b56e6b83e400ac5273d8477264df2ee97828f425c708b58b45528f71cf7d4",
+    "bytes": 1808,
+    "family": "prior_or_unselected",
+    "selected": 0,
+    "status": "already_in_v23",
+    "existing_archive": "SourceCode (2).zip"
+  },
+  {
+    "archive": "SourceCode.zip",
+    "sha256": "2550d3abe6be08c9c0dd55a424ce1dd96d463f512e6567916a824630136a3895",
+    "bytes": 6086,
+    "family": "prior_or_unselected",
+    "selected": 0,
+    "status": "already_in_v23",
+    "existing_archive": "SourceCode (1).zip"
+  },
+  {
+    "archive": "Stylized Nature MegaKit[Standard].zip",
+    "sha256": "298f6732b872e4cf7b30e6e7abf9641c7f6dc6b326df37ac089533ed7e3d58c9",
+    "bytes": 104088529,
+    "family": "qnat",
+    "selected": 68,
+    "status": "curated"
+  },
+  {
+    "archive": "Tiny_Treats_Baked_Goods_1.0_FREE.zip",
+    "sha256": "212722b94562364194d7fde8426ec48a10f6a00a08df0fba41d0965a7d88df6a",
+    "bytes": 4188342,
+    "family": "treat",
+    "selected": 10,
+    "status": "curated"
+  },
+  {
+    "archive": "Universal Animation Library 2[Standard].zip",
+    "sha256": "4008ea208a604773a2b2177d965f0f5d3195498b5bf838c3f5785d68e95f2a68",
+    "bytes": 18735003,
+    "family": "ual2",
+    "selected": 1,
+    "status": "curated"
+  },
+  {
+    "archive": "Universal Animation Library[Standard].zip",
+    "sha256": "cc73fc4e495b82958207316596317a3f40b9fa38065bde1027937452da537724",
+    "bytes": 15904933,
+    "family": "ual1",
+    "selected": 1,
+    "status": "curated"
+  },
+  {
+    "archive": "Utility Infrastructure.zip",
+    "sha256": "bda15b8068b80f9450a512026201c7c82f62d9833c35e2e3047f1e1f82e13fd2",
+    "bytes": 17922288,
+    "family": "utility",
+    "selected": 0,
+    "status": "alternate_or_unsuitable"
+  },
+  {
+    "archive": "Vegetation.zip",
+    "sha256": "54e658182c1837b0f34913da695554e29eba0fdb6a646721da0cf45f9f72c99f",
+    "bytes": 44661067,
+    "family": "prior_or_unselected",
+    "selected": 0,
+    "status": "already_in_v23",
+    "existing_archive": "Vegetation.zip"
+  },
+  {
+    "archive": "Village_Builder_Free.zip",
+    "sha256": "88f43879f5e189d04ca29b4d03efbac45aa832a9ca09651a4fb871dac691c016",
+    "bytes": 1050586,
+    "family": "village",
+    "selected": 31,
+    "status": "curated"
+  },
+  {
+    "archive": "brackeys_vfx_bundle.zip",
+    "sha256": "ac0fbf5d5a07688a5d4d35fd0bbae783597d819a3d8a92893b05eb69ddb144c5",
+    "bytes": 28227919,
+    "family": "prior_or_unselected",
+    "selected": 0,
+    "status": "already_in_v23",
+    "existing_archive": "brackeys_vfx_bundle.zip"
+  },
+  {
+    "archive": "interior__free__zappypixel.zip",
+    "sha256": "18accfefedbb73096241dde6f960d69ced43d85bcc293d7ca3e3d48ef668e2ef",
+    "bytes": 3086284,
+    "family": "zappy",
+    "selected": 14,
+    "status": "curated"
+  },
+  {
+    "archive": "modular_village_collection.zip",
+    "sha256": "47345eb9be0463ef20743539316c577d8a79d695725300f27485b3757263fa65",
+    "bytes": 881360,
+    "family": "modular",
+    "selected": 3,
+    "status": "curated"
+  },
+  {
+    "archive": "slavica_free_2026.blend",
+    "sha256": "7c49989bbbe488947fca267991b58cce4a69b4ef902a573ce7bbc5083b5ac4b7",
+    "bytes": 30844322,
+    "family": "prior_or_unselected",
+    "selected": 0,
+    "status": "native_blend_source"
+  }
+]

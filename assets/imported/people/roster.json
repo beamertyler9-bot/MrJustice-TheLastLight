@@ -1,0 +1,170 @@
+[
+	{
+		"bones": 41.0,
+		"clips": [
+			"idle",
+			"walk"
+		],
+		"context_clips": [
+			"chat",
+			"work",
+			"arms"
+		],
+		"height": 1.76840091712802,
+		"path": "res://assets/imported/people/city_dwellers_1.scn"
+	},
+	{
+		"bones": 41.0,
+		"clips": [
+			"idle",
+			"walk"
+		],
+		"context_clips": [
+			"chat",
+			"work",
+			"arms"
+		],
+		"height": 1.68383690714836,
+		"path": "res://assets/imported/people/city_dwellers_2.scn"
+	},
+	{
+		"bones": 41.0,
+		"clips": [
+			"idle",
+			"walk"
+		],
+		"context_clips": [
+			"chat",
+			"work",
+			"arms"
+		],
+		"height": 1.7858928386122,
+		"path": "res://assets/imported/people/peasant_1.scn"
+	},
+	{
+		"bones": 41.0,
+		"clips": [
+			"idle",
+			"walk"
+		],
+		"context_clips": [
+			"chat",
+			"work",
+			"arms"
+		],
+		"height": 1.68223473662511,
+		"path": "res://assets/imported/people/peasant_2.scn"
+	},
+	{
+		"bones": 41.0,
+		"clips": [
+			"idle",
+			"walk"
+		],
+		"context_clips": [
+			"chat",
+			"work",
+			"arms"
+		],
+		"height": 1.77047302884603,
+		"path": "res://assets/imported/people/peasant_3.scn"
+	},
+	{
+		"bones": 41.0,
+		"clips": [
+			"idle",
+			"walk"
+		],
+		"context_clips": [
+			"chat",
+			"work",
+			"arms"
+		],
+		"height": 1.68803535134066,
+		"path": "res://assets/imported/people/peasant_4.scn"
+	},
+	{
+		"bones": 41.0,
+		"clips": [
+			"idle",
+			"walk"
+		],
+		"context_clips": [
+			"chat",
+			"work",
+			"arms"
+		],
+		"height": 1.7718255026266,
+		"path": "res://assets/imported/people/peasant_5.scn"
+	},
+	{
+		"bones": 41.0,
+		"clips": [
+			"idle",
+			"walk"
+		],
+		"context_clips": [
+			"chat",
+			"work",
+			"arms"
+		],
+		"height": 1.69587247539312,
+		"path": "res://assets/imported/people/peasant_6.scn"
+	},
+	{
+		"bones": 41.0,
+		"clips": [
+			"idle",
+			"walk"
+		],
+		"context_clips": [
+			"chat",
+			"work",
+			"arms"
+		],
+		"height": 1.75599075946957,
+		"path": "res://assets/imported/people/rich_citizzens_1.scn"
+	},
+	{
+		"bones": 41.0,
+		"clips": [
+			"idle",
+			"walk"
+		],
+		"context_clips": [
+			"chat",
+			"work",
+			"arms"
+		],
+		"height": 1.7205572091043,
+		"path": "res://assets/imported/people/rich_citizzens_2.scn"
+	},
+	{
+		"bones": 41.0,
+		"clips": [
+			"idle",
+			"walk"
+		],
+		"context_clips": [
+			"chat",
+			"work",
+			"arms"
+		],
+		"height": 1.77207015128806,
+		"path": "res://assets/imported/people/rich_citizzens_3.scn"
+	},
+	{
+		"bones": 41.0,
+		"clips": [
+			"idle",
+			"walk"
+		],
+		"context_clips": [
+			"chat",
+			"work",
+			"arms"
+		],
+		"height": 1.74201815761626,
+		"path": "res://assets/imported/people/rich_citizzens_4.scn"
+	}
+]
