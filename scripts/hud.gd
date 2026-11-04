@@ -92,6 +92,7 @@ func _ready() -> void:
 	seed_entry.add_theme_stylebox_override("focus", style)
 	add_child(seed_entry)
 
+var _redraw_parity := false
 func _process(dt: float) -> void:
 	if game == null or game.state == null: return
 	if dev_menu != null: dev_menu.tick(dt)
@@ -122,7 +123,13 @@ func _process(dt: float) -> void:
 	seed_entry.scale = ratio
 	if magic_ui != null: magic_ui.tick(dt)
 	if fieldbook.workshop.has_method("tick"): fieldbook.workshop.tick(dt)
-	queue_redraw()
+	# The HUD is drawn immediate-mode, which is costly on phones. During gameplay it redraws
+	# at half rate (the last drawing persists between redraws), but at full rate whenever a
+	# finger is down so the joystick and buttons stay perfectly responsive.
+	_redraw_parity = not _redraw_parity
+	var touching: bool = joy_id != -1 or not hold_buttons.is_empty() or not pending_actions.is_empty()
+	if game.mode != "play" or touching or _redraw_parity or frame_dt > 0.025:
+		queue_redraw()
 
 func text_color(color: Color) -> Color:
 	if not paper_context: return color

@@ -1095,10 +1095,13 @@ func apply_settings() -> void:
 	var quality = int(state.settings.quality)
 	load("res://scripts/imported_assets.gd").set_quality(quality)
 	if effects != null: effects.configure(state.settings)
+	var cloth = load("res://scripts/cape_cloth.gd")
+	cloth.STEP = 1.0 / 60.0 if quality == 2 else 1.0 / 30.0
+	cloth.ITERATIONS = 3 if quality == 2 else 2
 	sunlight.shadow_enabled = quality > 0
 	# One shadow cascade on Balanced halves the shadow pass; High keeps two cascades.
 	sunlight.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS if quality == 2 else DirectionalLight3D.SHADOW_ORTHOGONAL
-	sunlight.directional_shadow_max_distance = [24.0, 30.0, 56.0][quality]
+	sunlight.directional_shadow_max_distance = [24.0, 24.0, 56.0][quality]
 	sunlight.directional_shadow_fade_start = 0.75
 	RenderingServer.directional_shadow_atlas_set_size(2048 if quality > 0 else 1024, true)
 	# The governor lowers this when the GPU can't keep up and restores it when it can.
@@ -1106,13 +1109,16 @@ func apply_settings() -> void:
 		governor = preload("res://scripts/frame_governor.gd").new(); add_child(governor)
 	governor.set_ceiling([0.65, 0.8, 1.0][quality])
 	get_viewport().msaa_3d = Viewport.MSAA_2X if quality == 2 else Viewport.MSAA_DISABLED
+	# Low quality holds a steady 30 fps, which reads smoother on weak phones than a frame
+	# rate bouncing between 30 and 50.
+	Engine.max_fps = 30 if quality == 0 else 60
 	# High quality: a soft glow so spell cores, lanterns and flames bloom slightly.
 	var env: Environment = environment.environment
 	env.glow_enabled = quality == 2
 	env.glow_intensity = 0.55; env.glow_strength = 0.9; env.glow_bloom = 0.0
 	env.glow_hdr_threshold = 0.92; env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
 	for detail in get_tree().get_nodes_in_group("world_detail"):
-		detail.visibility_range_end = [50.0, 65.0, 85.0][quality]
+		detail.visibility_range_end = [40.0, 55.0, 85.0][quality]
 	_save_current_state()
 
 func _save_current_state() -> bool:

@@ -514,6 +514,8 @@ func _update_chunk_detail(position: Vector3) -> void:
 func _finish_chunk_detail(chunk: Node3D) -> void:
 	ChunkLOD.attach(chunk).update_viewer(_detail_position)
 
+## Per-frame time for building streamed chunks; smaller on phones to avoid frame spikes.
+var STREAM_BUDGET_USEC: int = 1500 if OS.has_feature("mobile") else 2000
 func _process(dt: float) -> void:
 	elapsed += dt
 	_stone_clock += dt
@@ -542,7 +544,7 @@ func _process(dt: float) -> void:
 		if is_instance_valid(resident):
 			resident.tick(dt, nearby_player)
 	var stream_started := Time.get_ticks_usec()
-	while (not pending.is_empty() or not stream_job.is_empty()) and Time.get_ticks_usec() - stream_started < 2000:
+	while (not pending.is_empty() or not stream_job.is_empty()) and Time.get_ticks_usec() - stream_started < STREAM_BUDGET_USEC:
 		stream_step()
 	Locations.step_settlement(self)
 	for n in get_tree().get_nodes_in_group("float_pickup"):

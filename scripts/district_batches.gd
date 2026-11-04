@@ -10,22 +10,41 @@ var audit_index = 0
 var last_view = Vector3.INF
 var last_detail_range = -1.0
 
-static func rebuild(owner: Node3D, key: String, library: Resource = null):
+## Frequently rebuilt libraries stay loaded instead of being re-read from disk each time.
+const CACHED_LIBRARIES := ["housing-vistas"]
+static var _library_cache: Dictionary = {}
+## Incremental builds bind saved cells a little at a time (per-frame time budget) so a
+## rebuild never freezes a frame; sources simply render unbatched until bound.
+const BIND_BUDGET_USEC := 1500
+var pending_cells: Array = []
+var pending_index := 0
+var pending_owners: Dictionary = {}
+
+static func rebuild(owner: Node3D, key: String, library: Resource = null, incremental: bool = false):
 	var previous = owner.get_node_or_null("DistrictBatches")
 	if previous: previous.free()
-	return build(owner, key, library)
-static func build(owner: Node3D, key: String, library: Resource = null):
+	return build(owner, key, library, incremental)
+static func build(owner: Node3D, key: String, library: Resource = null, incremental: bool = false):
 	var previous = owner.get_node_or_null("DistrictBatches")
 	if previous: return previous
 	if library == null:
 		var path = LIBRARY + key + ".res"
 		if not ResourceLoader.exists(path): return null
-		library = load(path)
+		if key in CACHED_LIBRARIES:
+			if not _library_cache.has(path): _library_cache[path] = load(path)
+			library = _library_cache[path]
+		else:
+			library = load(path)
 	if library.get_meta("schema", 0) != 1: return null
 	var renderer = load("res://scripts/district_batches.gd").new(); renderer.name = "DistrictBatches"; renderer.add_to_group("batch_dynamic"); owner.add_child(renderer)
 	var owners = {"@root": owner}
 	for n in owner.find_children("*", "Node3D", true, false):
 		if (n.is_in_group("settlement_building") or n.is_in_group("housing_representation")) and n.has_meta("plot_id"): owners[str(n.get_meta("plot_id"))] = n
+	if incremental:
+		renderer.pending_cells = library.get_meta("cells", [])
+		renderer.pending_index = 0
+		renderer.pending_owners = owners
+		return renderer
 	for saved in library.get_meta("cells", []): renderer._bind(saved, owners)
 	renderer.refresh_visibility()
 	renderer.last_detail_range = preload("res://scripts/imported_assets.gd").detail_range()
@@ -72,7 +91,9 @@ func _bind(saved: Dictionary, owners: Dictionary):
 	var used = {}
 	for expected in saved.sources:
 		if not owners.has(expected.owner): return
-		var holder = owners[expected.owner]; var source = node_at(holder, expected.path)
+		var holder = owners[expected.owner]
+		if not is_instance_valid(holder) or holder.is_queued_for_deletion(): return
+		var source = node_at(holder, expected.path)
 		if not _matches(source, expected) or used.has(source.get_instance_id()):
 			source = null
 
@@ -201,6 +222,15 @@ func _update_ranges(audit: bool, only_group: int = -1):
 		elif within and (inspect_contract or not group.within) and _valid(group, false): _activate(group)
 		group.within = within
 func _process(dt: float):
+	if pending_index < pending_cells.size():
+		var started := Time.get_ticks_usec()
+		while pending_index < pending_cells.size() and Time.get_ticks_usec() - started < BIND_BUDGET_USEC:
+			_bind(pending_cells[pending_index], pending_owners); pending_index += 1
+		if pending_index >= pending_cells.size():
+			pending_cells = []; pending_owners = {}
+			refresh_visibility()
+			last_detail_range = preload("res://scripts/imported_assets.gd").detail_range()
+		return
 	audit_clock += dt
 	var camera = get_viewport().get_camera_3d()
 	var detail_range = preload("res://scripts/imported_assets.gd").detail_range()

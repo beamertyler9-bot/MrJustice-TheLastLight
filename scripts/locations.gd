@@ -956,6 +956,6 @@ static func step_settlement(world) -> void:
 		load("res://scripts/building_paths.gd").complete(world, job.root, job.site, job.plots)
 		B.batch_static(job.root)
 		cull_art(job.root, 360.0 if world.get("atlas") != null else 180.0)
-		load("res://scripts/district_batches.gd").build(job.root, "civic-" + str(job.site.id))
+		load("res://scripts/district_batches.gd").build(job.root, "civic-" + str(job.site.id), null, true)
 		job.root.set_meta("streaming", false)
 		world.settlement_jobs.pop_front()

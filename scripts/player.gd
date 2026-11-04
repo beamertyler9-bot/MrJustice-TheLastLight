@@ -69,6 +69,7 @@ var landing_offset: float = 0.0
 var camera_clock: float = 0.0
 # Camera feel: a smoothed pivot (lags vertically in the air), travel look-ahead,
 # collision distance that snaps in and eases out, organic shake and directional kicks.
+var _interaction_clock := 0.0
 var cam_pivot := Vector3.ZERO
 var cam_pivot_ready := false
 var cam_length := -1.0
@@ -354,7 +355,11 @@ func _physics_process(dt: float) -> void:
 	visual.carry_pose = is_instance_valid(held_body)
 	state.player_position = global_position
 	world.stream_at(global_position)
-	closest = nearest_interaction()
+	# The interaction prompt only needs ~10 updates a second; interact() always rescans.
+	_interaction_clock -= dt
+	if _interaction_clock <= 0.0 or (closest != null and not is_instance_valid(closest)):
+		_interaction_clock = 0.1
+		closest = nearest_interaction()
 
 func _process(dt: float) -> void:
 	if visual == null:

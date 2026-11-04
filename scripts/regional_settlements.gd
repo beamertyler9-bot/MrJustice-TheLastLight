@@ -112,8 +112,13 @@ func step_proxy() -> void:
 	B.batch_static(n)
 	for mesh in n.find_children("*", "GeometryInstance3D", true, false): mesh.visibility_range_end = 750; mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	proxy_live[job.id] = n
-	_update_proxies()
-	if proxy_jobs.is_empty(): DistrictBatches.rebuild(proxies, "housing-vistas")
+	# Only the new house needs its visibility decided now; re-checking every distant house
+	# after each build made streaming cost grow with the size of the town (40-65 ms hitches).
+	if n.is_in_group("housing_representation"):
+		n.visible = not has_plot(n.get_meta("site"), n.get_meta("plot_index")) and not _occupied(n.get_meta("world_plot"), 7)
+	if proxy_jobs.is_empty():
+		_update_proxies()
+		DistrictBatches.rebuild(proxies, "housing-vistas", null, true)
 func _update_proxies() -> void:
 	if proxies == null: return
 	for n in proxies.get_children():
@@ -195,7 +200,7 @@ func step() -> void:
 	_batch_completed(job.root)
 
 func _batch_completed(root: Node3D):
-	if not jobs.any(func (job): return job.root == root): DistrictBatches.rebuild(root, "district-%s-%s" % [root.get_meta("site"), root.get_meta("district")])
+	if not jobs.any(func (job): return job.root == root): DistrictBatches.rebuild(root, "district-%s-%s" % [root.get_meta("site"), root.get_meta("district")], null, true)
 
 func _house(parent: Node3D, site: Dictionary, plot: Dictionary) -> void:
 	var p: Vector2 = site.pos + plot.p; var high: float = world.height_at(p.x, p.y)

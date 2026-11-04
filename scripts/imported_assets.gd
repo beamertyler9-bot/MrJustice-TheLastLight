@@ -5,7 +5,7 @@ static var _meshes: Dictionary = {}
 static var _quality: int = 1
 
 static func detail_range() -> float:
-	return [55.0, 85.0, 110.0][_quality]
+	return [45.0, 65.0, 110.0][_quality]
 
 static func set_quality(value: int) -> void:
 	_quality = clampi(value, 0, 2)

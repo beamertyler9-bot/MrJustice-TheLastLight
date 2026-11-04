@@ -5,9 +5,10 @@ extends RefCounted
 
 const ROWS := 10
 const COLUMNS := 8
-const STEP := 1.0 / 60.0
+## Simulation rate and solver passes; lowered on Low/Balanced quality for phones.
+static var STEP := 1.0 / 60.0
 const MAX_SUBSTEPS := 8
-const ITERATIONS := 3
+static var ITERATIONS := 3
 const TELEPORT_DISTANCE := 2.5
 const AIR_RESPONSE := 0.22
 const ACCELERATION_RESPONSE := 0.28
