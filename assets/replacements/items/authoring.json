@@ -1,0 +1,102 @@
+[
+	{
+		"item": "herb",
+		"parts": 5,
+		"policy": "retained bespoke shape, offline shared resource and material revision"
+	},
+	{
+		"item": "stone",
+		"parts": 2,
+		"policy": "retained bespoke shape, offline shared resource and material revision"
+	},
+	{
+		"item": "iron",
+		"parts": 3,
+		"policy": "retained bespoke shape, offline shared resource and material revision"
+	},
+	{
+		"item": "tonic",
+		"parts": 7,
+		"policy": "supplied potion glass, cork and liquid; retained fitted label/neck details"
+	},
+	{
+		"item": "mana_potion",
+		"parts": 7,
+		"policy": "supplied potion glass, cork and liquid; retained fitted label/neck details"
+	},
+	{
+		"item": "coffee",
+		"parts": 5,
+		"policy": "retained bespoke shape, offline shared resource and material revision"
+	},
+	{
+		"item": "wood",
+		"parts": 1,
+		"policy": "supplied resource log geometry fitted to the canonical upright hand frame and released world carry transform"
+	},
+	{
+		"item": "stick",
+		"parts": 3,
+		"policy": "retained bespoke shape, offline shared resource and material revision"
+	},
+	{
+		"item": "planks",
+		"parts": 1,
+		"policy": "supplied stacked plank geometry"
+	},
+	{
+		"item": "crystal",
+		"parts": 1,
+		"policy": "supplied crystal mesh fitted to the canonical hand/mining bounds"
+	},
+	{
+		"item": "shard",
+		"parts": 1,
+		"policy": "supplied crystal mesh fitted to the canonical hand/mining bounds"
+	},
+	{
+		"item": "coffee_bean",
+		"parts": 2,
+		"policy": "retained bespoke shape, offline shared resource and material revision"
+	},
+	{
+		"item": "marshmallow",
+		"parts": 2,
+		"policy": "retained bespoke shape, offline shared resource and material revision"
+	},
+	{
+		"item": "roasted_marshmallow",
+		"parts": 3,
+		"policy": "retained bespoke shape, offline shared resource and material revision"
+	},
+	{
+		"item": "camp_kit",
+		"parts": 4,
+		"policy": "sourced packed bedroll with retained fitted straps, buckles and poles"
+	},
+	{
+		"item": "relic",
+		"parts": 4,
+		"policy": "sourced crystal inset in retained bespoke relic frame"
+	},
+	{
+		"item": "ancient_core",
+		"parts": 4,
+		"policy": "sourced crystal inset in retained bespoke relic frame"
+	},
+	{
+		"item": "chocolate_bar",
+		"parts": 1,
+		"policy": "retained bespoke shape, offline shared resource and material revision"
+	},
+	{
+		"item": "graham_cracker",
+		"parts": 2,
+		"policy": "retained bespoke shape, offline shared resource and material revision"
+	},
+	{
+		"item": "smore",
+		"parts": 3,
+		"policy": "retained bespoke shape, offline shared resource and material revision"
+	}
+]
