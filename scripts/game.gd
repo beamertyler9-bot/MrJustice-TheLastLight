@@ -340,6 +340,14 @@ func _world_drop(record: Dictionary) -> Node3D:
 	node.global_position = Vector3(float(record.position[0]), float(record.position[1]), float(record.position[2]))
 	node.set_meta("id", id); node.set_meta("kind", "shard" if record.item == "shard" else "material"); node.set_meta("item", record.item); node.set_meta("amount", int(record.amount)); node.set_meta("world_drop", true); node.set_meta("loose_stone", record.item == "stone")
 	node.set_meta("label", "Collect %d Light Essence" % int(record.amount) if record.item == "shard" else "Collect " + Crafting.item_name(str(record.item)))
+	if record.has("rock_size"):
+		# A big rock that was carried or levitated and set down: it stays a rock you can lift again.
+		var size: Array = record.rock_size
+		node.set_meta("rock_size", size); node.set_meta("label", "Lift rock")
+		var rock = preload("res://scripts/imported_assets.gd").place(node, "qnat_rock_medium_" + str(1 + posmod(hash(id), 3)), Vector3(0, -0.14, 0), maxf(0.2, float(size[1])), float(posmod(hash(id), 628)) * 0.01)
+		if rock == null: preload("res://scripts/item_models.gd").build(node, "stone").scale = Vector3.ONE * 2.0
+		node.add_to_group("interactable"); _loot_nodes[id] = node
+		return node
 	var art = preload("res://scripts/item_models.gd").build(node, str(record.item)); art.scale = Vector3.ONE * (1.5 if record.item == "shard" else 1.2)
 	node.set_meta("base_y", node.position.y); node.add_to_group("interactable"); node.add_to_group("float_pickup"); _loot_nodes[id] = node
 	return node
@@ -1254,6 +1262,11 @@ func begin_context_action(prefer_interaction: bool = false) -> void:
 	var node = player.nearest_interaction()
 	if usable_node(node):
 		var kind = str(node.get_meta("kind", ""))
+		if kind == "rock" and not has_harvest_tool(node) and preload("res://scripts/loose_stone_carry.gd").liftable(node):
+			# No pickaxe in hand: hold to pick the rock up (a tap still explains mining).
+			if player.climbing or player.mantle_time > 0 or player.visual.is_throwing() or player.visual.grapple_active():
+				cancel_context_action(); return
+			context_kind = "pickup"; pickup_target = node; return
 		if kind in ["tree", "rock"]:
 			if has_harvest_tool(node): harvest_target = node
 			interact_with(node); return
@@ -1281,6 +1294,7 @@ func end_context_action(canceled: bool = false) -> void:
 		if is_instance_valid(target) and player.held_body == target: player.throw_held()
 	elif valid_pickup:
 		if target.get_meta("breakable_barrel", false): face_node(target); player.attack()
+		elif str(target.get_meta("kind", "")) == "rock": interact_with(target)
 		elif str(target.get_meta("kind", "")) == "carry" and str(target.get_meta("material", "")) == "": toast("Hold E to lift this object." if desktop_enabled() else "Hold B to lift this object.")
 		else: _collect_resource(target)
 
@@ -2162,9 +2176,15 @@ func toast(message: String, seconds: float = 4.0) -> void:
 	toast_text = message
 	toast_time = seconds
 
-func beam(start: Vector3, end: Vector3, color: Color, width: float, duration: float) -> MeshInstance3D:
+func beam(start: Vector3, end: Vector3, color: Color, width: float, duration: float) -> Node3D:
 	comic_impact("FZZZT!", start + Vector3.UP * 0.45, Color("#b8fff0"))
-	return effects.beam(start, end, color, width, duration)
+	var node = effects.beam(start, end, color, width, duration)
+	# Where a strong beam lands it blooms into the same contact star, shockwave and glow
+	# every spell impact uses.
+	if width >= 0.12 and magic != null and magic.get("presentation") != null:
+		var palette := {"element": "light", "color": color.lerp(Color("1e8fff"), 0.7), "accent": color.lerp(Color("8ff0ff"), 0.6), "core_color": Color("e9fdff"), "size": 0.3, "intensity": 3}
+		magic.presentation.glyph(end, palette, "impact", clampf(duration * 0.8, 0.3, 0.9), clampf(width * 3.0, 0.4, 1.6))
+	return node
 
 func comic_impact(word: String, point: Vector3, color: Color = Color("#f4d887")) -> void:
 	comic_word = word

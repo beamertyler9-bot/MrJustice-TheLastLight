@@ -817,21 +817,16 @@ func _impact_accent(node: Node3D, data: Dictionary) -> void:
 		var piece := _piece(node, title + str(i), shape, data.materials[2] if accent == "mist" else data.materials[1], Vector3.ONE * (0.7 if accent == "shards" else 1.0))
 		data.parts.append({"node": piece, "role": "ripple" if accent == "rings" else "mist" if accent == "mist" else "splinter", "seed": float(i) + 0.7, "unit": 1.0})
 
+## Every beam spell is a Kamehameha-style column of light in the spell's own colours
+## (see kame_beam.gd); chain links and tethers use the same renderer, just thin.
 func beam(start: Vector3, end: Vector3, spell: Dictionary, life: float, width: float) -> Node3D:
 	var runtime := _runtime()
 	if runtime == null or not start.is_finite() or not end.is_finite() or start.distance_squared_to(end) < 0.0001 or not is_finite(life) or life <= 0: return null
-	while visuals.size() >= MAX_TRANSIENTS: _retire_transient(0)
-	var node := Node3D.new(); node.name = "SpellBeam"; runtime.add_child(node)
-	node.global_transform = Transform3D(Basis.IDENTITY, start)
-	var data := _record(node, spell, SURFACE); data.kind = "beam"; data.life = clampf(life, 0.04, 4.0)
-	data.start = start; data.end = end; data.width = clampf(width * 1.4, 0.06, 1.0) * _number(spell, "trail_width", 1.0, 0.3, 2.0)
-	data.light = false
-	for i in range(3):
-		var strip := MeshInstance3D.new(); strip.name = "BeamCore" if i == 0 else "BeamFilament%d" % i
-		strip.mesh = ArrayMesh.new(); strip.material_override = data.materials[1]; strip.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		node.add_child(strip); data.parts.append({"node": strip, "seed": float(i)})
-	_ornament(node, data); visuals.append(data); _animate_beam(data)
-	return node
+	var body := _color(spell, "color", Color("a764ed"))
+	var core := _color(spell, "core_color", _color(spell, "accent", Color("ffefc8")))
+	var radius := clampf(width * 1.4, 0.03, 1.0) * _number(spell, "trail_width", 1.0, 0.3, 2.0)
+	var gentle := bool(_settings().get("low_flash", false))
+	return preload("res://scripts/kame_beam.gd").spawn(runtime, start, end, body, core, radius, clampf(life * 2.3, 0.3, 1.4), gentle)
 
 func _animate_beam(data: Dictionary) -> void:
 	var node: Node3D = data.node; var age: float = data.age

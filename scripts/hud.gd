@@ -507,6 +507,8 @@ func context_pickup_hint() -> String:
 	if is_instance_valid(game.player.held_body) or not is_instance_valid(game.player.closest):
 		return ""
 	var target = game.player.closest
+	if str(target.get_meta("kind", "")) == "rock" and not game.has_harvest_tool(target) and preload("res://scripts/loose_stone_carry.gd").liftable(target):
+		return "HOLD B TO LIFT"
 	if str(target.get_meta("kind", "")) == "material":
 		return "TAP B TO COLLECT · HOLD B TO LIFT" if preload("res://scripts/loose_stone_carry.gd").liftable(target) else "TAP B TO COLLECT"
 	if str(target.get_meta("kind", "")) == "carry":

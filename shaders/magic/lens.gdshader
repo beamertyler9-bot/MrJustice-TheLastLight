@@ -28,7 +28,9 @@ void fragment() {
 	float swirl = step(0.75, fract(a * 0.954 + r * 3.0 - age * 0.25)) * hole * (1.0 - toon_aa(0.3, rr));
 	vec3 dark = body_color.rgb * 0.18;
 	vec3 col = mix(dark, toon_ink(trail_color.rgb) * 1.4, swirl);
-	col = mix(col, mix(rim_color.rgb, core_color.rgb, 0.4 + contact_flash * 0.3), max(ring, outer));
+	// The event horizon uses the shared energy tones: hot ring, glow fringe outside it.
+	float ring_v = ring * (0.72 + contact_flash * 0.2) + outer * 0.25;
+	col = mix(col, energy_color(ring_v, rim_color.rgb, core_color.rgb), max(ring, outer));
 	ALBEDO = col * mix(1.0, clamp(brightness, 0.6, 1.6), max(ring, outer));
 	ALPHA = clamp(hole * 0.85 + ring + outer * 0.8, 0.0, 1.0) * opacity * mix(1.0, 0.8, low_flash);
 }

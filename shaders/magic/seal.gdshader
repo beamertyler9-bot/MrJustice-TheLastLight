@@ -1,7 +1,7 @@
 shader_type spatial;
 render_mode unshaded, blend_mix, cull_disabled, depth_draw_never, shadows_disabled;
-// Ground and air sigils drawn like inked comic linework: solid bright strokes with a
-// dark outline so they read on sunlit grass, sand and snow alike.
+// Ground and air sigils: glowing line art in the shared energy tones, with a soft
+// shadow underneath so they read on sunlit grass, sand and snow alike.
 #include "res://shaders/magic/toon_magic.gdshaderinc"
 uniform vec4 body_color : source_color = vec4(0.8,0.5,0.2,1.0);
 uniform vec4 core_color : source_color = vec4(1.0,0.9,0.7,1.0);
@@ -33,13 +33,16 @@ void fragment() {
 	float ticks = clock_face * step(0.96, cos(a * 12.0)) * band(r, 0.47, 0.16);
 	float fracture = mix(1.0, step(0.13, fract(a * 0.7 + age * 0.025)), max(step(10.5, family), step(3.5, sigil)));
 	float lines = clamp(outer + inner + teeth + runes * 0.9 + ticks, 0.0, 1.0);
-	// Outline: the same strokes, fattened.
+	// Glow: the same strokes, fattened, in the translucent glow tone.
 	float halo_r = max(max(band(r, 0.84, 0.065), band(r, 0.66, 0.05)), band(r, 0.74, 0.07) * step(0.6, cos(a * 24.0 + spin * 2.0)));
-	float outline = clamp(halo_r + lines, 0.0, 1.0);
-	vec3 ink = toon_ink(body_color.rgb);
-	vec3 col = mix(ink, mix(body_color.rgb, core_color.rgb, 0.45), lines);
+	float glow = clamp(halo_r + lines, 0.0, 1.0);
+	// A faint soft shadow under the glyph keeps it readable on sunlit grass, sand and snow.
+	float shade = max(band(r, 0.84, 0.1), band(r, 0.66, 0.085)) * (1.0 - glow);
+	float v = lines * 0.74 + (glow - lines) * 0.2;
+	vec3 col = energy_color(v, body_color.rgb, core_color.rgb);
+	col = mix(col, toon_ink(body_color.rgb) * 0.5, shade);
 	col *= clamp(brightness, 0.6, 1.6);
 	ALBEDO = col;
-	EMISSION = col * 0.3;
-	ALPHA = outline * opacity * fracture * mix(0.95, 0.7, low_flash);
+	EMISSION = col * 0.3 * (1.0 - shade);
+	ALPHA = (max(energy_alpha(v) * glow, shade * 0.22)) * opacity * fracture * mix(0.95, 0.7, low_flash);
 }

@@ -75,7 +75,9 @@ void fragment() {
 	float flash = contact_flash * is_contact;
 	ALBEDO = base;
 	// Coloured rim band (lit regardless of sun) and a flat element glow.
-	EMISSION = (rim_color.rgb * rim * 0.55 + base * glow * 0.5 + core_color.rgb * flash * 0.35) * clamp(brightness, 0.6, 1.6);
+	// Same glow tone as every energy effect on the rim, so solid spell objects belong to the set.
+	vec3 rim_glow = mix(body_color.rgb, core_color.rgb, 0.3) * 1.12;
+	EMISSION = (rim_glow * rim * 0.6 + base * glow * 0.5 + core_color.rgb * flash * 0.35) * clamp(brightness, 0.6, 1.6);
 	ALPHA = opacity * alpha;
 }
 void light() {

@@ -113,6 +113,13 @@ func _acquire_levitation(spell: Dictionary) -> Node3D:
 	var start := camera.project_ray_origin(mark)
 	var end := start + camera.project_ray_normal(mark) * (_line_delivery_reach(spell) + start.distance_to(_origin()))
 	var hit := _ray(start, end)
+	# Rocks in the world are static until something picks them up: aiming levitation at one
+	# turns it into a loose rock body first.
+	if not hit.is_empty() and not _target_allowed(hit.get("collider"), spell):
+		var rock = preload("res://scripts/loose_stone_carry.gd").rock_owner(hit.get("collider"))
+		if rock != null and _origin().distance_to(rock.global_position) <= _line_delivery_reach(spell) + 1.5:
+			var body = preload("res://scripts/loose_stone_carry.gd").lift(game, rock)
+			if body != null and object_magic.eligible(body, spell) and object_magic.can_hold_body(body): return body
 	if hit.is_empty() or not _target_allowed(hit.get("collider"), spell): hit = _sweep(start, end, 0.2)
 	if hit.is_empty() or not _target_allowed(hit.get("collider"), spell): return null
 	var candidate: Node3D = hit.collider

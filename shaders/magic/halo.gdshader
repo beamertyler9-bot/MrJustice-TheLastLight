@@ -41,7 +41,7 @@ void fragment() {
 		// Shockwave: a crisp ring with a faint fill, thinning as it races outward.
 		float ring = toon_aa(0.8, r) * (1.0 - toon_aa(0.93, r));
 		float fill = (1.0 - toon_aa(0.8, r)) * toon_aa(0.45, r) * 0.18;
-		col = mix(rim_color.rgb, core_color.rgb, 0.55);
+		col = mix(mix(body_color.rgb, core_color.rgb, 0.3) * 1.12, core_color.rgb, 0.6);
 		value = (ring + fill) * 0.9;
 	} else if (COLOR.r < 0.5) {
 		// Contact star: eight hard rays (long cross + short diagonal) around a hot core.
@@ -56,7 +56,7 @@ void fragment() {
 		float scallop = 1.0 + sin(ang * 8.0 + age * 1.3) * 0.035 * edge_noise;
 		float rr = r * scallop;
 		// Three flat glow steps instead of a soft blob.
-		float outer = 1.0 - toon_aa(0.62, rr);
+		float outer = 1.0 - toon_aa(0.56, rr);
 		float mid = 1.0 - toon_aa(0.42, rr);
 		float inner = 1.0 - toon_aa(0.22, rr);
 		float ring = toon_aa(0.62, rr) * (1.0 - toon_aa(0.68, rr));
@@ -65,8 +65,8 @@ void fragment() {
 		float t = age * 0.8;
 		vec2 q = mat2(vec2(cos(t), sin(t)), vec2(-sin(t), cos(t))) * p;
 		float sparkle = star_arms(q, 0.5 + 0.06 * sin(age * 5.0), 0.05) * (1.0 - corona);
-		value = mix(outer * 0.16 + mid * 0.2 + inner * 0.34 + sparkle * 0.45, ring * 0.8, corona);
-		col = mix(mix(body_color.rgb, rim_color.rgb, 0.35), core_color.rgb, clamp(inner * 0.7 + sparkle, 0.0, 1.0) * (1.0 - corona));
+		value = mix(outer * 0.12 + mid * 0.2 + inner * 0.34 + sparkle * 0.45, ring * 0.8, corona);
+		col = mix(mix(body_color.rgb, core_color.rgb, 0.3) * 1.12, mix(core_color.rgb, vec3(1.0), 0.5), clamp(inner * 0.7 + sparkle, 0.0, 1.0) * (1.0 - corona));
 		value *= (family < 0.5 ? 1.0 : 0.85);
 	}
 	ALBEDO = col * bright * flicker;

@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.41.0 — Liftable rocks, one magic style, Kamehameha beams (2026-11-04)
+
+### Pick up rocks
+- The "Mine stone" rocks around the world (up to 2.8 m across) can now be picked up: with no
+  pickaxe in hand, hold B (E on keyboard) next to one. A tap still explains mining, and with a
+  pickaxe equipped, B mines as before.
+- Levitation spells can grab them too: aim at a rock and it comes loose.
+- Big rocks are heavy (2-11 kg; the basic Levitation spell's limit is 12), slow you a little
+  while carried, can be thrown, and stay where you leave them across saves.
+
+### One style for all magic
+- Every magic shader now shares one energy look (`toon_magic.gdshaderinc`): a white-hot centre,
+  the accent colour, the element colour, then a translucent stepped glow. Black ink outlines
+  on energy are gone; magic reads as light on any ground.
+- Strokes, trails and ribbons, flames, sigils, void rifts, glows, impact stars and shockwaves,
+  and the rim glow of solid spell objects all use it. The "ink" material style is still
+  available as a deliberate choice.
+
+### Kamehameha beams
+- New beam renderer (`kame_beam.gd`, `kame_beam`/`kame_glow` shaders) for Mr. Justice's hand
+  beam and every beam spell:
+  - It bursts from the hands and reaches the target in 0.12 s, holds, then thins away.
+  - The column is solid from any angle, including from behind the shoulder.
+  - Bulges travel down its length, streaks race along it, and an aura sheath spirals around it.
+  - A muzzle orb sits at the hands, a pulsing head orb at the front, and sparks race alongside.
+- Charging the hand beam builds a swirling energy ball in the palm with sparks spiralling in.
+  It throbs and the view hums when fully charged.
+- Charged hand beams are thicker, hold for about a second, add a short hit stop and a strong
+  rumble, and land with the contact star, shockwave and glow.
+- Spell beams use their spell's colours; chain links and tethers are thin versions of the
+  same beam.
+
 ## 0.40.0 — Lock-on, forest smoothness and spell effects (2026-11-04)
 
 ### Lock-on that sticks

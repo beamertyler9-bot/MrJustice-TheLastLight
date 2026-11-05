@@ -1,7 +1,7 @@
 shader_type spatial;
 render_mode unshaded, blend_mix, cull_disabled, depth_draw_never, shadows_disabled;
-// Cartoon fire: the noise-driven flame shape is kept, but heat resolves into
-// three flat bands with an ink-dark outer lick, like hand-painted comic flames.
+// Cartoon fire: a noise-driven flame shape resolved into the shared energy tones
+// (glow fringe, element body, hot core, white tongue).
 #include "res://shaders/magic/toon_magic.gdshaderinc"
 uniform vec4 body_color : source_color = vec4(0.98,0.26,0.015,1.0);
 uniform vec4 core_color : source_color = vec4(1.0,0.84,0.36,1.0);
@@ -36,16 +36,14 @@ void fragment() {
 	float density = (1.0 - abs(p.x + sway) / width) * (1.0 - p.y * 0.6);
 	density += (n - 0.5) * mix(0.3, 1.2, edge_noise);
 	density *= smoothstep(0.0, 0.1, p.y) * (1.0 - smoothstep(0.8, 1.0, p.y));
-	vec3 ink = toon_ink(rim_color.rgb);
 	vec3 body = body_color.rgb;
-	vec3 core = mix(core_color.rgb, vec3(1.0, 0.98, 0.9), 0.3);
-	if (style > 3.5 && style < 4.5) { body = toon_ink(body_color.rgb) * 0.6; ink = rim_color.rgb; }
+	vec3 core = core_color.rgb;
 	if (style > 0.5 && style < 1.5) { body = mix(body, trail_color.rgb, 0.35); }
-	// Thin outline, wide body band, a compact core and a small white-hot tongue.
-	vec3 col = toon_ramp(density, ink, body, core, 0.1, 0.55);
-	col = mix(col, vec3(1.0, 0.99, 0.92), toon_aa(0.86, density) * (1.0 - low_flash * 0.5));
+	float v = clamp(density * 1.05, 0.0, 1.0);
+	vec3 col = energy_color(v, body, core);
+	if (style > 3.5 && style < 4.5) { col = mix(rim_color.rgb, toon_ink(body_color.rgb) * 0.6, toon_aa(ENERGY_BODY_AT, v) * (1.0 - toon_aa(ENERGY_HOT_AT, v))); }
 	col *= clamp(brightness, 0.6, 1.6);
 	ALBEDO = col;
 	EMISSION = col * 0.35;
-	ALPHA = toon_aa(0.03, density) * opacity * COLOR.a * 0.96;
+	ALPHA = energy_alpha(v) * opacity * COLOR.a;
 }

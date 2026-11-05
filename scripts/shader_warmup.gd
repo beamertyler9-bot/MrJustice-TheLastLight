@@ -38,6 +38,10 @@ func build(game: Node, camera: Camera3D) -> void:
 			_try(func(): _single(presentation._mesh("quad"), presentation._material(shader, spell), false))
 		_try(func(): _single(presentation._mesh("blade"), presentation._material(Presentation.SURFACE, spell), false))
 		_try(func(): _single(presentation._mesh("shock_card"), presentation._material(Presentation.HALO, spell), false))
+		for shader in [preload("res://shaders/magic/kame_beam.gdshader"), preload("res://shaders/magic/kame_glow.gdshader")]:
+			var beam_material := ShaderMaterial.new(); beam_material.shader = shader
+			var tube := CylinderMesh.new(); tube.radial_segments = 8; tube.rings = 2
+			_try(func(): _single(tube, beam_material, false))
 		var motes := ShaderMaterial.new(); motes.shader = Presentation.MOTE
 		_try(func(): _multi(presentation._mesh("spark"), motes, false, true))
 		var smoke := ShaderMaterial.new(); smoke.shader = Presentation.SMOKE

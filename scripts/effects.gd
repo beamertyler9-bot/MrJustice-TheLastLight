@@ -159,32 +159,16 @@ func ring(pos: Vector3, color: Color, radius: float = 1.0, duration: float = 0.4
 	tween.tween_property(material, "albedo_color:a", 0.0, duration)
 	tween.chain().tween_callback(node.queue_free)
 
-func beam(start: Vector3, end: Vector3, color: Color, width: float, duration: float) -> MeshInstance3D:
-	var material = B.mat(color.to_html(false), 0, 0.9).duplicate()
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.albedo_color.a = 0.45
-	var node = cylinder_between(start, end, width, material)
-	node.set_meta("feedback_transient", true)
-	var core = CylinderMesh.new()
-	core.top_radius = width * 0.28
-	core.bottom_radius = width * 0.28
-	core.height = node.mesh.height
-	core.radial_segments = 8
-	B.mesh(node, core, B.mat("#eafff5", 0, 1.2)).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var tween = create_tween()
-	active_tweens.append(tween)
-	_feedback_tweens.append(tween)
-	tween.tween_interval(maxf(0.05, duration - 0.14))
-	tween.tween_property(node, "scale", Vector3(0.01, 1, 0.01), 0.14).set_trans(Tween.TRANS_QUAD)
-	tween.tween_callback(node.queue_free)
+## Mr. Justice's hand beam, drawn as a Kamehameha-style column of light (kame_beam.gd).
+## `width` is the beam's core radius in metres.
+func beam(start: Vector3, end: Vector3, color: Color, width: float, duration: float) -> Node3D:
+	# Deep blue body, cyan hot band, white-hot centre (the white comes from the shared ramp).
+	var body := color.lerp(Color("1e8fff"), 0.7)
+	var core := color.lerp(Color("8ff0ff"), 0.6)
+	var gentle := bool(preferences.get("low_flash", false))
+	var node = preload("res://scripts/kame_beam.gd").spawn(self, start, end, body, core, width, duration, gentle)
+	if node != null: node.set_meta("feedback_transient", true)
 	burst(end, color, 10, 0.75)
-	var flash = B.ball(self, start, Vector3.ONE * 0.32, B.mat("#c6fff2", 0, 0.8))
-	flash.set_meta("feedback_transient", true)
-	var flash_tween = create_tween()
-	active_tweens.append(flash_tween)
-	_feedback_tweens.append(flash_tween)
-	flash_tween.tween_property(flash, "scale", Vector3.ZERO, 0.2)
-	flash_tween.tween_callback(flash.queue_free)
 	return node
 
 func rope(start: Vector3, end: Vector3) -> MeshInstance3D:
