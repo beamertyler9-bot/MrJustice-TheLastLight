@@ -79,6 +79,9 @@ var _grimoire_page: Node3D
 var _grimoire_rune: Node3D
 var _grimoire_rune_material: StandardMaterial3D
 var _grimoire_left: float = 0.0
+## After the spell leaves the hand, the casting arm stays raised this long before lowering.
+const GRIMOIRE_ARM_HOLD := 0.55
+var _grimoire_hold_left: float = 0.0
 var _grimoire_pose_weight: float = 0.0
 var _grimoire_duration: float = 0.62
 var _grimoire_origins: Array[Vector3] = [Vector3.ZERO, Vector3.ZERO]
@@ -445,6 +448,7 @@ func begin_grimoire_cast(color: Color, duration: float = 0.62) -> void:
 		return
 	_grimoire_duration = clampf(duration, 0.3, 1.5) if is_finite(duration) else 0.62
 	_grimoire_left = _grimoire_duration
+	_grimoire_hold_left = GRIMOIRE_ARM_HOLD
 	for i in range(2):
 		_grimoire_origins[i] = torso.to_local(hands[i].global_position)
 	_grimoire_rune_material.albedo_color = color
@@ -861,7 +865,10 @@ func _advance_pose(dt: float, motion: String, speed: float) -> void:
 		if _grimoire_blocked(motion):
 			cancel_grimoire_cast()
 		else:
-			_grimoire_left = maxf(0.0, _grimoire_left - dt)
+			# Hold the arm out toward the spell for a moment once it has been released.
+			var cast_progress := 1.0 - _grimoire_left / maxf(_grimoire_duration, 0.001)
+			if cast_progress >= 0.7 and _grimoire_hold_left > 0.0: _grimoire_hold_left -= dt
+			else: _grimoire_left = maxf(0.0, _grimoire_left - dt)
 			if not is_grimoire_casting():
 				cancel_grimoire_cast()
 	if motion != _last_motion:

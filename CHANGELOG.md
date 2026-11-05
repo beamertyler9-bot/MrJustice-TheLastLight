@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.57.0 — Casting arm holds (2026-11-05)
+
+- **Casting arm stays up longer:** after a spell leaves his hand, Mr. Justice holds his
+  arm out toward it for a moment before lowering it.
+  - Quick casts hold for about half a second at the end of the grimoire gesture.
+  - Charged hand spells hold about 0.6 seconds after you let go.
+  - Beams still keep the arm up for as long as they fire.
+  - Lantern spells still leave the hands alone.
+
 ## 0.56.0 — Braced beams, snappy casting circles (2026-11-05)
 
 - **Casting circles fade right after the cast:** the circle at the hand (or lantern) and at

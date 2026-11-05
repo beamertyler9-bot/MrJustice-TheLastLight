@@ -102,6 +102,10 @@ var climb_detach: float = 0.0
 var charge_vfx: Node3D
 var spell_charging := false
 var lantern_still := 0.0
+## After a charged hand spell is let go, the arm stays raised toward it a moment.
+const CAST_ARM_HOLD := 0.6
+var cast_arm_hold := 0.0
+var _cast_arm_point := Vector3.ZERO
 ## Firing a beam: view frozen, facing locked to the beam, movement slowed.
 var beam_locked := false
 var _beam_lock_yaw := 0.0
@@ -427,7 +431,8 @@ func _process(dt: float) -> void:
 	# A hand beam keeps the arm raised toward its end for as long as it lasts.
 	var runtime_now = magic_runtime()
 	var beam_held: bool = runtime_now != null and float(runtime_now.get("beam_hold")) > 0.0
-	var arm_up: bool = (spell_charging and str(state.equipped_spell().get("origin", "hand")) != "lantern") or beam_held
+	cast_arm_hold = maxf(0.0, cast_arm_hold - dt)
+	var arm_up: bool = (spell_charging and str(state.equipped_spell().get("origin", "hand")) != "lantern") or beam_held or cast_arm_hold > 0.0
 	# Lantern spells come out of his head: his hands stay exactly where they are.
 	lantern_still = maxf(0.0, lantern_still - dt)
 	visual.aim_weight = 1.0 if visual.grapple_active() or beam_contact >= 0 or arm_up else (0.0 if (spell_view or lantern_still > 0.0) and not ability_aiming else aim_blend)
@@ -443,6 +448,8 @@ func _process(dt: float) -> void:
 		visual.aim_target = beam_target
 	elif beam_held:
 		visual.aim_target = runtime_now.beam_hold_point
+	elif cast_arm_hold > 0.0:
+		visual.aim_target = _cast_arm_point
 	elif aim_blend > 0.001:
 		visual.aim_target = ability_target().point
 	if visual.has_method("set_motion_context"):
@@ -1911,6 +1918,8 @@ func cast_spell(charge: float = -1.0) -> bool:
 			lantern_still = 3.6
 		else:
 			visual_action("beam")
+			cast_arm_hold = CAST_ARM_HOLD
+			_cast_arm_point = destination
 		camera_trauma = minf(0.4, camera_trauma + 0.12 + charged * 0.18)
 		feel_rumble(int(16 + charged * 40.0), 0.35 + charged * 0.4)
 		if str(spell.get("motif", "none")) == "railgun":
