@@ -674,13 +674,15 @@ func _animate(data: Dictionary, age: float, _dt: float, impact: bool) -> void:
 				piece.visible = pop < 1.0
 				if piece.visible:
 					piece.scale = Vector3.ONE * lerpf(2.6, 0.9, pop * pop)
+					piece.transparency = smoothstep(0.5, 1.0, pop)
 					piece.position = Vector3(0, 0.25, 0)
 					_face(piece, pop * 0.6)
 			"shockwave":
 				var wave := clampf(age / 0.26, 0.0, 1.0)
 				piece.visible = wave < 1.0
 				if piece.visible:
-					piece.scale = Vector3.ONE * (0.6 + (1.0 - pow(1.0 - wave, 3.0)) * 3.6)
+					piece.scale = Vector3.ONE * (0.6 + (1.0 - pow(1.0 - wave, 3.0)) * 2.8)
+					piece.transparency = smoothstep(0.35, 1.0, wave)
 					piece.position = Vector3(0, 0.2, 0)
 					_face(piece)
 	if data.has("halo"): _face(data.halo)

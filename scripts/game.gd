@@ -522,6 +522,13 @@ func _present_loaded_world() -> void:
 	_loading_stage("Animating Mr. Justice")
 	player._process(1.0 / 60.0)
 	await render_loading.draw_frame()
+	# Compile forest and spell shaders now, not on the first walk into the woods.
+	_loading_stage("Preparing forests and magic")
+	var warmup = preload("res://scripts/shader_warmup.gd").new()
+	add_child(warmup); warmup.build(self, render_loading.camera)
+	await render_loading.draw_frame()
+	await render_loading.draw_frame()
+	warmup.queue_free()
 	_loading_stage("Opening the world view")
 	await render_loading.draw_frame()
 	loading_report.data["rendered_loading_frames"] = render_loading.drawn_frames
@@ -1109,6 +1116,8 @@ func apply_settings() -> void:
 		governor = preload("res://scripts/frame_governor.gd").new(); add_child(governor)
 	governor.set_ceiling([0.65, 0.8, 1.0][quality])
 	get_viewport().msaa_3d = Viewport.MSAA_2X if quality == 2 else Viewport.MSAA_DISABLED
+	# Coarser mesh LOD on phones' lower tiers: forests are thousands of tree triangles each.
+	get_viewport().mesh_lod_threshold = [4.0, 2.5, 1.0][quality]
 	# Low quality holds a steady 30 fps, which reads smoother on weak phones than a frame
 	# rate bouncing between 30 and 50.
 	Engine.max_fps = 30 if quality == 0 else 60

@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.40.0 — Lock-on, forest smoothness and spell effects (2026-11-04)
+
+### Lock-on that sticks
+- Lock-on now stays through hand aiming (beam and grapple), dodging and spell casting. It
+  only drops when the target dies, gets more than 30 m away, or stays hidden for 1.5 s.
+- Aiming while locked keeps the target under the reticle and tilts the view to its height.
+- The hero keeps facing the target through rolls and casts; while the grapple is pulling,
+  the lock pauses instead of clearing.
+- The camera eases between lock-on framing and the aim view instead of cutting.
+- The beam turns toward a locked target faster (4.2 rad/s, was 2.8).
+
+### Entering forests
+- Shader warm-up behind the loading screen (`scripts/shader_warmup.gd`): every tree, ground
+  cover and spell material is drawn once while loading, so the phone's GPU driver compiles
+  them up front instead of stalling the first time you walk into a forest or cast.
+- Coarser mesh detail on lower settings (LOD threshold Low 4 px, Balanced 2.5 px, High 1 px).
+- Measured walking 260 m into the densest nearby forest: 2 frames over 35 ms of CPU time in
+  30 seconds, so world streaming itself isn't the cause.
+
+### Spell effects
+- Every impact now pops a white-hot eight-ray contact star and a shockwave ring that races
+  outward, both gone in about a quarter of a second.
+- Glows are three stepped toon bands with a slowly turning four-point sparkle (were flat discs).
+- Spell strokes, beams and trails get a translucent glow fringe outside a thin ink line.
+- Sparks and embers burn white-hot on camera-facing facets and twinkle individually.
+- Charging the beam swells a glow in Mr. Justice's palm that pulses when fully charged.
+
 ## 0.39.0 — Smoothness pass (2026-11-04)
 
 Measured running through the start area (desktop CPU; phones are slower but the ratios hold):
