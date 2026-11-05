@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.58.0 — Judgement Pillar unleashed (2026-11-05)
+
+- **Judgement Pillar is now one of the strongest spells in the game:**
+  - Full power plus a damage bonus: it burns for 7 per pulse (was 2), 10 pulses over about
+    8 seconds.
+  - **Chargeable** (2.2 seconds): hold to widen the pillar by up to half again and hit
+    harder. A full charge burns for 9 per pulse, up to 90 damage to anything that stays
+    inside.
+  - **Only one at a time:** you can't cast or charge another while one is still standing.
+  - **Lightning:** forks of lightning in the pillar's own gold strike down around it the
+    whole time it stands, and arcs jump across its face.
+  - It costs 78 mana.
+- Spells already at full power now turn extra charge into extra damage instead of wasting
+  it.
+
 ## 0.57.0 — Casting arm holds (2026-11-05)
 
 - **Casting arm stays up longer:** after a spell leaves his hand, Mr. Justice holds his

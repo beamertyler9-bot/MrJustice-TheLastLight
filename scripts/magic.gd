@@ -104,6 +104,8 @@ func prepare(raw: Dictionary, target: Vector3, acquired: Node3D = null, charge: 
 	last_release_error = ""
 	if not _valid_point(target) or not can_cast(raw): return false
 	var spell := Spellbook.sanitize(raw)
+	last_release_error = unique_block(spell)
+	if not last_release_error.is_empty(): return false
 	last_release_error = weave.admission_reason(spell, target)
 	if not last_release_error.is_empty(): return false
 	pending = {"spell": spell, "target": target, "caster": game.player.get_instance_id(), "age": 0.0}
@@ -288,6 +290,24 @@ func feet_tracker() -> Callable:
 	return func() -> Array:
 		if not is_instance_valid(game) or not is_instance_valid(game.player): return []
 		return [game.player.global_position + Vector3.UP * 0.06, Vector3.ZERO]
+
+## Spells so strong that only one of them may stand at a time.
+const UNIQUE_SPELLS := {"judgement_pillar": "Only one Judgement Pillar can stand at a time."}
+
+## Is a cast of this spell id still running (any of its stages not yet ended)?
+func spell_id_active(id: String) -> bool:
+	for stage in weave.stages:
+		if bool(stage.ended): continue
+		var recipes: Array = stage.context.pool.get("recipes", [])
+		var index := int(stage.index)
+		if index < recipes.size() and str(recipes[0].get("id", "")) == id: return true
+	return false
+
+## Why this spell can't be cast right now because another copy is still standing ("" if it can).
+func unique_block(spell: Dictionary) -> String:
+	var id := str(spell.get("id", ""))
+	if UNIQUE_SPELLS.has(id) and spell_id_active(id): return str(UNIQUE_SPELLS[id])
+	return ""
 
 ## Spells that keep pouring out of the hand after the cast (beams, breath cones).
 func long_cast(spell: Dictionary) -> bool:

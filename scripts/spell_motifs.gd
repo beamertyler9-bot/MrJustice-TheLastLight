@@ -239,6 +239,23 @@ func _update(dt: float) -> void:
 			presentation._set_material_clock(material, spell, age, envelope)
 	var camera: Camera3D = presentation._camera()
 	if not _streaks.is_empty(): _update_streaks()
+	if motif == "pillar" and age < life - 0.3:
+		# Lightning in the pillar's own colour crackles down and around it.
+		_flash_clock -= dt
+		if _flash_clock <= 0.0:
+			_flash_clock = _rng.randf_range(0.12, 0.3)
+			var bolt: Dictionary = spell.duplicate(); bolt.element = "storm"
+			bolt.color = "#" + _body.to_html(false); bolt.core_color = "#" + _core.to_html(false); bolt.accent = bolt.core_color
+			var around := _rng.randf() * TAU
+			var reach := radius * _rng.randf_range(0.35, 1.05)
+			var landing := global_position + Vector3(cos(around), 0.0, sin(around)) * reach
+			var top := global_position + Vector3(cos(around + 0.6), 0.0, sin(around + 0.6)) * radius * 0.3 + Vector3.UP * _rng.randf_range(7.0, 12.0)
+			presentation.sky_strike(top, landing, bolt, 0.3, clampf(radius / 2.4, 0.8, 1.6))
+			if _rng.randf() < 0.5:
+				# A short arc jumping across the pillar's face.
+				var a := global_position + Vector3(cos(around), 0.0, sin(around)) * radius * 0.45 + Vector3.UP * _rng.randf_range(0.5, 4.0)
+				var b := global_position + Vector3(cos(around + 2.2), 0.0, sin(around + 2.2)) * radius * 0.45 + Vector3.UP * _rng.randf_range(0.5, 4.0)
+				presentation.sky_strike(a, b, bolt, 0.2, 0.5)
 	if motif == "storm_cloud" and age < life * 0.85:
 		# Lightning forks out of the thundercloud onto the ground beneath it.
 		_flash_clock -= dt

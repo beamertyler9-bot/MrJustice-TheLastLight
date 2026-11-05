@@ -49,7 +49,7 @@ const LIMITS := {
 	"wall_width": [1.0, 6.0], "wall_height": [1.0, 4.0], "wall_thickness": [0.2, 1.0], "summon_count": [1.0, 2.0],
 	"edge_noise": [0.0, 2.0], "trail_length": [0.25, 3.0], "trail_fade": [0.1, 3.0], "particle_drift": [0.0, 3.0],
 	"impact_scale": [0.25, 3.0], "cast_scale": [0.25, 3.0], "residual_motes": [0.0, 2.0],
-	"charge": [0.0, 4.0]
+	"charge": [0.0, 4.0], "damage_bonus": [0.0, 8.0]
 }
 const ELEMENT_COLORS := {
 	"flame": ["#ff794e", "#ffe6a0"], "frost": ["#82d9ff", "#ebffff"],
@@ -82,7 +82,7 @@ static func _flat_defaults(id: String) -> Dictionary:
 		"core_color": "#ffe6a0", "rim_color": "#ffe6a0", "trail_color": "#ff794e", "material_style": "elemental",
 		"edge_noise": 0.5, "trail_length": 1.0, "trail_fade": 1.0, "particle_drift": 1.0,
 		"impact_scale": 1.0, "cast_scale": 1.0, "residual_motes": 1.0, "sigil": "circle", "impact_accent": "bloom",
-		"charge": 0.0, "origin": "hand", "motif": "none"}
+		"charge": 0.0, "origin": "hand", "motif": "none", "damage_bonus": 0}
 
 static func _valid_id(value: Variant) -> bool:
 	if not value is String or value.is_empty() or value.length() > 48:
@@ -300,7 +300,7 @@ static func _stage_cooldown(s: Dictionary) -> float:
 static func damage(spell: Dictionary) -> int:
 	var s := sanitize(spell)
 	if s.is_empty(): return 0
-	return int(s.power) + (1 if s.form in ["beam", "burst", "strike"] else 0)
+	return int(s.power) + int(s.get("damage_bonus", 0)) + (1 if s.form in ["beam", "burst", "strike"] else 0)
 
 static func describe(spell: Dictionary) -> String:
 	var s := sanitize(spell)

@@ -1744,6 +1744,8 @@ func begin_spell_cast() -> void:
 	if runtime == null: return
 	if runtime.cooldown_remaining > 0.0:
 		toast("Your grimoire is recharging."); return
+	if runtime.has_method("unique_block") and not runtime.unique_block(spell).is_empty():
+		toast(runtime.unique_block(spell)); return
 	spell_charging = true
 	spell_charge = 0.0
 	spell_charge_time = float(spell.charge)
@@ -1883,7 +1885,10 @@ func cast_spell(charge: float = -1.0) -> bool:
 	var charged := clampf(charge, 0.0, 1.0)
 	if float(spell.get("charge", 0.0)) > 0.0 and charged > 0.0:
 		# Charging makes the spell stronger and bigger (and, for throws, go further).
-		spell.power = mini(5, int(spell.power) + roundi(charged * 2.0))
+		var raised := int(spell.power) + roundi(charged * 2.0)
+		spell.power = mini(5, raised)
+		# Already at full power: the extra charge becomes extra damage instead.
+		spell.damage_bonus = mini(8, int(spell.get("damage_bonus", 0)) + maxi(0, raised - 5))
 		spell.size = clampf(float(spell.size) * (1.0 + charged * 0.6), 0.1, 0.45)
 		spell.radius = clampf(float(spell.radius) * (1.0 + charged * 0.5), 1.0, 5.0)
 		for stage in spell.get("stages", []):
