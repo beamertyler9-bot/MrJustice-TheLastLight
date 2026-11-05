@@ -129,7 +129,7 @@ func _build(id: String) -> void:
 	live = Node3D.new(); live.name = id; live.position = S.origin(id); add_child(live); live.set_meta("interior", id)
 	for level in range(plan.levels): _shell(id, level)
 	if plan.castle: _stairs(id)
-	if record.kind != "cave": Architecture.portals(live, plan, func (p: Vector2, level: int) -> float: return S.floor_height(id, p, level), plan.castle)
+	if record.kind != "cave": Architecture.portals(live, plan, func (p: Vector2, level: int) -> float: return S.floor_height(id, p, level), plan.castle, null if plan.castle else Architecture.stone(int(record.region), false, false, false))
 	var furnished: Array[String] = []
 	for room in plan.rooms:
 		var local = S.point(id, room.p, int(room.level)) - S.origin(id) - Vector3.UP * 0.24

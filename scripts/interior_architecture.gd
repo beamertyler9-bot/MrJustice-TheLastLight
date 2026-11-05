@@ -5,6 +5,7 @@ const Art = preload("res://scripts/landmark_art.gd")
 const A = preload("res://scripts/imported_assets.gd")
 static var materials = {}
 static var arches = {}
+static var doorway_walls = {}
 static var window_pane: Mesh
 static func stone(region: int, floor: bool = false, castle: bool = false, cave: bool = false) -> ShaderMaterial:
  var key = "%d:%s:%s:%s" % [region, floor, castle, cave]
@@ -36,10 +37,52 @@ static func arch(parent: Node3D, width: float, spring: float, rise: float, depth
     var normal = (points[quad[j + 1]] - points[quad[j]]).cross(points[quad[j + 2]] - points[quad[j]]).normalized()
     for k in range(3): st.set_normal(normal); st.set_uv(Vector2(points[quad[j + k]].x, points[quad[j + k]].y)); st.add_vertex(points[quad[j + k]])
  arches[key] = st.commit(); B.mesh(parent, arches[key], material)
-static func portal(parent: Node3D, at: Vector3, yaw: float, castle: bool = false):
+## A masonry wall filling the whole corridor (side to side, floor to the 7 m vault) with an
+## arch-shaped opening sized to sit just inside the gate, so the archway is set into a real
+## wall and lines up with the ceiling instead of standing free with gaps around it.
+static func doorway_wall(parent: Node3D, material: Material, span: float = 9.0, height: float = 7.25, depth: float = 0.6) -> MeshInstance3D:
+ var key = Vector3(span, height, depth)
+ if not doorway_walls.has(key):
+  var hole: Array[Vector2] = []
+  var half_w = 2.32; var spring = 3.05; var rise = 1.3
+  hole.append(Vector2(-half_w, 0.0))
+  for i in range(4): hole.append(Vector2(-half_w, spring * float(i + 1) / 4.0))
+  for i in range(1, 16):
+   var t = PI - PI * float(i) / 16.0
+   hole.append(Vector2(cos(t) * half_w, spring + sin(t) * rise))
+  for i in range(4, -1, -1): hole.append(Vector2(half_w, spring * float(i) / 4.0 if i > 0 else 0.0))
+  # Each opening point is joined to where a ray from the doorstep through it meets the
+  # outer edge of the wall (the opening is convex, so the quads never overlap).
+  var outer: Array[Vector2] = []
+  for q in hole:
+   var dir = q.normalized() if q.length() > 0.001 else Vector2.LEFT
+   var reach = INF
+   if absf(dir.x) > 0.0001: reach = minf(reach, (span * 0.5) / absf(dir.x))
+   if dir.y > 0.0001: reach = minf(reach, height / dir.y)
+   outer.append(dir * reach)
+  var st = SurfaceTool.new(); st.begin(Mesh.PRIMITIVE_TRIANGLES)
+  for face in [1.0, -1.0]:
+   var z = depth * 0.5 * face; var n = Vector3(0, 0, face)
+   for i in range(hole.size() - 1):
+    var quad = [Vector3(hole[i].x, hole[i].y, z), Vector3(hole[i + 1].x, hole[i + 1].y, z), Vector3(outer[i + 1].x, outer[i + 1].y, z), Vector3(outer[i].x, outer[i].y, z)]
+    var order = [0, 1, 2, 0, 2, 3] if face < 0 else [0, 2, 1, 0, 3, 2]
+    for k in order: st.set_normal(n); st.add_vertex(quad[k])
+  # The reveal: the inside faces of the opening, running through the wall's thickness.
+  for i in range(hole.size() - 1):
+   var a0 = hole[i]; var a1 = hole[i + 1]
+   var edge = (a1 - a0); var inward = Vector2(edge.y, -edge.x).normalized()
+   var n = Vector3(inward.x, inward.y, 0)
+   var quad = [Vector3(a0.x, a0.y, -depth * 0.5), Vector3(a1.x, a1.y, -depth * 0.5), Vector3(a1.x, a1.y, depth * 0.5), Vector3(a0.x, a0.y, depth * 0.5)]
+   for k in [0, 1, 2, 0, 2, 3]: st.set_normal(n); st.add_vertex(quad[k])
+  doorway_walls[key] = st.commit()
+ var wall = B.mesh(parent, doorway_walls[key], material); wall.name = "DoorwayWall"
+ var shape = doorway_walls[key].create_trimesh_shape(); shape.backface_collision = true; B.solid(parent, Vector3.ZERO, shape)
+ return wall
+static func portal(parent: Node3D, at: Vector3, yaw: float, castle: bool = false, wall_material: Material = null):
  var node = Node3D.new(); node.name = "DungeonDoorway_%d" % parent.get_child_count(); node.position = at; node.rotation.y = yaw; parent.add_child(node)
  var material = B.world_surface("stone", "#8b8191" if castle else "#928778")
  if not castle and not A.entry("p32_dungeon_gate").is_empty():
+  if wall_material != null: doorway_wall(node, wall_material)
   var gate = Art.module(node, "p32_dungeon_gate", Vector3.ZERO, Vector3(4.8, 4.5, 0.65))
   for part in gate.find_children("*", "MeshInstance3D", true, false):
    var points = part.mesh.get_faces(); var frame = part.transform; var ancestor = part.get_parent()
@@ -54,7 +97,7 @@ static func portal(parent: Node3D, at: Vector3, yaw: float, castle: bool = false
  arch(node, 4.3, 3.3, 1.25, 0.25, material)
  node.set_meta("clear_width", 3.88)
  return node
-static func portals(parent: Node3D, plan: Dictionary, floor_at: Callable, castle: bool = false):
+static func portals(parent: Node3D, plan: Dictionary, floor_at: Callable, castle: bool = false, wall_material: Material = null):
  var used = {}
  for edge in plan.links:
   var a: Dictionary = plan.rooms[int(edge[0])]; var b: Dictionary = plan.rooms[int(edge[1])]
@@ -66,7 +109,7 @@ static func portals(parent: Node3D, plan: Dictionary, floor_at: Callable, castle
    var key = Vector3(roundf(p.x), int(from.level), roundf(p.y))
    if used.has(key): continue
    used[key] = true
-   var y: float = floor_at.call(p, int(from.level)); portal(parent, Vector3(p.x, y, p.y), atan2(delta.x, delta.y), castle)
+   var y: float = floor_at.call(p, int(from.level)); portal(parent, Vector3(p.x, y, p.y), atan2(delta.x, delta.y), castle, wall_material)
 static func room(parent: Node3D, size: Vector2, height: float, purpose: String):
  var node = Node3D.new(); node.name = "GothicVault"; parent.add_child(node)
  var trim = B.world_surface("stone", "#8c8093"); var iron = B.mat("#423b49", 0.4)

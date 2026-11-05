@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.60.0 — Archways set into the walls (2026-11-05)
+
+- **Dungeon archways line up with the ceiling:** every doorway arch now sits in a solid
+  masonry wall that fills the corridor from side to side and from the floor up to the
+  vaulted ceiling.
+  - The opening is shaped to the arch, with a stone reveal through the wall's thickness.
+  - The bricks run continuously from the walls into it, so arches no longer stand on
+    their own with open gaps above and beside them.
+  - The way through is just as wide as before.
+
 ## 0.59.0 — Caves, dungeons, homes and land (2026-11-05)
 
 - **Caves** (all 52):
