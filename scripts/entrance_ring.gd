@@ -34,15 +34,15 @@ static func _shared_resources() -> void:
 	if rim_mesh != null: return
 	trace_mesh = TorusMesh.new(); trace_mesh.inner_radius = RADIUS - 0.018; trace_mesh.outer_radius = RADIUS + 0.018; trace_mesh.rings = 32; trace_mesh.ring_segments = 6
 	rim_mesh = TorusMesh.new(); rim_mesh.inner_radius = RADIUS - 0.028; rim_mesh.outer_radius = RADIUS + 0.028; rim_mesh.rings = 40; rim_mesh.ring_segments = 8
-	trace_material = _material(Color(0.13, 0.9, 0.38, 0.26), 0.45)
-	rim_material = _material(Color(0.16, 1.0, 0.43, 0.58), 1.6)
+	trace_material = _material(Color(0.42, 0.95, 0.62, 0.2), 0.3)
+	rim_material = _material(Color(0.5, 1.0, 0.68, 0.42), 0.75)
 
 static func _material(tint: Color, energy: float) -> StandardMaterial3D:
 	var material = StandardMaterial3D.new()
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.albedo_color = tint
-	material.emission_enabled = true; material.emission = Color(0.11, 1.0, 0.32); material.emission_energy_multiplier = energy
+	material.emission_enabled = true; material.emission = Color(0.4, 1.0, 0.6); material.emission_energy_multiplier = energy
 	material.roughness = 0.6
 	return material
 

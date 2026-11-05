@@ -34,6 +34,8 @@ static func mesh(id: String) -> Mesh:
 		var resource = load(path)
 		if not resource is Mesh: return null
 		if str(data.category) != "vegetation" and not resource.has_meta("forest_canopy_revision"): load("res://scripts/pack_materials.gd").apply(resource)
+		var wind = load("res://scripts/wind_sway.gd")
+		if wind.sways(id): resource = wind.apply(resource)
 		_meshes[id] = resource
 	return _meshes[id]
 

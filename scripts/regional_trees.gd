@@ -20,6 +20,7 @@ static func mesh(region: int) -> ArrayMesh:
 
 		if region == 15:
 			for i in range(3): meshes[region].surface_set_material(i, B.mat(CRYSTAL_COLORS[i], 0.12, 0.08))
+		if region in [9, 10, 11, 13, 14]: meshes[region] = load("res://scripts/wind_sway.gd").apply(meshes[region])
 	return meshes[region]
 static var canopy_anchors = {}
 static func food_anchors(region: int) -> Array:

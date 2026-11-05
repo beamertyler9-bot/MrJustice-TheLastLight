@@ -58,6 +58,7 @@ var save_clock: float = 0.0
 var rain: MultiMeshInstance3D
 var rain_amount: float = 0.0
 var motes: MultiMeshInstance3D
+var ambient_life: Node3D
 var _sandstorm_warned := false
 var clouds: MultiMeshInstance3D
 var effects: Node3D
@@ -940,6 +941,7 @@ func _build_environment() -> void:
 	motes.material_override = B.mat("#e5d79a", 0, 0.5)
 	motes.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(motes)
+	ambient_life = load("res://scripts/ambient_life.gd").new(); ambient_life.setup(self); add_child(ambient_life)
 
 func _process(dt: float) -> void:
 	if mode in ["play", "rest", "sleep", "loading"] or is_title_context():
@@ -1014,6 +1016,9 @@ func _weather() -> void:
 	var cycle = TAU * fposmod(0.18 + state.journey_time / 540.0, 1.0)
 	var height = sin(cycle)
 	var daylight = smoothstep(-0.18, 0.22, height)
+	if ambient_life != null:
+		ambient_life.daylight = daylight; ambient_life.biome = biome
+		ambient_life.allowed = not protected and rain_amount < 0.3 and interior_id == ""
 	var dusk = (1.0 - smoothstep(0.08, 0.42, absf(height))) * daylight
 	var direction = Vector3(-0.6 * cos(cycle), height * 0.85, -0.75).normalized()
 	sky_material.set_shader_parameter("world_time", clock)

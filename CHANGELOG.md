@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.64.0 — A living world (2026-11-05)
+
+- **Wind:** trees, bushes, grass, ferns and flowers sway, rock and flutter in slow gusts.
+  - **Out of step:** each plant moves a little differently from its neighbours.
+  - **Roots stay put:** only the tops move.
+  - **Size:** small plants move more than tall trees.
+  - **What stays still:** rocks, pebbles, stumps, mushrooms, cacti and crystals.
+- **Butterflies by day:** they flit about at knee to head height around Mr. Justice, wings
+  beating, in colours that suit each land:
+  - golden and white in the valley;
+  - pink in the sweets lands;
+  - pale blue and violet among the crystals.
+- **Fireflies by night:** after dark they give way to fireflies that drift slowly and
+  blink.
+  - **When they appear:** only out in the open, never indoors, sheltering or in heavy
+    rain.
+  - **Performance:** all of them together cost a single draw call.
+- **Softer entrance rings:** the rings marking doors and entrances are a gentler mint
+  glow instead of a hard neon green.
+
 ## 0.63.0 — Movement polish (2026-11-05)
 
 - **Jumps feel weightier:**
