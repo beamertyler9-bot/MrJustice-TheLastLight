@@ -27,6 +27,7 @@ var _body_override: Material
 var _pivot: Node3D
 var _body: MeshInstance3D
 var _sheath: MeshInstance3D
+var _inner: MeshInstance3D
 var _muzzle: MeshInstance3D
 var _head: MeshInstance3D
 var _sparks: MultiMeshInstance3D
@@ -93,6 +94,13 @@ func _ready() -> void:
 func set_body_material(material: Material) -> void:
 	_body_override = material
 	if _body != null: _body.material_override = material
+	# A solid inner column under the replacement surface, so a see-through surface (water)
+	# still reads as a full beam when you look straight down it.
+	if _body != null and _inner == null:
+		_inner = _part(_body.mesh, _material(BODY, {"wave": 0.0, "length_m": _length}))
+		_inner.position = _body.position
+		_pivot.add_child(_inner)
+		_update()
 
 func _basis_along(direction: Vector3) -> Basis:
 	var y := direction
@@ -146,6 +154,7 @@ func _update() -> void:
 		_body_override.set_shader_parameter("brightness", 1.1)
 	_pivot.scale = Vector3(1, maxf(grow, 0.001), 1)
 	_body.scale = Vector3(radius * thickness, 1, radius * thickness)
+	if _inner != null: _inner.scale = Vector3(radius * thickness * 0.6, 1, radius * thickness * 0.6)
 	_sheath.scale = Vector3(radius * thickness * 1.75, 1, radius * thickness * 1.75)
 	if not _orbs: return
 	var direction := (end - start) / maxf(_length, 0.001)

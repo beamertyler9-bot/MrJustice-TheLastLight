@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.49.0 — Solid beams end-on (2026-11-05)
+
+- **Beams:** you could see through the middle of a beam when looking down it from behind
+  Mr. Justice (it showed as hollow rings). Beams now have a solid, white-hot heart when seen
+  end-on, so Lantern Beam, Thunder Lance and the rest read as a full column of light from
+  every angle. Void beams keep their black heart, and water beams (Torrent Beam, Geyser) get
+  a solid inner column under the flowing water.
+
 ## 0.48.0 — New magic circle designs (2026-11-05)
 
 - **Magic circles:** replaced all twelve circle designs with the new elemental set: a clean

@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode unshaded, blend_mix, cull_back, depth_draw_never, shadows_disabled;
+render_mode unshaded, blend_mix, cull_disabled, depth_draw_never, shadows_disabled;
 // Kamehameha-style energy beam body (also its muzzle and head orbs). The tube is shaded by
 // how squarely each point faces the camera, so from any angle it reads as a solid column of
 // light: white-hot down the middle, element colour around it, a translucent glow at the
@@ -41,7 +41,24 @@ void fragment() {
 		// Void: the ramp turned inside out - a black heart with a burning edge.
 		col = mix(energy_color(clamp(1.2 - v, 0.0, 1.0), body_color.rgb, core_color.rgb), vec3(0.015, 0.0, 0.03), toon_aa(0.42, v));
 	}
-	ALBEDO = col;
 	// A solid column: only the outermost sliver of the silhouette fades.
-	ALPHA = toon_aa(0.02, max(v, 0.03)) * mix(0.75, 1.0, toon_aa(0.12, v)) * opacity;
+	float alpha = toon_aa(0.02, max(v, 0.03)) * mix(0.75, 1.0, toon_aa(0.12, v));
+	if (!FRONT_FACING) {
+		// The tube's open ends: looking along the beam (from behind the hero, or straight
+		// into it) shows its inner wall. Paint that as the white-hot heart of the column so
+		// the beam reads as solid end-on, instead of a hollow ring you can see through.
+		// From the side the inner wall stays hidden behind the outer one.
+		float along_view = 0.0;
+		if (tube) {
+			vec3 axis = normalize((VIEW_MATRIX * MODEL_MATRIX * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
+			along_view = abs(dot(normalize(VIEW), axis));
+		}
+		float inner = toon_aa(0.55, along_view);
+		vec3 heart = energy_color(1.0, body_color.rgb, core_color.rgb) * clamp(brightness, 0.6, 1.8);
+		if (dark_core > 0.5) heart = vec3(0.015, 0.0, 0.03);
+		col = heart;
+		alpha = inner;
+	}
+	ALBEDO = col;
+	ALPHA = alpha * opacity;
 }
