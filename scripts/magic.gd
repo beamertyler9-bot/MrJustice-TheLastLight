@@ -243,7 +243,7 @@ func _cast_circles(spell: Dictionary, origin: Vector3, target: Vector3) -> void:
 
 ## How high rain spells pour from: the sky circle, low enough to stay in view.
 func rain_drop_height(spell: Dictionary) -> float:
-	return minf(float(spell.get("rain_height", 6.0)), 4.8)
+	return minf(float(spell.get("rain_height", 6.0)), 4.3)
 
 ## Lantern spells leave from the lantern in Mr. Justice's head; everything else from the hand.
 func _spell_origin(spell: Dictionary) -> Vector3:

@@ -49,20 +49,12 @@ static func on_ground(parent: Node, spell: Dictionary, point: Vector3, radius: f
 
 
 ## A circle hanging flat in the sky, seen from below (rain spells pour out of it).
-## It is tipped toward `viewer` so it reads face-on from the ground instead of edge-on.
 static func in_sky(parent: Node, spell: Dictionary, point: Vector3, radius: float, duration: float = 2.0, viewer: Vector3 = Vector3.INF) -> Node3D:
 	var circle = load("res://scripts/magic_circle.gd").new()
 	circle.configure(element_of(spell), radius, duration)
 	parent.add_child(circle)
-	var toward := Vector3.ZERO
-	if viewer.is_finite():
-		toward = Vector3(viewer.x - point.x, 0.0, viewer.z - point.z)
-		if toward.length_squared() > 0.01: toward = toward.normalized()
-	if toward == Vector3.ZERO:
-		circle.global_transform = Transform3D(Basis(Vector3.RIGHT, PI * 0.5), point)
-	else:
-		# Face down and toward the viewer (about 40 degrees off flat).
-		circle.place_facing(point, -(Vector3.DOWN + toward * 0.85).normalized())
+	# Flat and level, facing straight down at the ground it rains on.
+	circle.global_transform = Transform3D(Basis(Vector3.RIGHT, PI * 0.5), point)
 	return circle
 
 

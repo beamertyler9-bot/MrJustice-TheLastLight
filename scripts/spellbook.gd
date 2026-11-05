@@ -49,7 +49,7 @@ const LIMITS := {
 	"wall_width": [1.0, 6.0], "wall_height": [1.0, 4.0], "wall_thickness": [0.2, 1.0], "summon_count": [1.0, 2.0],
 	"edge_noise": [0.0, 2.0], "trail_length": [0.25, 3.0], "trail_fade": [0.1, 3.0], "particle_drift": [0.0, 3.0],
 	"impact_scale": [0.25, 3.0], "cast_scale": [0.25, 3.0], "residual_motes": [0.0, 2.0],
-	"charge": [0.0, 2.5]
+	"charge": [0.0, 4.0]
 }
 const ELEMENT_COLORS := {
 	"flame": ["#ff794e", "#ffe6a0"], "frost": ["#82d9ff", "#ebffff"],

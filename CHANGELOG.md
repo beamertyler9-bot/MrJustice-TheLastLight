@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.51.0 — Longer Railgun charge, flat rain circles (2026-11-05)
+
+- **Railgun:** takes 3.5 seconds to charge fully, up from 2, so the metal circle array
+  builds up slowly before the shot.
+- **Rain spells:** the magic circle in the sky now lies flat and level over the target
+  instead of tipping toward you, and hangs a little lower so it stays in view.
+- Magic circles use anisotropic filtering, so their thin lines stay sharp when seen at a
+  low angle (circles overhead or on the ground).
+
 ## 0.50.0 — Railgun array, held beams and sky circles (2026-11-05)
 
 - **Railgun, the most powerful spell in the game:**

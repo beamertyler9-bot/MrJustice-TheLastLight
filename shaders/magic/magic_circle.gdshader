@@ -2,7 +2,9 @@ shader_type spatial;
 render_mode unshaded, blend_mix, cull_disabled, depth_draw_never, shadows_disabled;
 // Animated elemental magic circle (one per element): a 4 x 4 flipbook of 16 frames played at
 // 11 frames a second, with a little extra glow so the thin lines read as light.
-uniform sampler2D sheet : source_color, filter_linear_mipmap, repeat_disable;
+// Anisotropic: flat circles seen at a low angle (rain circles overhead, ground circles)
+// keep their thin lines sharp instead of blurring away.
+uniform sampler2D sheet : source_color, filter_linear_mipmap_anisotropic, repeat_disable;
 uniform float clock = 0.0;
 uniform float opacity = 1.0;
 uniform float glow = 1.15;
