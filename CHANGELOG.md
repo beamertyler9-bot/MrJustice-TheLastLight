@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.63.0 — Movement polish (2026-11-05)
+
+- **Jumps feel weightier:**
+  - **Arc:** a light hang at the top of a jump, then a quicker fall than the rise
+    instead of drifting down. A jump goes about as high as before.
+  - **Fall damage:** drops that used to be safe are still safe.
+- **Snappier turnarounds:** reversing direction at a run digs in hard, with a skid sound
+  and a puff of dust.
+- **Banking:** Mr. Justice leans into his turns when running.
+- **Splashdown:** dropping into a river or lake throws up a splash and spray sized to
+  the fall, with a little jolt.
+
 ## 0.62.0 — Combat polish (2026-11-05)
 
 - **Every hit reads clearly**, whether from fists, weapons, spells or beams:

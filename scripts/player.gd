@@ -57,6 +57,11 @@ var coyote: float = 0.0
 var air_jumps := 0
 var flip_time := 0.0
 const FLIP_DURATION := 0.5
+const FALL_GRAVITY := 1.28
+const FALL_HURT_SPEED := 18.2
+var skid_clock := 0.0
+var bank := 0.0
+var bank_prev_yaw := 0.0
 var swim_jump_time: float = 0.0
 var jump_buffer: float = 0.0
 var jump_lock: float = 0.0
@@ -270,7 +275,16 @@ func _physics_process(dt: float) -> void:
 		world.stream_at(global_position)
 		return
 	var dry_interior = world.has_method("interior_at") and world.interior_at(global_position) != ""
+	var was_swimming := swimming
 	swimming = not dry_interior and swim_jump_time <= 0 and global_position.y < _water_height() - 0.25 and world.height_at(global_position.x, global_position.z) < _water_height() - 1.2
+	if swimming and not was_swimming and velocity.y < -1.5 and game != null:
+		# Hitting the water: a splash sized to the drop.
+		var entry := clampf(-velocity.y / 10.0, 0.3, 1.0)
+		var surface := Vector3(global_position.x, _water_height(), global_position.z)
+		game.foot_effect(surface, true, 0.5 + entry)
+		if game.get("effects") != null: game.effects.burst(surface + Vector3.UP * 0.2, Color("#d9f1f4"), int(lerpf(8, 18, entry)), 0.8 + entry * 0.6)
+		cue("splash", lerpf(1.1, 0.85, entry))
+		camera_trauma = minf(1.0, camera_trauma + entry * 0.18)
 	if swimming and dodge_time > 0.0:
 		cancel_dodge()
 	if dodge_time <= 0.0 and not climbing and hooking <= 0 and not swimming and move.length() > 0.15 and not ability_aiming and cast_time <= 0:
@@ -339,10 +353,22 @@ func _physics_process(dt: float) -> void:
 		var acceleration = 23.0 if is_on_floor() else 8.0
 		if stick.length() < 0.05 and is_on_floor():
 			acceleration = 20.0
+		# Snapping round: reversing direction at speed digs in harder, with a puff of dust.
+		var flat_now := Vector2(velocity.x, velocity.z)
+		var flat_want: Vector2 = Vector2(move.x, move.z) * speed
+		if is_on_floor() and flat_now.length() > 1.6 and flat_want.length() > 0.5 and flat_now.normalized().dot(flat_want.normalized()) < -0.3:
+			acceleration *= 2.1
+			skid_clock -= dt
+			if skid_clock <= 0.0:
+				skid_clock = 0.35
+				if game != null and game.has_method("foot_effect"): game.foot_effect(global_position, false, 0.3)
+				cue("step", 0.86)
+		else:
+			skid_clock = 0.0
 		velocity.x = move_toward(velocity.x, move.x * speed, dt * acceleration)
 		velocity.z = move_toward(velocity.z, move.z * speed, dt * acceleration)
 		if not is_on_floor():
-			velocity.y -= 19.6 * dt
+			velocity.y -= 19.6 * dt * _gravity_shape()
 		elif velocity.y < 0:
 			velocity.y = -0.6
 		motion = "run" if run else "walk" if Vector2(velocity.x, velocity.z).length() > 0.12 else "idle"
@@ -363,6 +389,14 @@ func _physics_process(dt: float) -> void:
 		visual.rotation.y = lerp_angle(visual.rotation.y, yaw, 1.0 - exp(-dt * 15))
 	elif move.length() > 0.08 and not climbing and hooking <= 0:
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(-move.x, -move.z), 1.0 - exp(-dt * 13))
+	# Bank into turns when running, like leaning into a corner.
+	var turn_rate := angle_difference(bank_prev_yaw, visual.rotation.y) / maxf(dt, 0.0001)
+	bank_prev_yaw = visual.rotation.y
+	var bank_target := 0.0
+	if is_on_floor() and flip_time <= 0.0 and not climbing and dodge_time <= 0.0 and not swimming:
+		bank_target = clampf(turn_rate * Vector2(velocity.x, velocity.z).length() * 0.011, -0.15, 0.15)
+	bank = lerpf(bank, bank_target, 1.0 - exp(-dt * 7.0))
+	if flip_time <= 0.0: visual.rotation.z = bank
 	var was_grounded = is_on_floor()
 	last_vertical = velocity.y
 	move_and_slide()
@@ -380,7 +414,7 @@ func _physics_process(dt: float) -> void:
 			game.foot_effect(global_position, false, impact)
 	if jump_buffer > 0 and is_on_floor() and jump_lock <= 0:
 		execute_jump()
-	if is_on_floor() and last_vertical < -16:
+	if is_on_floor() and last_vertical < -FALL_HURT_SPEED:
 		take_damage(1)
 	if global_position.y < -35 and (not world.has_method("interior_at") or world.interior_at(global_position).is_empty()):
 		respawn("A small stumble. A fresh start.")
@@ -914,6 +948,13 @@ func _tick_flip(dt: float) -> void:
 	var pivot := Vector3.UP * (0.62 * HERO_RATIO)
 	visual.rotation.x = angle
 	visual.position = pivot - visual.basis * pivot if flip_time > 0.0 else Vector3.ZERO
+
+## Jump arcs: a light hang at the top, then a quicker fall than the rise, so jumps feel
+## weighty rather than floaty. (The fall-hurt speed rises to match, so the same drops hurt.)
+func _gravity_shape() -> float:
+	if dodge_time > 0.0 or hooking > 0.0 or climbing or swimming: return 1.0
+	if absf(velocity.y) < 1.4: return 0.78
+	return FALL_GRAVITY if velocity.y < 0.0 else 1.0
 
 func execute_jump() -> void:
 	if dodge_time > 0.0:
