@@ -93,6 +93,17 @@ func _ready() -> void:
 	add_child(seed_entry)
 
 var _redraw_parity := false
+# Little HUD animations: toasts slide in, the essence counter bumps with a "+N", the
+# interaction prompt pops in, and the screen edges pulse when down to the last lantern.
+var _toast_seen := ""
+var _toast_age := 9.0
+var _toast_last := 0.0
+var _shard_shown := -1
+var _shard_bump := 0.0
+var _gain_amount := 0
+var _gain_time := 0.0
+var _prompt_id := 0
+var _prompt_age := 9.0
 func _process(dt: float) -> void:
 	if game == null or game.state == null: return
 	if dev_menu != null: dev_menu.tick(dt)
@@ -101,6 +112,7 @@ func _process(dt: float) -> void:
 	for key in press_values.keys():
 		press_values[key] = maxf(0, float(press_values[key]) - dt * 5.0)
 	displayed_health = game.state.health
+	_tick_feedback(dt)
 	health_flash = maxf(0, health_flash - dt * 2.5)
 	damage_feedback.tick(dt)
 	if game.mode in ["menu", "loading"]: damage_feedback.clear()
@@ -352,7 +364,9 @@ func _draw() -> void:
 		draw_line(Vector2(452, 429), Vector2(452 + 376 * progress, 429), Art.BRASS, 3, true)
 		centered(Vector2(640, 495), "A NEW ROAD. THE SAME SMALL LIGHT.", 12, Art.SILVER)
 	else:
-		if mode == "play": damage_feedback.draw_edges(self)
+		if mode == "play":
+			damage_feedback.draw_edges(self)
+			_draw_last_light()
 		if not game.is_title_context():
 			_draw_play(mode == "play")
 		if mode == "bag":
@@ -482,10 +496,13 @@ func _draw_play(controls: bool) -> void:
 		_draw_magic_controls()
 		var nearest = game.player.closest
 		if is_instance_valid(nearest) and not is_instance_valid(game.player.held_body):
-			panel(Rect2(426, 510, 428, 64 if pickup_hint != "" else 42), Color(INK, 0.9), Color(IVORY, 0.3), 2)
-			centered(Vector2(640, 519), str(nearest.get_meta("label", "Interact")), 17)
+			var pop := clampf(_prompt_age / 0.16, 0.0, 1.0) if ui_motion_enabled() else 1.0
+			_local(Vector2(640, 530), lerpf(0.86, 1.0, 1.0 - pow(1.0 - pop, 3.0)) + sin(pop * PI) * 0.04)
+			panel(Rect2(426, 510, 428, 64 if pickup_hint != "" else 42), Color(INK, 0.9 * pop), Color(IVORY, 0.3 * pop), 2)
+			centered(Vector2(640, 519), str(nearest.get_meta("label", "Interact")), 17, Color(IVORY, pop))
 			if pickup_hint != "":
-				centered(Vector2(640, 548), "HOLD TO PUT DOWN" if pickup_progress > 0 and game.context_kind in ["magic", "carried"] else "HOLD TO LIFT" if pickup_progress > 0 else pickup_hint, 12, CYAN)
+				centered(Vector2(640, 548), "HOLD TO PUT DOWN" if pickup_progress > 0 and game.context_kind in ["magic", "carried"] else "HOLD TO LIFT" if pickup_progress > 0 else pickup_hint, 12, Color(CYAN, pop))
+			_unlocal()
 	if controls and desktop_mode(): _draw_desktop_play()
 	if game.region_time > 0 and controls:
 		var alpha = clampf(game.region_time, 0, 1)
@@ -502,8 +519,13 @@ func _draw_play(controls: bool) -> void:
 		draw_string_outline(title_font, baseline, game.comic_word, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, 4, Color(Color("#102431"), minf(1.0, game.comic_time * 7.0)))
 		draw_string(title_font, baseline, game.comic_word, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(game.comic_color, minf(1.0, game.comic_time * 7.0)))
 	if game.toast_time > 0 and controls:
-		panel(Rect2(352, 576, 576, 62), Color(0.025, 0.07, 0.08, 0.82), Color(GOLD, 0.3), 5)
-		paragraph(Vector2(371, 587), game.toast_text, 540, 14, IVORY)
+		var appear := clampf(_toast_age / 0.22, 0.0, 1.0) if ui_motion_enabled() else 1.0
+		var shown := minf(appear, clampf(game.toast_time / 0.3, 0.0, 1.0))
+		var ease := 1.0 - pow(1.0 - appear, 3.0)
+		_local(Vector2(640, 607), lerpf(0.94, 1.0, ease), Vector2(0, (1.0 - ease) * 18.0))
+		panel(Rect2(352, 576, 576, 62), Color(0.025, 0.07, 0.08, 0.82 * shown), Color(GOLD, 0.3 * shown), 5)
+		paragraph(Vector2(371, 587), game.toast_text, 540, 14, Color(IVORY, shown))
+		_unlocal()
 
 func context_pickup_hint() -> String:
 	if game.magic != null and game.magic.has_levitated_object(): return "TAP B TO THROW · HOLD B TO DROP"
@@ -1192,10 +1214,19 @@ func _draw_lantern_health() -> void:
 	for pip in pips:
 		Art.draw_fitted(self, Art.texture("head" if pip.filled else "head_empty"), pip.rect)
 	var shards := "%03d" % int(game.state.items.get("shard", 0))
+	var bump := sin(clampf(_shard_bump, 0.0, 1.0) * PI) if ui_motion_enabled() else 0.0
+	_local(Vector2(140, 98), 1.0 + bump * 0.32)
 	draw_string_outline(body_font, Vector2(138, 104), shards, HORIZONTAL_ALIGNMENT_LEFT, -1, 17, 3, Color(Art.NIGHT, 0.9))
-	txt(Vector2(138, 87), shards, 17, Art.PAPER)
-	txt(Vector2(187, 93), "LIGHT ESSENCE", 9, Art.SILVER)
+	txt(Vector2(138, 87), shards, 17, Art.PAPER.lerp(Color("#ffd75e"), bump))
 	Art.draw_fitted(self, Art.item_texture("shard"), Rect2(107, 83, 31, 31))
+	_unlocal()
+	txt(Vector2(187, 93), "LIGHT ESSENCE", 9, Art.SILVER)
+	if _gain_time > 0.0:
+		var rise := 1.0 - _gain_time / 1.3
+		var fade := clampf(_gain_time / 0.45, 0.0, 1.0)
+		var gain_pos := Vector2(272, 102 - rise * 24.0)
+		draw_string_outline(body_font, gain_pos, "+%d" % _gain_amount, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, 4, Color(Art.NIGHT, 0.9 * fade))
+		draw_string(body_font, gain_pos, "+%d" % _gain_amount, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(Color("#ffd75e"), fade))
 
 func desktop_mode() -> bool:
 	return game != null and game.has_method("desktop_enabled") and game.desktop_enabled()
@@ -1218,3 +1249,46 @@ func _draw_desktop_play() -> void:
 	if is_instance_valid(nearest) and not is_instance_valid(game.player.held_body):
 		panel(Rect2(426, 510, 428, 42), Color(INK, 0.9), Color(IVORY, 0.3), 2)
 		centered(Vector2(640, 519), "E  ·  " + str(nearest.get_meta("label", "Interact")), 17)
+
+
+func _tick_feedback(dt: float) -> void:
+	if game.toast_text != _toast_seen or game.toast_time > _toast_last + 0.05:
+		_toast_seen = game.toast_text; _toast_age = 0.0
+	_toast_last = game.toast_time
+	_toast_age += dt
+	var shards := int(game.state.items.get("shard", 0))
+	if _shard_shown < 0 or game.mode == "menu": _shard_shown = shards
+	if shards > _shard_shown:
+		_gain_amount = (_gain_amount if _gain_time > 0.0 else 0) + shards - _shard_shown
+		_gain_time = 1.3; _shard_bump = 1.0
+	_shard_shown = shards
+	_shard_bump = maxf(0.0, _shard_bump - dt * 3.0)
+	_gain_time = maxf(0.0, _gain_time - dt)
+	var near = game.player.closest if game.player != null else null
+	var near_id: int = near.get_instance_id() if is_instance_valid(near) else 0
+	if near_id != _prompt_id: _prompt_id = near_id; _prompt_age = 0.0
+	_prompt_age += dt
+
+
+## Draw the next things scaled about a pivot (design units) and nudged by an offset.
+func _local(pivot: Vector2, scale_value: float, offset: Vector2 = Vector2.ZERO) -> void:
+	var ratio := get_viewport_rect().size / Vector2(1280, 720)
+	draw_set_transform((pivot * (1.0 - scale_value) + offset + drawing_offset) * ratio, 0, ratio * scale_value)
+
+
+func _unlocal() -> void:
+	var ratio := get_viewport_rect().size / Vector2(1280, 720)
+	draw_set_transform(drawing_offset * ratio, 0, ratio)
+
+
+## Down to the last lantern: the screen edges glow red with a slow heartbeat.
+func _draw_last_light() -> void:
+	if game.state.max_health <= 1 or game.state.health != 1: return
+	var beat := 0.5 + 0.5 * sin(clock * 5.2) if ui_motion_enabled() else 0.6
+	var strength := (0.08 if bool(game.state.settings.get("low_flash", false)) else 0.2) * (0.55 + beat * 0.45)
+	var edge := Color(0.55, 0.04, 0.03, strength); var clear := Color(0.55, 0.04, 0.03, 0.0)
+	var depth := 90.0
+	draw_polygon(PackedVector2Array([Vector2(0, 0), Vector2(1280, 0), Vector2(1280, depth), Vector2(0, depth)]), PackedColorArray([edge, edge, clear, clear]))
+	draw_polygon(PackedVector2Array([Vector2(0, 720 - depth), Vector2(1280, 720 - depth), Vector2(1280, 720), Vector2(0, 720)]), PackedColorArray([clear, clear, edge, edge]))
+	draw_polygon(PackedVector2Array([Vector2(0, 0), Vector2(depth * 1.4, 0), Vector2(depth * 1.4, 720), Vector2(0, 720)]), PackedColorArray([edge, clear, clear, edge]))
+	draw_polygon(PackedVector2Array([Vector2(1280 - depth * 1.4, 0), Vector2(1280, 0), Vector2(1280, 720), Vector2(1280 - depth * 1.4, 720)]), PackedColorArray([clear, edge, edge, clear]))

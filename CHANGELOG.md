@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.65.0 — HUD polish (2026-11-05)
+
+- **Messages:** they slide up and fade in, then fade out, instead of popping on and off.
+- **Light Essence counter:** collecting essence makes the counter bump and flash gold,
+  with a "+N" that floats up beside it. Several quick pickups add up into one number.
+- **Interaction prompts:** "Open", "Talk", "Pick up" and the rest pop in with a little
+  spring when you walk up to something.
+- **Last lantern:** when Mr. Justice is down to his last lantern, the edges of the
+  screen glow red with a slow heartbeat. It is softer with Low flash on, and steady with
+  UI motion off.
+
 ## 0.64.0 — A living world (2026-11-05)
 
 - **Wind:** trees, bushes, grass, ferns and flowers sway, rock and flutter in slow gusts.
