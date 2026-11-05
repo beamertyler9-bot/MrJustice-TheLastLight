@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.42.0 — Every element looks like itself (2026-11-04)
+
+- **Fireball is a ball of fire.** The phoenix-wing shape is gone. A churning sphere of
+  fire licks outward, flame tongues stream back off it in the direction it is flying, a wake
+  of fire trails behind, and embers spill off it. On impact it blooms into a fiery
+  explosion.
+- **Each element has its own core** (`shaders/magic/element_core.gdshader`), shaded in the
+  shared energy tones but with a surface only that element has:
+  - fire: churning, licking flame
+  - frost: icy body with bright facet cracks
+  - storm: crackling plasma with jumping filaments
+  - grove: a seed with growing light veins
+  - light: a radiant sun with sweeping rays
+  - shadow: an ink drop lit only at its rim
+  - water: a wobbling clear drop with caustics
+  - wind: a translucent swirl
+  - earth: a lumpy boulder with magma cracks
+  - metal: polished bands
+  - void: a dark hole with a hot rim
+  - time: a golden clock face with ticking hands
+- Spell projectiles keep their element shapes (ice blades, lightning, leaves, moths, water
+  sheets, wind crescents, stones, blades, broken orbits, clock arcs) around that core.
+- Impacts burst open as an expanding ball of the element, under the shared contact star and
+  shockwave, so every hit is recognisable at a glance.
+- Smaller, calmer glow cards, and no more striped dashes along spell trails.
+
 ## 0.41.0 — Liftable rocks, one magic style, Kamehameha beams (2026-11-04)
 
 ### Pick up rocks

@@ -8,7 +8,7 @@ const MAX_TRAIL_SAMPLES := 24
 const MAX_PROJECTILE_MOTES := 24
 const MAX_TRANSIENT_MOTES := 32
 const MAX_PARTICLES := MAX_PROJECTILES * MAX_PROJECTILE_MOTES + MAX_TRANSIENTS * MAX_TRANSIENT_MOTES
-const MAX_MATERIALS := (MAX_PROJECTILES + MAX_TRANSIENTS) * 3 + 2
+const MAX_MATERIALS := (MAX_PROJECTILES + MAX_TRANSIENTS) * 4 + 2
 const MAX_NODES := 1100
 const MAX_MESHES := 48
 const ELEMENTS := ["flame", "frost", "storm", "grove", "light", "shadow", "water", "wind", "earth", "metal", "void", "time"]
@@ -21,6 +21,9 @@ const LENS = preload("res://shaders/magic/lens.gdshader")
 const SEAL = preload("res://shaders/magic/seal.gdshader")
 const MOTE = preload("res://shaders/magic/mote.gdshader")
 const SMOKE = preload("res://shaders/magic/smoke.gdshader")
+const CORE = preload("res://shaders/magic/element_core.gdshader")
+## Elements whose projectile is a solid object first (their core shows on impact only).
+const SOLID_FAMILIES := ["earth", "metal"]
 var _owner: WeakRef
 var _projectiles: Dictionary = {}
 var visuals: Array = []
@@ -108,6 +111,8 @@ func _mesh(kind: String) -> Mesh:
 			var ring := TorusMesh.new(); ring.outer_radius = 0.55; ring.inner_radius = 0.42; ring.rings = 24; ring.ring_segments = 5; mesh = ring
 		"arc", "crescent", "ring", "sigil_circle", "sigil_star", "sigil_clock", "sigil_petals", "sigil_fracture": mesh = _arc_mesh(kind)
 		"cube": mesh = BoxMesh.new()
+		"core_sphere":
+			var core := SphereMesh.new(); core.radius = 0.5; core.height = 1.0; core.radial_segments = 20; core.rings = 10; mesh = core
 		_:
 			var orb := SphereMesh.new(); orb.radius = 0.5; orb.height = 1.0; orb.radial_segments = 8; orb.rings = 3; mesh = orb
 	_meshes[kind] = mesh
@@ -282,7 +287,7 @@ func _piece(parent: Node3D, title: String, shape: String, material: Material, si
 	return piece
 
 func _record(node: Node3D, spell: Dictionary, primary_shader: Shader) -> Dictionary:
-	var materials := [_material(primary_shader, spell), _material(ENERGY, spell), _material(LENS if _family(spell) == "void" else HALO, spell)]
+	var materials := [_material(primary_shader, spell), _material(ENERGY, spell), _material(LENS if _family(spell) == "void" else HALO, spell), _material(CORE, spell)]
 	return {"node": node, "spell": spell.duplicate(true), "family": _family(spell), "materials": materials, "age": 0.0, "parts": [], "trail": [], "light": true}
 
 func _selected_shape(spell: Dictionary, fallback: String) -> String:
@@ -302,9 +307,10 @@ func projectile_node(spell: Dictionary) -> Node3D:
 	var data := _record(node, spell, FLAME if _family(spell) == "flame" else SURFACE)
 	_projectiles[node.get_instance_id()] = data
 	_build_family(data, false)
+	_add_core(data, false)
 	_add_silhouette(data)
 	_add_projectile_orbit(data)
-	var halo := _piece(node, "ContainedHalo", "quad", data.materials[2], Vector3.ONE * _number(spell, "size", 0.18, 0.06, 0.75) * 8.0)
+	var halo := _piece(node, "ContainedHalo", "quad", data.materials[2], Vector3.ONE * _number(spell, "size", 0.18, 0.06, 0.75) * (5.5 if _family(spell) == "flame" else 4.6))
 	data.halo = halo
 	var trail := MeshInstance3D.new(); trail.name = "WorldTrail"; trail.mesh = ArrayMesh.new()
 	trail.material_override = data.materials[1]; trail.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -323,12 +329,17 @@ func _build_family(data: Dictionary, impact: bool) -> void:
 	var count := 6 if impact else 3
 	match family:
 		"flame":
-			for i in range(3 if not impact else 6):
-				var card := _piece(node, "PhoenixBody" if i == 0 else "FlameTongue%d" % i, "quad", primary, Vector3(0.62, 1.05, 1) * unit)
-				data.parts.append({"node": card, "role": "flame", "seed": float(i), "unit": unit})
-			if not impact:
-				data.plumage = _flame_instances(node, "PhoenixPlumage", primary, 16)
-				var wake := _flame_instances(node, "PhoenixWake", primary, 8)
+			if impact:
+				for i in range(6):
+					var card := _piece(node, "FlameTongue%d" % i, "quad", primary, Vector3(0.62, 1.05, 1) * unit)
+					data.parts.append({"node": card, "role": "flame", "seed": float(i), "unit": unit})
+			else:
+				# A ball of fire: churning fire core (added below), flame tongues streaming back
+				# off it, and a wake of fire licks along the flight path.
+				for i in range(4):
+					var tongue := _piece(node, "FireTongue%d" % i, "quad", primary, Vector3(0.7, 1.2, 1) * unit)
+					data.parts.append({"node": tongue, "role": "tongue", "seed": float(i), "unit": unit})
+				var wake := _flame_instances(node, "FireWake", primary, 8)
 				wake.top_level = true; wake.global_transform = Transform3D.IDENTITY; data.wake = wake
 		"frost":
 			for i in range(5 if impact else 2):
@@ -396,6 +407,32 @@ func _build_family(data: Dictionary, impact: bool) -> void:
 				var tick_mark := _piece(node, "SuspendedSecond%d" % i, "rune", primary, Vector3(0.17, 0.12, 0.7) * unit)
 				data.parts.append({"node": tick_mark, "role": "second", "seed": float(i), "unit": unit})
 
+## Every projectile (except solid stone and metal ones) carries a core in its element's
+## own surface; impacts burst open as an expanding core.
+func _add_core(data: Dictionary, impact: bool) -> void:
+	var node: Node3D = data.node
+	if impact:
+		var burst := _piece(node, "CoreBurst", "core_sphere", data.materials[3], Vector3.ONE * 0.4, Vector3(0, 0.3, 0))
+		data.parts.append({"node": burst, "role": "core_burst", "seed": 0.0, "unit": 1.0})
+		return
+	if data.family in SOLID_FAMILIES: return
+	var unit := _number(data.spell, "size", 0.18, 0.06, 0.75) * 2.7
+	var size := unit * (0.78 if data.family == "flame" else 0.55)
+	var core := _piece(node, "ElementCore", "core_sphere", data.materials[3], Vector3.ONE * size)
+	data.parts.append({"node": core, "role": "core", "seed": 0.0, "unit": size})
+
+## Screen-space roll that points a camera-facing card's "up" away from the direction of travel.
+func _trailing_roll(data: Dictionary) -> float:
+	var trail: Array = data.trail; var camera := _camera()
+	if camera == null or trail.size() < 2: return PI
+	var motion: Vector3 = (trail[trail.size() - 1].point as Vector3) - (trail[maxi(0, trail.size() - 3)].point as Vector3)
+	if motion.length_squared() < 1.0e-6: return PI
+	var local := camera.global_basis.inverse() * motion
+	var screen := Vector2(local.x, local.y)
+	if screen.length_squared() < 1.0e-6: return PI
+	screen = screen.normalized()
+	return atan2(screen.x, -screen.y)
+
 func _flame_instances(parent: Node3D, title: String, material: Material, amount: int) -> MultiMeshInstance3D:
 	var cards := MultiMeshInstance3D.new(); cards.name = title
 	cards.multimesh = MultiMesh.new(); cards.multimesh.transform_format = MultiMesh.TRANSFORM_3D; cards.multimesh.use_colors = true
@@ -415,6 +452,10 @@ func _card_transform(container: Node3D, point: Vector3, size: Vector2, roll: flo
 
 func _animate_flame_instances(data: Dictionary, age: float) -> void:
 	var spell: Dictionary = data.spell; var unit := _number(spell, "size", 0.18, 0.06, 0.75) * 2.7
+	if data.has("plumage"): _animate_plumage(data, age, unit)
+	_animate_wake(data, age, unit)
+
+func _animate_plumage(data: Dictionary, age: float, unit: float) -> void:
 	var cards: MultiMeshInstance3D = data.plumage; cards.multimesh.visible_instance_count = 16
 	for i in range(16):
 		var side := -1.0 if i < 8 else 1.0; var fraction := float(i % 8 + 1) / 8.0
@@ -423,16 +464,20 @@ func _animate_flame_instances(data: Dictionary, age: float) -> void:
 		var size := Vector2(0.59 - fraction * 0.16, 0.76 + sin(fraction * PI) * 0.27) * unit
 		cards.multimesh.set_instance_transform(i, _card_transform(cards, point, size, side * (-0.34 - fraction * 0.34) + flap))
 		cards.multimesh.set_instance_color(i, Color(fposmod(float(i) * 0.618, 1.0), 1, 1, 0.85 - fraction * 0.22))
+
+func _animate_wake(data: Dictionary, age: float, unit: float) -> void:
+	var spell: Dictionary = data.spell
 	var wake: MultiMeshInstance3D = data.wake; var history: Array = data.trail
 	var amount := mini(history.size(), 4 if int(_settings().get("quality", 1)) == 0 else 8)
 	if str(spell.get("trail", "ribbon")) == "none": amount = 0
 	wake.multimesh.visible_instance_count = amount
+	var trailing := _trailing_roll(data)
 	for i in range(amount):
 		var fraction := float(i) / float(maxi(1, amount - 1)); var sample: Dictionary = history[roundi(fraction * float(history.size() - 1))]
 		var alpha := pow(clampf(1.0 - (age - float(sample.age)) / _number(spell, "trail_length", 1.0, 0.08, 3.0), 0, 1), _number(spell, "trail_fade", 1.0, 0.1, 3.0))
 		var size := Vector2(0.38 + fraction * 0.2, 0.66 + fraction * 0.22) * unit * _number(spell, "trail_width", 1.0, 0.5, 2.0)
-		wake.multimesh.set_instance_transform(i, _card_transform(wake, sample.point, size, sin(age * 3 + float(i)) * 0.15))
-		wake.multimesh.set_instance_color(i, Color(fposmod(float(i) * 0.381, 1), 1, 1, alpha * (0.24 + fraction * 0.35)))
+		wake.multimesh.set_instance_transform(i, _card_transform(wake, sample.point, size, trailing + sin(age * 3 + float(i)) * 0.15))
+		wake.multimesh.set_instance_color(i, Color(fposmod(float(i) * 0.381, 1), 1, 1, alpha * (0.3 + fraction * 0.45)))
 
 func _add_silhouette(data: Dictionary) -> void:
 	var style := str(data.spell.get("projectile", "orb")); var node: Node3D = data.node
@@ -443,6 +488,8 @@ func _add_silhouette(data: Dictionary) -> void:
 		strip.mesh = ArrayMesh.new(); strip.material_override = data.materials[1]; strip.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF; node.add_child(strip)
 		data.parts.append({"node": strip, "role": "silhouette_ribbon", "seed": 0.0 if style == "serpent" else 1.0, "unit": unit})
 		selected = strip
+	elif style == "orb" and not data.family in SOLID_FAMILIES:
+		return  # the element core already is the orb
 	else:
 		var mesh_name := "orb"; var dimensions := Vector3.ONE * unit; var base_rotation := Vector3.ZERO
 		match style:
@@ -501,7 +548,7 @@ func _record_trail(data: Dictionary, point: Vector3, age: float) -> void:
 	if trail.is_empty() or (trail.back().point as Vector3).distance_squared_to(point) > 0.0004:
 		trail.append({"point": point, "age": age})
 	var mesh: MeshInstance3D = data.trail_node
-	if str(spell.get("trail", "ribbon")) == "none" or trail.size() < 2:
+	if str(spell.get("trail", "ribbon")) == "none" or trail.size() < 2 or data.has("wake"):
 		mesh.visible = false; return
 	var points := PackedVector3Array(); var alpha := PackedFloat32Array()
 	var fade := _number(spell, "trail_fade", 1.0, 0.1, 3.0)
@@ -669,6 +716,27 @@ func _animate(data: Dictionary, age: float, _dt: float, impact: bool) -> void:
 			"projectile_orbit": piece.rotation = Vector3(0.65, age * spin * 0.5, 0.2 + age * spin * 0.8)
 			"ripple": piece.rotation.x = -PI * 0.5; piece.scale = Vector3.ONE * (0.6 + progress * (1.2 + seed * 0.35)); piece.position.y = 0.015 + seed * 0.025
 			"mist": piece.position = Vector3(sin(seed * 2.4) * 0.4, 0.1 + progress * (0.6 + seed * 0.25), cos(seed * 2.4) * 0.3); _face(piece)
+			"core":
+				var throb := 1.0 + sin(clock * 9.0 + seed) * 0.05
+				piece.scale = Vector3.ONE * unit * throb
+				piece.rotation = Vector3(clock * 0.9, clock * 1.7 * spin, 0)
+			"tongue":
+				# Flames stream back off the fireball, flickering around its rim.
+				var trailing := _trailing_roll(data)
+				var flicker := sin(clock * 11.0 + seed * 2.1) * 0.22
+				var roll := trailing + (seed - 1.5) * 0.42 + flicker
+				var length := (1.05 + sin(clock * 8.0 + seed * 1.7) * 0.18) * (1.15 if seed == 1.0 or seed == 2.0 else 0.9)
+				piece.scale = Vector3(0.72, length, 1) * unit
+				piece.position = Vector3.ZERO
+				_face(piece, roll)
+				piece.position = piece.basis.y.normalized() * unit * length * 0.42
+			"core_burst":
+				# The impact blooms as an expanding ball of the element, then dissolves.
+				var bloom := clampf(age / 0.32, 0.0, 1.0)
+				piece.visible = bloom < 1.0
+				if piece.visible:
+					piece.scale = Vector3.ONE * (0.35 + (1.0 - pow(1.0 - bloom, 2.5)) * (1.9 if data.family == "flame" else 1.25))
+					piece.transparency = smoothstep(0.45, 1.0, bloom)
 			"contact_star":
 				var pop := clampf(age / 0.16, 0.0, 1.0)
 				piece.visible = pop < 1.0
@@ -687,7 +755,7 @@ func _animate(data: Dictionary, age: float, _dt: float, impact: bool) -> void:
 					_face(piece)
 	if data.has("halo"): _face(data.halo)
 	if data.has("selected"): data.selected.rotation = data.get("selected_rotation", Vector3.ZERO) + Vector3(0, 0, age * spin * 2.0)
-	if data.has("plumage"): _animate_flame_instances(data, clock)
+	if data.has("wake"): _animate_flame_instances(data, clock)
 	if data.has("smoke"): _animate_smoke(data, age)
 	if data.has("dust"): _animate_motes(data, age, progress, envelope, impact)
 
@@ -770,7 +838,8 @@ func glyph(point: Vector3, spell: Dictionary, kind: String, life: float, radius:
 		if not sigil in ["circle", "star", "clock", "petals", "fracture"]: sigil = "circle"
 		var seal := _piece(node, "ContactSigil", "sigil_" + sigil, data.materials[1], Vector3.ONE * 1.9)
 		seal.rotation.x = -PI * 0.5
-	data.halo = _piece(node, "ImpactHalo", "quad", data.materials[2], Vector3.ONE * 3.0)
+	data.halo = _piece(node, "ImpactHalo", "quad", data.materials[2], Vector3.ONE * 2.4)
+	if kind in ["impact", "burst", "beam_end"]: _add_core(data, true)
 	if kind in ["impact", "burst", "beam_end"] and data.family != "void":
 		# Punch of contact: a white-hot star and a ring that races outward, both gone in ~0.25 s.
 		var star := _piece(node, "ContactStar", "star_card", data.materials[2], Vector3.ONE * 2.2)

@@ -29,9 +29,7 @@ void fragment() {
 	// Chunky, slow wobble instead of fine fibres: reads as a drawn brush stroke.
 	float wobble = sin(UV.x * 21.0 - clock * 6.0) * 0.6 + sin(UV.x * 9.0 + clock * 2.3) * 0.4;
 	float shape = clamp(edge + wobble * edge_noise * 0.16, 0.0, 1.0);
-	// Speed-line notches travelling along the stroke.
-	float dash = fract(UV.x * 6.0 - clock * 2.2);
-	float cut = 1.0 - step(0.86, dash) * step(shape, 0.55) * 0.9;
+	float cut = 1.0;
 	if (family > 10.5) { cut *= mix(0.15, 1.0, step(0.22, fract(UV.x * 9.0 + floor(clock * 4.0) * 0.07))); }
 	if (family > 2.5 && family < 3.5) { cut *= step(0.15, fract(UV.x * 7.0)); }
 	if (family > 4.5 && family < 5.5) { cut *= step(0.25, abs(sin(UV.x * 19.0 + clock * 0.6))); }

@@ -37,6 +37,7 @@ func build(game: Node, camera: Camera3D) -> void:
 		for shader in [Presentation.SURFACE, Presentation.FLAME, Presentation.ENERGY, Presentation.HALO, Presentation.LENS, Presentation.SEAL]:
 			_try(func(): _single(presentation._mesh("quad"), presentation._material(shader, spell), false))
 		_try(func(): _single(presentation._mesh("blade"), presentation._material(Presentation.SURFACE, spell), false))
+		_try(func(): _single(presentation._mesh("core_sphere"), presentation._material(Presentation.CORE, spell), false))
 		_try(func(): _single(presentation._mesh("shock_card"), presentation._material(Presentation.HALO, spell), false))
 		for shader in [preload("res://shaders/magic/kame_beam.gdshader"), preload("res://shaders/magic/kame_glow.gdshader")]:
 			var beam_material := ShaderMaterial.new(); beam_material.shader = shader
