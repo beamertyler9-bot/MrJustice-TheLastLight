@@ -1,18 +1,35 @@
 # Changelog
 
-## 0.65.0 — HUD polish (2026-11-05)
+## 0.62.0 — Full polish pass (2026-11-05)
 
-- **Messages:** they slide up and fade in, then fade out, instead of popping on and off.
-- **Light Essence counter:** collecting essence makes the counter bump and flash gold,
-  with a "+N" that floats up beside it. Several quick pickups add up into one number.
-- **Interaction prompts:** "Open", "Talk", "Pick up" and the rest pop in with a little
-  spring when you walk up to something.
-- **Last lantern:** when Mr. Justice is down to his last lantern, the edges of the
-  screen glow red with a slow heartbeat. It is softer with Low flash on, and steady with
-  UI motion off.
+### Combat
+- **Every hit reads clearly**, whether from fists, weapons, spells or beams:
+  - **Flash:** the enemy's whole body flashes white for an instant.
+  - **Squash:** it squashes from the blow.
+  - **Damage numbers:** numbers pop up over its head and drift away. Big hits show in
+    orange, and rapid hits (beams, burning) add up into one number instead of a pile.
+  - **Sound:** the impact sound varies a little from hit to hit.
+- **Enemies feel alive:**
+  - **Spotting you:** an enemy that first spots Mr. Justice flashes a "!" over its head
+    and hops before closing in. A hit always gets its attention.
+  - **At ease:** instead of standing frozen, enemies amble about their patch, pausing to
+    look around.
+- **A cue to dodge:** just before an enemy's blow lands, it glints hot orange.
+- **Defeats pop:** a bright flash of light, a burst of sparks and a puff of dust. Bosses
+  also get a short slow-motion beat as they fall.
 
-## 0.64.0 — A living world (2026-11-05)
+### Movement
+- **Jumps feel weightier:**
+  - **Arc:** a light hang at the top of a jump, then a quicker fall than the rise
+    instead of drifting down. A jump goes about as high as before.
+  - **Fall damage:** drops that used to be safe are still safe.
+- **Snappier turnarounds:** reversing direction at a run digs in hard, with a skid sound
+  and a puff of dust.
+- **Banking:** Mr. Justice leans into his turns when running.
+- **Splashdown:** dropping into a river or lake throws up a splash and spray sized to
+  the fall, with a little jolt.
 
+### The world
 - **Wind:** trees, bushes, grass, ferns and flowers sway, rock and flutter in slow gusts.
   - **Out of step:** each plant moves a little differently from its neighbours.
   - **Roots stay put:** only the tops move.
@@ -31,34 +48,15 @@
 - **Softer entrance rings:** the rings marking doors and entrances are a gentler mint
   glow instead of a hard neon green.
 
-## 0.63.0 — Movement polish (2026-11-05)
-
-- **Jumps feel weightier:**
-  - **Arc:** a light hang at the top of a jump, then a quicker fall than the rise
-    instead of drifting down. A jump goes about as high as before.
-  - **Fall damage:** drops that used to be safe are still safe.
-- **Snappier turnarounds:** reversing direction at a run digs in hard, with a skid sound
-  and a puff of dust.
-- **Banking:** Mr. Justice leans into his turns when running.
-- **Splashdown:** dropping into a river or lake throws up a splash and spray sized to
-  the fall, with a little jolt.
-
-## 0.62.0 — Combat polish (2026-11-05)
-
-- **Every hit reads clearly**, whether from fists, weapons, spells or beams:
-  - **Flash:** the enemy's whole body flashes white for an instant.
-  - **Squash:** it squashes from the blow.
-  - **Damage numbers:** numbers pop up over its head and drift away. Big hits show in
-    orange, and rapid hits (beams, burning) add up into one number instead of a pile.
-  - **Sound:** the impact sound varies a little from hit to hit.
-- **Enemies feel alive:**
-  - **Spotting you:** an enemy that first spots Mr. Justice flashes a "!" over its head
-    and hops before closing in. A hit always gets its attention.
-  - **At ease:** instead of standing frozen, enemies amble about their patch, pausing to
-    look around.
-- **A cue to dodge:** just before an enemy's blow lands, it glints hot orange.
-- **Defeats pop:** a bright flash of light, a burst of sparks and a puff of dust. Bosses
-  also get a short slow-motion beat as they fall.
+### HUD
+- **Messages:** they slide up and fade in, then fade out, instead of popping on and off.
+- **Light Essence counter:** collecting essence makes the counter bump and flash gold,
+  with a "+N" that floats up beside it. Several quick pickups add up into one number.
+- **Interaction prompts:** "Open", "Talk", "Pick up" and the rest pop in with a little
+  spring when you walk up to something.
+- **Last lantern:** when Mr. Justice is down to his last lantern, the edges of the
+  screen glow red with a slow heartbeat. It is softer with Low flash on, and steady with
+  UI motion off.
 
 ## 0.61.0 — Blackthorn Keep rebuilt, water that looks like water (2026-11-05)
 
