@@ -30,12 +30,12 @@ const ITEM_INSETS := {
 	"marshmallow": Vector2(0, 15)
 }
 const SPELL_CELLS := {
-	"basic_fireball": Vector2(0, 0),
-	"basic_lightning_bolt": Vector2(1, 0),
-	"basic_rock_throw": Vector2(2, 0),
-	"basic_levitation": Vector2(0, 1),
-	"v18_cinder_serpents": Vector2(1, 1),
-	"v18_winter_crown": Vector2(2, 1)
+	"fireball": Vector2(0, 0),
+	"skybolt": Vector2(1, 0),
+	"rock_throw": Vector2(2, 0),
+	"levitation": Vector2(0, 1),
+	"phoenix_dive": Vector2(1, 1),
+	"frozen_orbit": Vector2(2, 1)
 }
 static var _item_textures: Dictionary = {}
 static var _spell_textures: Dictionary = {}

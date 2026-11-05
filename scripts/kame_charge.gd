@@ -16,6 +16,7 @@ var _sparks: MultiMeshInstance3D
 var _core_material: ShaderMaterial
 var _aura_material: ShaderMaterial
 var _clock := 0.0
+var _element_material: ShaderMaterial
 
 
 func _ready() -> void:
@@ -33,6 +34,21 @@ func _ready() -> void:
 	_sparks.material_override = spark_material; _sparks.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_sparks)
 
+
+## Spell charges grow a ball of the element itself (fire, water, lightning...) instead of
+## plain energy, using the element core material from spell_presentation.
+func use_element_core(material: ShaderMaterial) -> void:
+	if _core == null: return
+	_core.material_override = material if material != null else _core_material
+	_element_material = material
+
+## Recolour (spell charges use their element's colours; the hand beam keeps blue).
+func set_colors(body: Color, core: Color) -> void:
+	body_color = body; core_color = core
+	if _core_material == null: return
+	for material in [_core_material, _aura_material]:
+		material.set_shader_parameter("body_color", body_color)
+		material.set_shader_parameter("core_color", core_color)
 
 func _material(shader: Shader) -> ShaderMaterial:
 	var material := ShaderMaterial.new(); material.shader = shader
@@ -61,6 +77,11 @@ func update_charge(dt: float, charge: float, full: bool, gentle: bool) -> void:
 		material.set_shader_parameter("opacity", lerpf(0.65, 1.0, charge))
 		material.set_shader_parameter("low_flash", 1.0 if gentle else 0.0)
 	_core_material.set_shader_parameter("brightness", 1.0 + (0.35 if full else charge * 0.15))
+	if _element_material != null:
+		_element_material.set_shader_parameter("age", _clock)
+		_element_material.set_shader_parameter("opacity", 1.0)
+		_element_material.set_shader_parameter("brightness", 1.0 + (0.3 if full else 0.0))
+		_core.scale = Vector3.ONE * size * 1.25
 	var tone := body_color.lerp(core_color, 0.45)
 	for i in range(SPARKS):
 		var seed := float(i) * 2.39996

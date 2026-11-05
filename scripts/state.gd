@@ -97,7 +97,14 @@ func delete_spell(id: String) -> bool:
 		return true
 	return false
 
+## Developer toggle: spells cost nothing while it is on (kept with the other settings).
+func infinite_mana() -> bool:
+	return bool(settings.get("dev_infinite_mana", false))
+
 func spend_mana(amount: float) -> bool:
+	if infinite_mana():
+		mana = max_mana
+		return is_finite(amount) and amount >= 0
 	if not is_finite(amount) or amount < 0 or not is_finite(mana) or mana < amount: return false
 	mana -= amount
 	return true
@@ -475,7 +482,7 @@ func _apply_saved_settings(saved: Dictionary) -> void:
 		var value = saved.get(key, settings[key])
 		if _number(value):
 			settings[key] = clampf(float(value), 0.2 if key == "sensitivity" else 0.0, 2.0 if key == "quality" else 1.0)
-	for key in ["low_flash", "camera_shake", "ui_motion", "contextual_hud"]:
+	for key in ["low_flash", "camera_shake", "ui_motion", "contextual_hud", "dev_infinite_mana"]:
 		if saved.get(key) is bool: settings[key] = saved[key]
 
 static func _number(value: Variant) -> bool:
@@ -500,8 +507,18 @@ static func _flags(value: Variant, allowed: Array = []) -> bool:
 			return false
 	return true
 
+## 3: the 0.43 spell overhaul. Older saves drop the retired example spells (custom spells
+## the player made are kept) and get the new starter spells in their quick slots.
+const MAGIC_CATALOG := 3
+const RETIRED_SPELLS := ["embercourt_spiral", "rimeglass_fan", "violet_constellation", "tempest_lance", "dawnward", "bloom_mend", "flash_step", "starfall_edict", "gentle_hand", "gravity_garden", "kindly_shove",
+	"lanternwake", "gravity_requiem", "rimeglass_crown", "tempest_serpent", "sunforged_sentence", "verdant_familiar", "unfinished_second", "undertow_choir", "ink_between_stars", "iron_orchard", "stonewake", "kindly_catastrophe"]
+
 static func _validated_magic(data: Dictionary) -> Dictionary:
 	var recipes: Variant = data.get("spellbook", Spellbook.starters())
+	var migrate := int(data.get("magic_catalog", 0)) < MAGIC_CATALOG if _number(data.get("magic_catalog", 0)) else true
+	if migrate and recipes is Array:
+		recipes = recipes.filter(func (raw): return not (raw is Dictionary and str(raw.get("id", "")) in RETIRED_SPELLS))
+		if recipes.is_empty(): recipes = Spellbook.starters()
 	if not recipes is Array or recipes.is_empty() or recipes.size() > Spellbook.MAX_SPELLS: return {}
 	var clean: Array = []
 	var ids: Dictionary = {}
@@ -528,18 +545,20 @@ static func _validated_magic(data: Dictionary) -> Dictionary:
 		ids[candidate] = true
 		remapped[old_id] = candidate
 	var slots: Variant = data.get("spell_slots", SpellCollection.starting_slots() if not data.has("spellbook") else [clean[0].id, clean[0].id, clean[0].id, clean[0].id])
+	if migrate: slots = SpellCollection.starting_slots()
 	if not slots is Array or slots.size() != Spellbook.SLOT_COUNT: return {}
 	var clean_slots: Array = []
-	for id in slots:
-		if not id is String or (not ids.has(id) and not SpellCollection.is_curated(id)): return {}
-
-
+	var fallback: Array = SpellCollection.starting_slots()
+	for index in range(slots.size()):
+		var id: Variant = slots[index]
+		# A slot pointing at a spell that no longer exists falls back to that slot's starter.
+		if not id is String or (not ids.has(id) and not SpellCollection.is_curated(id) and not remapped.has(id)): id = fallback[index]
 		clean_slots.append(remapped.get(id, id))
 	var active: Variant = data.get("active_spell_slot", 0)
 	if not _number(active) or float(active) != floorf(float(active)) or float(active) < 0 or float(active) >= Spellbook.SLOT_COUNT: return {}
 	var saved_mana: Variant = data.get("mana", Spellbook.MAX_MANA)
 	if not _number(saved_mana) or float(saved_mana) < 0 or float(saved_mana) > Spellbook.MAX_MANA: return {}
-	return {"spellbook": clean, "spell_slots": clean_slots, "active_spell_slot": int(active), "mana": float(saved_mana)}
+	return {"spellbook": clean, "spell_slots": clean_slots, "active_spell_slot": int(active), "mana": float(saved_mana), "magic_catalog": MAGIC_CATALOG}
 
 func _profile_path(path: String) -> String:
 	return "user://world-expedition.json" if expanded_world and path == "user://journey.json" else path

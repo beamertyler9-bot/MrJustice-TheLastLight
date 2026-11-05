@@ -17,7 +17,7 @@ var game
 var search_entry: LineEdit
 
 var name_entry: LineEdit
-var selected_id := "v18_cinder_serpents"
+var selected_id := "fireball"
 var search_query := ""
 var element_filter := "all"
 var role_filter := "all"
@@ -260,7 +260,7 @@ func _draw_details(spell: Dictionary) -> void:
 	_glyph(Rect2(692, 310, 112, 112), spell)
 	h.txt(Vector2(816, 318), _fit(str(spell.name), 364, 24, true), 24, PAPER, true)
 	h.txt(Vector2(816, 352), _fit("%s / %s / %s" % [str(spell.element).capitalize(), Collection.role(spell).capitalize(), str(spell.form).capitalize()], 364, 13), 13, CYAN)
-	h.txt(Vector2(816, 377), "CURATED SPELL" if curated else "SAVED LEGACY SPELL · READ-ONLY", 11, GOLD)
+	h.txt(Vector2(816, 377), (("BASIC" if Collection.tier(str(spell.id)) == "basic" else "ADVANCED") + " " + str(spell.element).to_upper() + " SPELL" + (" · HOLD TO CHARGE" if float(spell.get("charge", 0.0)) > 0.0 else "")) if curated else "SAVED LEGACY SPELL · READ-ONLY", 11, GOLD)
 	_paragraph(Vector2(696, 427), str(note.get("summary", "Your saved spell remains intact and ready to equip.")), 484, 16, 2, PAPER)
 	h.txt(Vector2(696, 477), "%d MANA    /    %.1f s RECOVERY    /    %d STAGE%s" % [int(Book.cost(spell)), Book.cooldown(spell), Book.stage_count(spell), "S" if Book.stage_count(spell) != 1 else ""], 13, GOLD)
 	h.txt(Vector2(696, 501), _fit(Collection.damage_summary(spell), 484, 14), 14, CYAN)

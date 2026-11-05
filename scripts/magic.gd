@@ -97,7 +97,10 @@ func can_cast(raw: Dictionary) -> bool:
 static func _valid_point(point: Vector3) -> bool:
 	return point.is_finite() and maxf(absf(point.x), maxf(absf(point.y), absf(point.z))) <= 100000.0
 
-func prepare(raw: Dictionary, target: Vector3, acquired: Node3D = null) -> bool:
+## How charged the spell being released is (0..1); read by delivery code during release.
+var release_charge := 0.0
+
+func prepare(raw: Dictionary, target: Vector3, acquired: Node3D = null, charge: float = 0.0) -> bool:
 	last_release_error = ""
 	if not _valid_point(target) or not can_cast(raw): return false
 	var spell := Spellbook.sanitize(raw)
@@ -105,6 +108,7 @@ func prepare(raw: Dictionary, target: Vector3, acquired: Node3D = null) -> bool:
 	if not last_release_error.is_empty(): return false
 	pending = {"spell": spell, "target": target, "caster": game.player.get_instance_id(), "age": 0.0}
 	if acquired != null: pending["acquired"] = weakref(acquired)
+	pending["charge"] = clampf(charge, 0.0, 1.0) if is_finite(charge) else 0.0
 	return true
 
 func _acquire_levitation(spell: Dictionary) -> Node3D:
@@ -148,7 +152,7 @@ func release() -> bool:
 	pending = {}
 	if not _equipped() or not _usable() or _physical_hands_busy() or game.player.get_instance_id() != transaction.caster or cooldown_remaining > 1.0e-05: return false
 	var spell: Dictionary = transaction.spell
-	var origin := _origin()
+	var origin := _spell_origin(spell)
 	var target: Vector3 = transaction.target
 	if transaction.get("acquired") is WeakRef:
 		var selected = transaction.acquired.get_ref()
@@ -165,7 +169,9 @@ func release() -> bool:
 		last_release_error = "Your mana changed before release."; return false
 	cooldown_remaining = Spellbook.cooldown(spell)
 	_sequence += 1
+	release_charge = float(transaction.get("charge", 0.0))
 	weave.begin(spell, origin, target, _sequence)
+	release_charge = 0.0
 	if game.get("audio") != null:
 		if game.audio.has_method("magic_cue"): game.audio.magic_cue(str(spell.element), "release", float(spell.power))
 		elif game.audio.has_method("cue"): game.audio.cue("beam", 0.85 + float(spell.power) * 0.04)
@@ -189,6 +195,46 @@ func _deliver(spell: Dictionary, origin: Vector3, target: Vector3, direction: Ve
 			game.state.health = mini(game.state.max_health, game.state.health + maxi(1, int(ceilf(float(spell.power) * 0.6))))
 			_glyph(game.player.global_position + Vector3.UP * 0.2, spell, "mend", 1.25, 1.0)
 		"step": _step(spell, target)
+		"strike": _strike_cast(spell, origin, target, context)
+
+## Lantern spells leave from the lantern in Mr. Justice's head; everything else from the hand.
+func _spell_origin(spell: Dictionary) -> Vector3:
+	if str(spell.get("origin", "hand")) == "lantern":
+		var visual: Variant = game.player.get("visual")
+		if is_instance_valid(visual) and is_instance_valid(visual.get("lantern")):
+			var lamp: Vector3 = visual.lantern.global_position
+			var ahead: Vector3 = -game.player.camera.global_basis.z if is_instance_valid(game.player.camera) else -visual.global_basis.z
+			return lamp + ahead.normalized() * 0.32
+	return _origin()
+
+## Where an arcing (lob) throw lands and how it is launched. Charge throws further.
+func lob_launch(spell: Dictionary, origin: Vector3, aim_target: Vector3, charge: float) -> Dictionary:
+	var flat := Vector3(aim_target.x - origin.x, 0.0, aim_target.z - origin.z)
+	var heading: Vector3 = flat.normalized() if flat.length_squared() > 1.0e-4 else -game.player.global_basis.z
+	var reach := lerpf(7.0, 30.0, clampf(charge, 0.0, 1.0))
+	var landing := aim_target
+	if flat.length() > reach or flat.length() < 1.5:
+		landing = origin + heading * reach
+		var ground := _ray(landing + Vector3.UP * 12.0, landing + Vector3.DOWN * 40.0)
+		landing.y = ground.position.y if not ground.is_empty() else origin.y - 1.2
+	var distance := Vector2(landing.x - origin.x, landing.z - origin.z).length()
+	var flight := clampf(distance / maxf(float(spell.speed), 1.0) * 1.5, 0.45, 1.9)
+	var velocity := (landing - origin) / flight + Vector3.UP * 5.5 * flight
+	return {"velocity": velocity, "landing": landing, "time": flight}
+
+## A bolt (or pillar) of the element out of the sky onto the aimed ground.
+func _strike_cast(spell: Dictionary, origin: Vector3, target: Vector3, context: Dictionary) -> void:
+	var aim := origin + (target - origin).limit_length(float(spell.range))
+	var ground := _ray(aim + Vector3.UP * 2.0, aim + Vector3.DOWN * 40.0)
+	var center: Vector3 = ground.position + Vector3.UP * 0.05 if not ground.is_empty() else aim
+	var stage := weave._stage(context)
+	if not stage.is_empty(): stage.point = center
+	presentation.sky_strike(center + Vector3.UP * 22.0, center, spell, 0.55 + release_charge * 0.3)
+	_glyph(center, spell, "burst", 0.8, float(spell.radius))
+	_contact(null, center, spell, context, true)
+	if is_instance_valid(game.player):
+		game.player.camera_trauma = minf(1.0, game.player.camera_trauma + 0.35)
+		if game.get("feel") != null: game.feel.rumble(45, 0.7)
 
 func cast(spell: Dictionary, target: Vector3) -> bool:
 	return prepare(spell, target) and release()
@@ -341,8 +387,14 @@ func _spawn_bolt(spell: Dictionary, origin: Vector3, direction: Vector3, context
 		"age": 0.0, "flight_age": 0.0, "context": context, "target": null, "seek_wait": 0.0, "seek_interval": 0.14 + float(index) * 0.006,
 		"ignored": [], "contacts": 0, "distance": 0.0, "visited": [], "held": spell.form == "orbitals", "hold_wait": float(spell.hold_time) + float(index) * float(spell.stagger), "stasis": 0.0,
 		"release_target": release_target,
-		"velocity": aim * float(spell.speed) + (Vector3.UP * 4.8 if spell.trajectory == "lob" else Vector3.ZERO)})
+		"velocity": _launch_velocity(spell, origin, aim, release_target, context)})
 	weave.work(context, 1)
+
+func _launch_velocity(spell: Dictionary, origin: Vector3, aim: Vector3, release_target: Vector3, context: Dictionary) -> Vector3:
+	if spell.trajectory != "lob": return aim * float(spell.speed)
+	var pool: Variant = context.get("pool")
+	var charge := float(pool.get("charge", 0.0)) if pool is Dictionary else 0.0
+	return lob_launch(spell, origin, release_target, charge).velocity
 
 func _tick_projectiles(dt: float) -> void:
 	for index in range(projectiles.size() - 1, -1, -1):
@@ -490,7 +542,7 @@ func _beam_cast(spell: Dictionary, origin: Vector3, direction: Vector3, context:
 	var stage := weave._stage(context)
 	if not stage.is_empty(): stage.point = end
 	if spell.targeting in ["caster", "projectiles"]: _contact(null, origin if spell.targeting == "caster" else end, spell, context, true)
-	_beam_visual(origin, end, spell, 0.26, float(spell.size))
+	_beam_visual(origin, end, spell, 0.26 + release_charge * 0.55, float(spell.size) * (1.0 + release_charge * 0.9))
 	var impact_spell := spell.duplicate(); impact_spell["_surface_normal"] = hit.get("normal", Vector3.UP)
 	_glyph(end, impact_spell, "beam_end" if hit.is_empty() else "impact", 0.5, 0.65)
 

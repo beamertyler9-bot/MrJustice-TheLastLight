@@ -144,6 +144,8 @@ func rows() -> Array:
 		2:
 			result.append(_row("Spell library & quick slots", "Browse and equip existing magic anywhere.", [_command("Open library", "open", "grimoire")]))
 			result.append(_row("Wizard's spell archive", "Visit the tower and browse predefined spells.", [_command("Travel archive", "travel", "spell_altar"), _command("Browse here", "altar")]))
+			var infinite: bool = game.state.infinite_mana()
+			result.append(_row("Infinite mana: " + ("ON" if infinite else "OFF"), "Every spell is free while this is on. Turn it off to play normally.", [_command("Turn off" if infinite else "Turn on", "infinite_mana")]))
 			result.append(_row("Restore testing resources", "Refill health, mana and stamina immediately.", [_command("Restore", "restore")]))
 			result.append(_row("Restore starter spells", "Adds missing predefined starters; keeps saved legacy spells.", [_command("Restore starters", "starters")]))
 			result.append(_row("Physics magic practice object", "Create a real throwable stone in front of you.", [_command("Spawn stone", "spawn_object")]))

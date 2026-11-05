@@ -19,6 +19,7 @@ var age := 0.0
 var low_flash := false
 var body_color := Color("3fc8ff")
 var core_color := Color("e8fbff")
+var muzzle_scale := 1.7
 
 var _pivot: Node3D
 var _body: MeshInstance3D
@@ -36,11 +37,11 @@ static var _spark_mesh: SphereMesh
 
 
 ## Spawns a beam under `parent` (world space). `radius` is the beam's core radius in metres.
-static func spawn(parent: Node, from: Vector3, to: Vector3, body: Color, core: Color, beam_radius: float, duration: float, gentle: bool = false) -> Node3D:
+static func spawn(parent: Node, from: Vector3, to: Vector3, body: Color, core: Color, beam_radius: float, duration: float, gentle: bool = false, muzzle_scale: float = 1.7) -> Node3D:
 	if parent == null or not parent.is_inside_tree() or not from.is_finite() or not to.is_finite() or from.distance_squared_to(to) < 1.0e-4: return null
 	var beam = load("res://scripts/kame_beam.gd").new()
 	beam.start = from; beam.end = to; beam.body_color = body; beam.core_color = core
-	beam.radius = clampf(beam_radius, 0.015, 1.2); beam.life = clampf(duration, 0.12, 3.0); beam.low_flash = gentle
+	beam.radius = clampf(beam_radius, 0.015, 1.2); beam.life = clampf(duration, 0.12, 3.0); beam.low_flash = gentle; beam.muzzle_scale = muzzle_scale
 	parent.add_child(beam)
 	return beam
 
@@ -136,7 +137,7 @@ func _update() -> void:
 	var direction := (end - start) / maxf(_length, 0.001)
 	var beat := 1.0 + sin(age * (14.0 if low_flash else 30.0)) * 0.06
 	_muzzle.global_position = start
-	_muzzle.scale = Vector3.ONE * radius * 1.7 * thickness * beat
+	_muzzle.scale = Vector3.ONE * radius * muzzle_scale * thickness * beat
 	_head.global_position = start + direction * _length * grow
 	_head.scale = Vector3.ONE * radius * (3.6 - grow * 0.6) * thickness * beat
 	# Sparks race down the beam just outside its surface.

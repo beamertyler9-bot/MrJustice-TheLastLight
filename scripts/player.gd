@@ -54,6 +54,9 @@ var foot_time: float = 0.0
 var bag_yaw: float = 0.0
 var last_vertical: float = 0.0
 var coyote: float = 0.0
+var air_jumps := 0
+var flip_time := 0.0
+const FLIP_DURATION := 0.5
 var swim_jump_time: float = 0.0
 var jump_buffer: float = 0.0
 var jump_lock: float = 0.0
@@ -97,6 +100,11 @@ var beam_charging: bool = false
 var beam_charge: float = 0.0
 var climb_detach: float = 0.0
 var charge_vfx: Node3D
+var spell_charging := false
+var spell_charge := 0.0
+var spell_charge_time := 1.0
+var spell_charge_vfx: Node3D
+var arc_preview: MultiMeshInstance3D
 var shadow: MeshInstance3D
 var shadow_material: ShaderMaterial
 var dodge_time: float = 0.0
@@ -302,6 +310,7 @@ func _physics_process(dt: float) -> void:
 					game.foot_effect(global_position + Vector3.UP * 0.8, true, 0.3)
 	else:
 		coyote = 0.12 if is_on_floor() else maxf(0, coyote - dt)
+		if is_on_floor() or climbing or swimming: air_jumps = 0
 		var wants_run = (control_move.length() > 0.72 or sprinting or Input.is_physical_key_pressed(KEY_SHIFT)) and stick.length() > 0.2
 		var run = wants_run and is_on_floor() and not is_instance_valid(held_body) and not visual.is_throwing() and not ability_aiming
 		var speed = lerpf(WALK_SPEED, RUN_SPEED, smoothstep(0.55, 1.0, stick.length())) if run else WALK_SPEED
@@ -372,7 +381,10 @@ func _process(dt: float) -> void:
 	if not active:
 		cancel_dodge()
 		clear_lock_on()
+		if spell_charging: cancel_spell_charge()
 	forward_dodge_progress()
+	_tick_spell_charge(dt)
+	_tick_flip(dt)
 	if visual.has_method("set_weapon"):
 		visual.set_weapon(state.equipment)
 	if beam_charging:
@@ -390,7 +402,10 @@ func _process(dt: float) -> void:
 	if ability_aiming and (not active or climbing or mantle_time > 0 or hooking > 0 or is_instance_valid(held_body) or visual.is_throwing()):
 		end_ability_aim(false)
 	visual.aim_kind = "hook" if visual.grapple_active() else "beam" if beam_contact >= 0 else ability_id
-	visual.aim_weight = 1.0 if visual.grapple_active() or beam_contact >= 0 else aim_blend
+	# The spell-charge camera borrows the aim view, but not the hand-aim pose (the grimoire
+	# cast needs the arms free).
+	var spell_view: bool = spell_charging or magic_contact >= 0.0 or (visual.has_method("is_grimoire_casting") and visual.is_grimoire_casting())
+	visual.aim_weight = 1.0 if visual.grapple_active() or beam_contact >= 0 else (0.0 if spell_view and not ability_aiming else aim_blend)
 	visual.mantle_progress = 1.0 - mantle_time / Mantle.DURATION if mantle_time > 0 else -1.0
 	if beam_contact >= 0:
 		var tracked_point = beam_lock_point()
@@ -460,7 +475,9 @@ func update_camera(dt: float) -> void:
 	camera_clock += dt
 	camera_trauma = maxf(0, camera_trauma - dt * 2.2)
 	landing_offset *= exp(-dt * 9)
-	var aiming_view = ability_aiming or ((cast_time > 0 or visual.grapple_active()) and aim_blend > 0.5)
+	# Charging a spell switches to the over-the-shoulder aim view (so beams from the lantern
+	# and thrown arcs are visible), and the view holds through the cast that follows.
+	var aiming_view = ability_aiming or spell_charging or ((cast_time > 0 or visual.grapple_active()) and aim_blend > 0.5)
 	aim_blend = lerpf(aim_blend, 1.0 if aiming_view and active else 0.0, 1.0 - exp(-maxf(dt, 0) * 11.0))
 	var desired_fov = lerpf(64.0 if motion == "run" and active else 60.0, 54.0, aim_blend)
 	camera.fov = lerpf(camera.fov, desired_fov, 1.0 - exp(-dt * 5))
@@ -829,8 +846,39 @@ func jump() -> void:
 		cue("jump")
 	elif is_on_floor() or coyote > 0 or swimming:
 		execute_jump()
+	elif air_jumps == 0 and not hooking > 0.0 and not visual.grapple_active() and not is_instance_valid(held_body):
+		execute_double_jump()
 	else:
 		jump_buffer = 0.16
+
+## Second jump in the air: a fresh burst of height and a front flip.
+func execute_double_jump() -> void:
+	if dodge_time > 0.0: return
+	air_jumps = 1
+	jump_buffer = 0.0
+	velocity.y = 6.6 * (1.15 if state.upgrades.get("spring_boots", false) else 1.0)
+	var stick := movement_input()
+	if stick.length() > 0.12:
+		var boost := Vector3(stick.x, 0.0, stick.y).rotated(Vector3.UP, yaw) * 1.6
+		velocity.x += boost.x; velocity.z += boost.z
+	jump_lock = 0.13
+	flip_time = FLIP_DURATION
+	visual_action("jump")
+	cue("jump", 1.18)
+	feel_rumble(12, 0.25)
+	if game != null and game.has_method("foot_effect"): game.foot_effect(global_position, false, 0.35)
+
+func _tick_flip(dt: float) -> void:
+	if flip_time <= 0.0:
+		return
+	flip_time = maxf(0.0, flip_time - dt)
+	var progress := 1.0 - flip_time / FLIP_DURATION
+	if is_on_floor() and progress > 0.3: flip_time = 0.0; progress = 1.0
+	# Ease in and out so the tuck reads, then land upright.
+	var angle := -TAU * smoothstep(0.0, 1.0, progress) if flip_time > 0.0 else 0.0
+	var pivot := Vector3.UP * (0.62 * HERO_RATIO)
+	visual.rotation.x = angle
+	visual.position = pivot - visual.basis * pivot if flip_time > 0.0 else Vector3.ZERO
 
 func execute_jump() -> void:
 	if dodge_time > 0.0:
@@ -1650,7 +1698,89 @@ func grimoire_equipped() -> bool:
 func magic_hands_busy() -> bool:
 	return not active or state == null or state.health <= 0 or visual.supply_pour.active() or climbing or swimming or mantle_time > 0.0 or hooking > 0.0 or dodge_time > 0.0 or is_instance_valid(held_body) or throw_pending or visual.is_throwing() or visual.grapple_active() or visual.bag_target > 0.01 or visual.bag_progress > 0.01 or cast_time > 0.0 or beam_charging or beam_contact >= 0.0 or melee_contact >= 0.0
 
-func cast_spell() -> bool:
+## Hold-to-charge casting: chargeable spells (fireball, lantern beam, ...) build power while
+## the cast button is held and release on let-go; every other spell casts on press.
+func begin_spell_cast() -> void:
+	if spell_charging: return
+	var spell: Dictionary = state.equipped_spell() if state != null else {}
+	if spell.is_empty() or float(spell.get("charge", 0.0)) <= 0.0 or not grimoire_equipped() or magic_hands_busy():
+		cast_spell(); return
+	var runtime = magic_runtime()
+	if runtime == null: return
+	if runtime.cooldown_remaining > 0.0:
+		toast("Your grimoire is recharging."); return
+	spell_charging = true
+	spell_charge = 0.0
+	spell_charge_time = float(spell.charge)
+	if spell_charge_vfx == null:
+		spell_charge_vfx = preload("res://scripts/kame_charge.gd").new()
+		add_child(spell_charge_vfx)
+		spell_charge_vfx.top_level = true
+	spell_charge_vfx.set_colors(Color(str(spell.color)), Color(str(spell.get("core_color", spell.accent))))
+	var presentation = runtime.get("presentation")
+	spell_charge_vfx.use_element_core(presentation._material(presentation.CORE, spell) if presentation != null else null)
+	spell_charge_vfx.visible = true
+	cue("bag", 1.25)
+
+func release_spell_cast(canceled: bool = false) -> void:
+	if not spell_charging: return
+	var amount := clampf(spell_charge / maxf(spell_charge_time, 0.05), 0.0, 1.0)
+	cancel_spell_charge()
+	if not canceled: cast_spell(amount)
+
+func cancel_spell_charge() -> void:
+	spell_charging = false
+	spell_charge = 0.0
+	if spell_charge_vfx != null: spell_charge_vfx.visible = false
+	if arc_preview != null: arc_preview.visible = false
+
+func _tick_spell_charge(dt: float) -> void:
+	if not spell_charging: return
+	var spell: Dictionary = state.equipped_spell()
+	if spell.is_empty() or float(spell.get("charge", 0.0)) <= 0.0 or not grimoire_equipped() or magic_hands_busy():
+		cancel_spell_charge(); return
+	spell_charge = minf(spell_charge + dt, spell_charge_time)
+	var amount := clampf(spell_charge / maxf(spell_charge_time, 0.05), 0.0, 1.0)
+	var full := amount >= 0.999
+	var runtime = magic_runtime()
+	var anchor: Vector3 = runtime._spell_origin(spell) if runtime != null else visual.hands[1].global_position
+	spell_charge_vfx.global_position = anchor
+	spell_charge_vfx.update_charge(dt, amount, full, bool(state.settings.get("low_flash", false)))
+	if full: camera_trauma = maxf(camera_trauma, 0.08)
+	if not is_instance_valid(lock_target): visual.rotation.y = lerp_angle(visual.rotation.y, yaw, 1.0 - exp(-dt * 12.0))
+	_update_arc_preview(spell, anchor, amount)
+
+## Dotted arc showing where a charged throw will land.
+func _update_arc_preview(spell: Dictionary, origin: Vector3, amount: float) -> void:
+	if str(spell.get("trajectory", "")) != "lob" or str(spell.get("form", "")) != "volley":
+		if arc_preview != null: arc_preview.visible = false
+		return
+	var runtime = magic_runtime()
+	if runtime == null: return
+	if arc_preview == null:
+		arc_preview = MultiMeshInstance3D.new(); arc_preview.name = "ThrowArc"; arc_preview.top_level = true
+		arc_preview.multimesh = MultiMesh.new(); arc_preview.multimesh.transform_format = MultiMesh.TRANSFORM_3D; arc_preview.multimesh.use_colors = true
+		var dot := SphereMesh.new(); dot.radius = 0.5; dot.height = 1.0; dot.radial_segments = 6; dot.rings = 3
+		arc_preview.multimesh.mesh = dot; arc_preview.multimesh.instance_count = 22
+		var paint := StandardMaterial3D.new(); paint.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; paint.vertex_color_use_as_albedo = true
+		paint.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA; paint.no_depth_test = true
+		arc_preview.material_override = paint; arc_preview.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(arc_preview)
+		arc_preview.global_transform = Transform3D.IDENTITY
+	arc_preview.visible = true
+	var solution := ability_target()
+	var aim: Vector3 = lock_target.global_position + Vector3.UP if is_instance_valid(lock_target) else solution.point
+	var launch: Dictionary = runtime.lob_launch(spell, origin, aim, amount)
+	var tone := Color(str(spell.color)).lerp(Color.WHITE, 0.35)
+	for i in range(22):
+		var t: float = float(launch.time) * float(i + 1) / 22.0
+		var point: Vector3 = origin + launch.velocity * t + Vector3.DOWN * 5.5 * t * t
+		var size := 0.11 if i < 21 else 0.38
+		tone.a = 0.9 if i == 21 else 0.8 * (1.0 - float(i) / 40.0)
+		arc_preview.multimesh.set_instance_transform(i, Transform3D(Basis.from_scale(Vector3.ONE * size), point))
+		arc_preview.multimesh.set_instance_color(i, tone)
+
+func cast_spell(charge: float = -1.0) -> bool:
 	var runtime = magic_runtime()
 	if runtime == null or not active: return false
 	if not grimoire_equipped():
@@ -1669,6 +1799,14 @@ func cast_spell() -> bool:
 	if magic_hands_busy(): return false
 	var spell: Dictionary = state.equipped_spell()
 	if spell.is_empty(): return false
+	var charged := clampf(charge, 0.0, 1.0)
+	if float(spell.get("charge", 0.0)) > 0.0 and charged > 0.0:
+		# Charging makes the spell stronger and bigger (and, for throws, go further).
+		spell.power = mini(5, int(spell.power) + roundi(charged * 2.0))
+		spell.size = clampf(float(spell.size) * (1.0 + charged * 0.6), 0.1, 0.45)
+		spell.radius = clampf(float(spell.radius) * (1.0 + charged * 0.5), 1.0, 5.0)
+		for stage in spell.get("stages", []):
+			stage.power = mini(5, int(stage.power) + roundi(charged * 1.5)); stage.radius = clampf(float(stage.radius) * (1.0 + charged * 0.5), 1.0, 5.0)
 	update_camera(0.0)
 	var solution := ability_target()
 	var destination: Vector3 = lock_target.global_position + Vector3.UP if is_instance_valid(lock_target) else solution.point
@@ -1679,7 +1817,7 @@ func cast_spell() -> bool:
 			toast("Aim at a movable object or regular creature within spell range.")
 			return false
 		destination = runtime._target_center(acquired)
-	if not runtime.prepare(spell, destination, acquired):
+	if not runtime.prepare(spell, destination, acquired, charged):
 		var reason := str(runtime.last_release_error)
 		if reason.is_empty() and runtime.has_method("admission_reason") and runtime.cooldown_remaining <= 0.0 and state.mana >= preload("res://scripts/spellbook.gd").cost(spell):
 			reason = runtime.admission_reason(spell, destination)
@@ -1701,6 +1839,7 @@ func cast_spell() -> bool:
 	return true
 
 func cancel_magic() -> void:
+	if spell_charging: cancel_spell_charge()
 	var was_casting := magic_contact >= 0.0
 	magic_contact = -1.0
 	var runtime = magic_runtime()

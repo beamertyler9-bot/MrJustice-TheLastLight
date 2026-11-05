@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.43.0 — The magic overhaul (2026-11-04)
+
+### A whole new spellbook
+- All previous spells are replaced by a new catalog of 84 (`scripts/spell_catalog.gd`): every
+  element has **2 basic spells and 5 advanced spells**. The spells within each element use
+  different kinds of magic (bolts, beams, cones, rains, fields, orbitals, walls, wards,
+  summons, steps, strikes from the sky).
+- **Starting spells:**
+  - **Fireball:** hold to charge, then it is thrown in an arc. Charging makes it bigger,
+    hotter and go further, and a dotted arc shows where it will land.
+  - **Skybolt:** lightning cracks down out of the sky onto your target, forking and
+    flickering.
+  - **Lantern Beam:** hold to charge, then a Kamehameha-style beam pours out of Mr. Justice's
+    lantern.
+  - **Levitation:** lifts objects, rocks and creatures.
+- New spell mechanics:
+  - Hold-to-charge for any spell. While charging, a ball of the element grows in the hand, or
+    in the lantern for lantern spells, and the camera moves over the shoulder. The cast
+    button shows a charge ring.
+  - Spells can come from the lantern.
+  - A new "strike" form: lightning bolts from storm magic, a pillar of light from light
+    magic, a giant falling icicle from frost magic.
+  - Arcing throws land where you aim.
+- The spell library labels spells as Basic or Advanced and shows which can be charged. Your
+  own custom spells are kept; old saves get the new starter spells in their quick slots.
+
+### Elements look like themselves
+- Each element's spells use its own core, shapes, particles and impact (fire churns,
+  lightning crackles, water wobbles, earth is rock with magma cracks, frost is ice, and so on).
+
+### Also
+- **Double jump:** jump again in the air for a second burst of height, and Mr. Justice does
+  a front flip.
+- **Dev menu → Magic → Infinite mana:** an on/off toggle; spells cost nothing while it is on.
+
 ## 0.42.0 — Every element looks like itself (2026-11-04)
 
 - **Fireball is a ball of fire.** The phoenix-wing shape is gone. A churning sphere of

@@ -130,6 +130,10 @@ func execute(action: String, payload: Variant = null, queued_travel: bool = fals
 		"return":
 			if not return_point.is_finite(): return _message("Travel somewhere first to set a return point.", false)
 			return _travel(return_point, "previous location", queued_travel)
+		"infinite_mana":
+			game.state.settings["dev_infinite_mana"] = not game.state.infinite_mana()
+			if game.state.infinite_mana(): game.state.mana = game.state.max_mana
+			return _message("Infinite mana " + ("on: spells are free." if game.state.infinite_mana() else "off."))
 		"restore":
 			game.state.health = game.state.max_health
 			game.state.mana = game.state.max_mana

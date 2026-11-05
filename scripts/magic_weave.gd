@@ -71,7 +71,7 @@ func admission_reason(raw: Dictionary, target: Vector3, check_placement := true)
 
 func begin(raw: Dictionary, origin: Vector3, target: Vector3, sequence: int) -> void:
 	var pool := {"sequence": sequence, "budget": runtime.MAX_APPLICATIONS, "healed": false, "reactions": 12,
-		"recipes": Book.stage_list(raw), "reserve": estimate(raw)}
+		"recipes": Book.stage_list(raw), "reserve": estimate(raw), "charge": float(runtime.get("release_charge"))}
 	casts.append(pool)
 	_start(pool, 0, origin, target, null)
 

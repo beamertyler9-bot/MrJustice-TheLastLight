@@ -752,6 +752,10 @@ func press(id: int, pos: Vector2) -> bool:
 			game.player.begin_primary_action()
 		elif selected.tag == "attack":
 			begin_context_hold(id)
+		elif selected.tag == "cast_spell":
+			hold_buttons[id] = "cast"
+			hud_context.reveal_magic()
+			game.player.begin_spell_cast()
 		else:
 			dispatch(selected.tag)
 		return true
@@ -837,6 +841,8 @@ func release(id: int, canceled: bool = false, pos: Vector2 = Vector2(INF, INF)) 
 			game.player.end_primary_action(canceled or game.mode != "play")
 		if kind == "ability":
 			game.player.end_ability_aim(not canceled and game.mode == "play")
+		if kind == "cast":
+			game.player.release_spell_cast(canceled or game.mode != "play")
 		if kind == "context" and game.has_method("end_context_action"):
 			game.end_context_action(canceled or game.mode != "play")
 
@@ -961,7 +967,11 @@ func _draw_magic_controls() -> void:
 		_draw_levitation_distance()
 	var cooldown: float = runtime.cooldown_remaining if runtime != null else 0.0
 	var affordable: bool = game.state.mana >= Spellbook.cost(spell)
-	round_button(Vector2(1076, 482), 35, "cast_spell", "magic", "CAST · %d" % int(Spellbook.cost(spell)), affordable and cooldown <= 0.0)
+	var cast_word := "HOLD" if float(spell.get("charge", 0.0)) > 0.0 else "CAST"
+	round_button(Vector2(1076, 482), 35, "cast_spell", "magic", "%s · %d" % [cast_word, int(Spellbook.cost(spell))], affordable and cooldown <= 0.0)
+	if game.player.spell_charging:
+		var amount := clampf(game.player.spell_charge / maxf(game.player.spell_charge_time, 0.05), 0.0, 1.0)
+		draw_arc(Vector2(1076, 482), 42, -PI / 2, -PI / 2 + TAU * amount, 48, GOLD if amount < 1.0 else CYAN, 4, true)
 	if cooldown > 0.0:
 		draw_arc(Vector2(1076, 482), 39, -PI * 0.5, -PI * 0.5 + TAU * clampf(cooldown / Spellbook.cooldown(spell), 0, 1), 32, tint, 3, true)
 	if runtime != null and runtime.ward_strength > 0:

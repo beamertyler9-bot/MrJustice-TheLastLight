@@ -2260,6 +2260,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		if event.pressed and mode == "play": player.begin_primary_action()
 		elif not event.pressed and player != null: player.end_primary_action(mode != "play")
 		return
+	if event.keycode == KEY_V:
+		if event.pressed and not event.echo and mode == "play": player.begin_spell_cast()
+		elif not event.pressed and player != null: player.release_spell_cast(mode != "play")
+		return
 	if event.keycode == KEY_E:
 		if event.pressed and mode == "play": begin_context_action()
 		elif not event.pressed: end_context_action(mode != "play")

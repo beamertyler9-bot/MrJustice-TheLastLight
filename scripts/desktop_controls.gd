@@ -67,12 +67,13 @@ func _input(event: InputEvent) -> void:
 			var player = game.player
 			if event.pressed and wants_capture:
 				primary_held = true
-				if player.grimoire_equipped(): player.cast_spell()
+				if player.grimoire_equipped(): player.begin_spell_cast()
 				elif player.ability_aiming and player.ability_id == "beam": player.begin_primary_action()
 				elif player.ability_aiming: player.use_ability()
 				else: player.attack()
 			elif not event.pressed:
 				primary_held = false; player.end_primary_action(not wants_capture)
+				player.release_spell_cast(not wants_capture)
 			handled = true
 		elif wants_capture and event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
 			if game.magic != null and game.magic.has_levitated_object(): game.magic.adjust_levitation_distance(0.6 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -0.6)
