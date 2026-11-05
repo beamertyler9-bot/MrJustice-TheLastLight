@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.62.0 — Combat polish (2026-11-05)
+
+- **Every hit reads clearly**, whether from fists, weapons, spells or beams:
+  - **Flash:** the enemy's whole body flashes white for an instant.
+  - **Squash:** it squashes from the blow.
+  - **Damage numbers:** numbers pop up over its head and drift away. Big hits show in
+    orange, and rapid hits (beams, burning) add up into one number instead of a pile.
+  - **Sound:** the impact sound varies a little from hit to hit.
+- **Enemies feel alive:**
+  - **Spotting you:** an enemy that first spots Mr. Justice flashes a "!" over its head
+    and hops before closing in. A hit always gets its attention.
+  - **At ease:** instead of standing frozen, enemies amble about their patch, pausing to
+    look around.
+- **A cue to dodge:** just before an enemy's blow lands, it glints hot orange.
+- **Defeats pop:** a bright flash of light, a burst of sparks and a puff of dust. Bosses
+  also get a short slow-motion beat as they fall.
+
 ## 0.61.0 — Blackthorn Keep rebuilt, water that looks like water (2026-11-05)
 
 - **Blackthorn Keep has a real floor plan** on all seven floors:

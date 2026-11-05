@@ -5,6 +5,7 @@ const B = preload("res://scripts/build.gd")
 const EnemyModels = preload("res://scripts/enemy_models.gd")
 const CreatureCatalog = preload("res://scripts/creature_catalog.gd")
 const Difficulty = preload("res://scripts/enemy_difficulty.gd")
+const Feel = preload("res://scripts/combat_feel.gd")
 const HURT_DURATION := 0.3
 const WINDUP_TIME: float = 0.65
 const RECOVERY_TIME: float = 0.52
@@ -56,6 +57,10 @@ var attack_direction := Vector3.FORWARD
 var charge_time := 0.0
 var charge_contact := false
 var projectiles: Array[Dictionary] = []
+var noticed := false
+var calm_time := 0.0
+var wander_target := Vector3.INF
+var wander_wait := 0.0
 
 func configure_species(kind: String) -> void:
 
@@ -140,6 +145,7 @@ func _physics_process(dt: float) -> void:
 		recovery = 0
 		telegraph.visible = false
 		_clear_projectiles()
+		noticed = false
 		return
 	_tick_projectiles(real_dt, player)
 	if not is_inside_tree() or is_queued_for_deletion(): return
@@ -150,10 +156,33 @@ func _physics_process(dt: float) -> void:
 	var pursuing: bool = distance < aggro and global_position.distance_to(home) < 28
 	var speed: float = float(profile.speed) if pursuing else 0.0
 	var travel: Vector3 = flat
-	if speed == 0 and global_position.distance_to(home) > 2:
+	# Spotting Mr. Justice: a "!" and a hop, once per encounter.
+	if pursuing:
+		calm_time = 0.0
+		wander_target = Vector3.INF
+		if not noticed:
+			noticed = true
+			Feel.notice(self, float(profile.height))
+			if is_on_floor(): velocity.y = 3.2
+			cooldown = maxf(cooldown, 0.35)
+	else:
+		calm_time += dt
+		if calm_time > 4.0: noticed = false
+	if speed == 0 and global_position.distance_to(home) > 4.5:
 		travel = home - global_position
 		travel.y = 0
 		speed = 1.0
+	elif speed == 0:
+		# At ease: amble about near home, pausing to look around.
+		wander_wait -= dt
+		if wander_target == Vector3.INF and wander_wait <= 0.0:
+			var angle := randf() * TAU
+			wander_target = home + Vector3(cos(angle), 0, sin(angle)) * randf_range(1.0, 3.5)
+		if wander_target != Vector3.INF:
+			travel = wander_target - global_position; travel.y = 0
+			speed = float(profile.speed) * 0.32
+			if travel.length() < 0.4 or is_on_wall():
+				wander_target = Vector3.INF; wander_wait = randf_range(2.0, 5.0); speed = 0.0
 	if pursuing and (species_id in ["thorn_wolf", "glass_skitter"] or profile.get("form", "") in ["hound", "cat"]) and distance > 3.0:
 
 		var side := -1.0 if posmod(hash(id), 2) == 0 else 1.0
@@ -166,7 +195,9 @@ func _physics_process(dt: float) -> void:
 		cooldown = float(profile.cooldown)
 		attack_direction = flat.normalized() if distance > 0.1 else -model.global_basis.z
 	if windup > 0:
+		var before_windup := windup
 		windup = maxf(0, windup - dt)
+		if before_windup > 0.2 and windup <= 0.2: Feel.warn(self)
 		if windup <= 0:
 
 
@@ -297,8 +328,13 @@ func take_damage(amount: int) -> void:
 	health = maxi(0, health - amount)
 	set_meta("health", health)
 	_begin_hurt_reaction()
-	game.audio.cue("impact")
+	game.audio.cue("impact", randf_range(0.92, 1.08))
 	game.burst(global_position + Vector3.UP, Color("#adcfc4"))
+	Feel.flash(self)
+	Feel.number(self, amount, float(profile.height))
+	if game.get("feel") != null: game.feel.squash(self, 0.5)
+	# Getting hit always gets an enemy's attention.
+	if not noticed: noticed = true; calm_time = 0.0
 	core.material_override = hurt_glow
 	_animate(0.0, 0.0)
 	if health <= 0:
@@ -311,6 +347,7 @@ func take_damage(amount: int) -> void:
 		if game.get("quests") != null:
 			game.quests.enemy_defeated(id, global_position, species_id)
 		core.material_override = hurt_glow
+		Feel.defeat(game, self, float(profile.height))
 		var tween = create_tween().set_parallel()
 		tween.tween_property(model, "scale", Vector3.ONE * 0.15, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 		tween.tween_property(model, "position:y", 0.28, 0.3)

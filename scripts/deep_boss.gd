@@ -265,6 +265,8 @@ func take_damage(amount: int) -> void:
 	_begin_hurt_reaction(false)
 	game.audio.cue("impact")
 	game.burst(global_position + Vector3.UP * 1.5, Color("#ffe4ad"))
+	Feel.flash(self, 0.8)
+	Feel.number(self, amount, 3.0 * body_scale)
 	_animate_boss(0.0, 0.0)
 	if not enraged and health > 0 and health <= max_health / 2:
 		enraged = true
@@ -279,6 +281,8 @@ func take_damage(amount: int) -> void:
 		collision_layer = 0
 		adventure.boss_defeated(self)
 		_drop_light_essence(8, false)
+		Feel.defeat(game, self, 3.0 * body_scale)
+		if game.get("feel") != null: game.feel.hit_stop(0.14)
 		var tween := create_tween().set_parallel()
 		tween.tween_property(model, "scale", Vector3.ONE * 0.15, 0.65)
 		tween.tween_property(model, "position:y", 0.3, 0.65)
