@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.54.0 — Circles follow Mr. Justice (2026-11-05)
+
+- **Magic circles follow Mr. Justice:**
+  - The circle in front of his hand (or lantern) moves with him and turns with his aim for
+    as long as the spell is active. That includes the circle a charged spell grew while
+    charging.
+  - Circles at his feet (wards, heals, teleports, summons) move with him too.
+  - Circles that mark where a spell landed (on the ground under an area spell, in the sky
+    over rain) stay at the spell.
+
 ## 0.53.0 — Circles last as long as the spell (2026-11-05)
 
 - **Magic circles last as long as the spell:** every circle stays fully open for as long as

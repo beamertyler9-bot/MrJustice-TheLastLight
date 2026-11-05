@@ -1756,6 +1756,7 @@ func release_spell_cast(canceled: bool = false) -> void:
 		# The charge circle stays open for as long as the spell (or beam) it fired is active.
 		if cast and is_instance_valid(circle) and runtime != null and runtime.has_method("cast_keeper"):
 			circle.keep_alive(runtime.cast_keeper(state.equipped_spell()))
+			circle.follow(runtime.hand_tracker(state.equipped_spell(), 0.42))
 
 func cancel_spell_charge() -> void:
 	if railgun_charge != null: railgun_charge.visible = false

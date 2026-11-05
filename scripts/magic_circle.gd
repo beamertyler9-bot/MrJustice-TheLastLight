@@ -25,6 +25,9 @@ var keep_while := Callable()
 const POP := 0.22
 const FADE := 0.45
 const MAX_HOLD := 16.0
+## Optional: returns [point, facing] each frame so the circle follows Mr. Justice
+## (a facing of Vector3.ZERO keeps it lying flat, for circles at his feet).
+var track := Callable()
 var _card: MeshInstance3D
 var _material: ShaderMaterial
 
@@ -110,6 +113,24 @@ func release() -> void:
 	life = maxf(life, POP + FADE + 0.3)
 
 
+## Follow Mr. Justice: `tracker` returns [point, facing] every frame.
+func follow(tracker: Callable) -> void:
+	track = tracker
+	_follow()
+
+
+func _follow() -> void:
+	if not track.is_valid(): return
+	var at: Variant = track.call()
+	if not at is Array or at.size() < 2 or not (at[0] is Vector3) or not at[0].is_finite(): return
+	var facing: Vector3 = at[1]
+	if facing == Vector3.ZERO:
+		var spin_basis := global_transform.basis
+		global_transform = Transform3D(spin_basis, at[0])
+	else:
+		place_facing(at[0], facing)
+
+
 ## Keep the circle up for as long as `check` returns true (the spell is still active).
 func keep_alive(check: Callable) -> void:
 	keep_while = check
@@ -120,6 +141,7 @@ var _clock := 0.0
 
 func _process(dt: float) -> void:
 	_clock += dt
+	_follow()
 	_card.rotate_object_local(Vector3.BACK, dt * spin * (2.4 if held else 1.2))
 	_material.set_shader_parameter("clock", _clock)
 	if held: return

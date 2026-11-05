@@ -256,6 +256,23 @@ func cast_active(sequence: int, form: String = "") -> bool:
 			if context is Dictionary and int(context.get("sequence", -1)) == sequence: return true
 	return false
 
+## Where a hand (or lantern) circle sits right now: in front of the casting hand, facing
+## the way Mr. Justice aims. Circles call this every frame to follow him.
+func hand_tracker(spell: Dictionary, reach: float = 0.35) -> Callable:
+	var lantern := str(spell.get("origin", "hand")) == "lantern"
+	var shape := {"origin": "lantern" if lantern else "hand"}
+	return func() -> Array:
+		if not is_instance_valid(game) or not is_instance_valid(game.player): return []
+		var player = game.player
+		var aim: Vector3 = -player.camera.global_basis.z if is_instance_valid(player.camera) else -player.visual.global_basis.z
+		return [_spell_origin(shape) + aim.normalized() * reach, aim.normalized()]
+
+## Where a circle at Mr. Justice's feet sits right now.
+func feet_tracker() -> Callable:
+	return func() -> Array:
+		if not is_instance_valid(game) or not is_instance_valid(game.player): return []
+		return [game.player.global_position + Vector3.UP * 0.06, Vector3.ZERO]
+
 ## A check the circles can hold on to for the cast that was just released.
 func cast_keeper(spell: Dictionary) -> Callable:
 	var sequence := _sequence; var form := str(spell.get("form", ""))
@@ -276,10 +293,14 @@ func _cast_circles(spell: Dictionary, origin: Vector3, target: Vector3) -> void:
 	if direction.length_squared() < 0.5: direction = -game.player.camera.global_basis.z if is_instance_valid(game.player.camera) else Vector3.FORWARD
 	var keeper := cast_keeper(spell)
 	if not suppress_hand_circle and str(spell.get("motif", "none")) != "railgun":
-		Circle.at_hand(self, spell, origin + direction * 0.35, direction, 0.42 + float(spell.power) * 0.06, 1.2).keep_alive(keeper)
+		var hand_circle = Circle.at_hand(self, spell, origin + direction * 0.35, direction, 0.42 + float(spell.power) * 0.06, 1.2)
+		hand_circle.keep_alive(keeper)
+		hand_circle.follow(hand_tracker(spell))
 	var form := str(spell.form)
 	if form in ["ward", "mend", "step", "summon"]:
-		Circle.on_ground(self, spell, game.player.global_position, 1.1, 1.8).keep_alive(keeper)
+		var feet_circle = Circle.on_ground(self, spell, game.player.global_position, 1.1, 1.8)
+		feet_circle.keep_alive(keeper)
+		feet_circle.follow(feet_tracker())
 	elif form in ["burst", "field", "rain", "strike", "trap", "wall"]:
 		var aim := origin + (target - origin).limit_length(float(spell.range))
 		var ground := _ray(aim + Vector3.UP * 1.5, aim + Vector3.DOWN * 30.0, 1)
