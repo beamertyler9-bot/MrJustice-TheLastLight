@@ -178,7 +178,9 @@ func _water_material(kind: String) -> ShaderMaterial:
 	var material = ShaderMaterial.new(); material.shader = preload("res://shaders/atlas_water.gdshader")
 	material.set_shader_parameter("liquid_color", Color("#71432a" if kind == "cola" else "#d75b26" if kind == "lava" else "#3d929e"))
 	material.set_shader_parameter("foam_color", Color("#f0d5a4" if kind == "cola" else "#f9ba52" if kind == "lava" else "#d9ede2"))
-	material.set_shader_parameter("lava", kind == "lava"); water_materials.append(material)
+	material.set_shader_parameter("lava", kind == "lava"); material.set_shader_parameter("cola", kind == "cola")
+	material.set_shader_parameter("sky_color", Color("#c9a77f") if kind == "cola" else Color("#a9cbe0"))
+	water_materials.append(material)
 	return material
 
 func _distant_forests() -> void:
@@ -221,6 +223,45 @@ func _lake(lake: Dictionary) -> void:
 	material.set_shader_parameter("wave_strength", 0.035)
 	var surface = B.mesh(self, mesh, material)
 	surface.name = "Lake_" + lake.kind; surface.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	if str(lake.kind) != "lava": _embankments(lake)
+
+## Where a lake's shore runs over ground lower than the water (and no river carries it on),
+## a stone embankment holds the water in, so it never hangs in the air.
+func _embankments(lake: Dictionary) -> void:
+	var W = preload("res://scripts/water_profile.gd")
+	var outline: PackedVector2Array = PackedVector2Array(lake.outline)
+	var height := float(lake.height)
+	var stone := ShaderMaterial.new(); stone.shader = preload("res://shaders/interior_stone.gdshader")
+	stone.set_shader_parameter("stone_color", Color("#8a8379")); stone.set_shader_parameter("masonry", true)
+	stone.set_shader_parameter("detail_tex", preload("res://assets/surfaces/stone.png"))
+	stone.set_shader_parameter("accent_color", Color("#5e7c3c")); stone.set_shader_parameter("accent_amount", 0.45)
+	var cap := B.world_surface("stone", "#a39b8e")
+	var built := 0
+	for i in range(outline.size()):
+		var a: Vector2 = outline[i]; var b: Vector2 = outline[(i + 1) % outline.size()]
+		var low := minf(W.terrain_height(a), W.terrain_height(b))
+		if low > height - 0.3: continue
+		var mid := (a + b) * 0.5
+		var river_near := false
+		for q in [a, mid, b]:
+			var found: Dictionary = W.sample(q + (q - lake.pos).normalized() * 3.0)
+			if not found.is_empty() and float(found.height) < height - 0.05: river_near = true
+		if river_near: continue
+		var length := a.distance_to(b) + 1.2
+		var out: Vector2 = (mid - lake.pos).normalized()
+		var at: Vector2 = mid + out * 0.6
+		var bottom := low - 0.6; var top := height + 0.35
+		var wall := Node3D.new(); wall.name = "LakeEmbankment"; add_child(wall)
+		wall.position = Vector3(at.x, (bottom + top) * 0.5, at.y)
+		wall.rotation.y = atan2(b.x - a.x, b.y - a.y)
+		var dry := signf(out.dot(Vector2(cos(wall.rotation.y), -sin(wall.rotation.y))))
+		B.box(wall, Vector3.ZERO, Vector3(1.4, top - bottom, length), stone, true)
+		B.box(wall, Vector3(0, (top - bottom) * 0.5 + 0.1, 0), Vector3(1.7, 0.22, length + 0.1), cap)
+		# A buttress on the dry side of each stretch, stepping out at the foot.
+		B.box(wall, Vector3(dry * 1.0, -(top - bottom) * 0.25, 0), Vector3(0.9, (top - bottom) * 0.5, 1.4), stone)
+		B.box(wall, Vector3(dry * 0.85, 0.1, 0), Vector3(0.6, (top - bottom) * 0.5, 1.1), stone)
+		built += 1
+	set_meta("lake_embankments", int(get_meta("lake_embankments", 0)) + built)
 
 func _bridge(record: Dictionary) -> void:
 	var p = atlas.point(Vector2(record.point[0], record.point[1]))

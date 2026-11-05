@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.61.0 — Blackthorn Keep rebuilt, water that looks like water (2026-11-05)
+
+- **Blackthorn Keep has a real floor plan** on all seven floors:
+  - **Rooms:** six walled rooms per floor, each entered through an arched stone doorway
+    from a long central landing lit by wall torches.
+  - **Stair tower:** the landing opens through a grand doorway into the tower.
+- **The keep's stairs are real stone flights:**
+  - Solid steps with a thick stone underside.
+  - Parapet walls on both sides, and lantern-topped posts at the top and bottom.
+  - They switch back floor to floor.
+  - A balustrade runs round the stair well on every upper floor.
+  - The bottom of the well is floored.
+- **Every room is furnished for its purpose**, with stone vaulting, Gothic windows, a
+  pillared arcade and its own warm light:
+  - **Great hall:** long feasting tables and a hearth.
+  - **Bedrooms:** beds, wardrobes, chests and paintings.
+  - **Kitchens:** ovens, barrels, crates and shelves.
+  - **Prison:** barred cells.
+  - **Crypt:** tombs.
+  - **Library and study:** bookcases, map and council tables, a telescope.
+  - **Other rooms:** the chapel, gallery, armory, vault, throne room and belfry are all
+    furnished too.
+  - **The castle's mood:** warm torchlit stone instead of a dark void.
+- **Rivers, streams, lakes and the cola look like liquid:**
+  - **Movement:** ripples run downstream on rivers and drift slowly on lakes.
+  - **Light:** the sun glints off the water and the sky reflects at low angles.
+  - **Depth:** the water is see-through and pale in the shallows by the bank, and deep
+    and dark in the middle. A broken foam line marks the shore, and steep stretches run
+    white.
+  - **The cola:** dark and glossy, amber in the shallows, with fizz.
+- **Water sits in its bed instead of floating:**
+  - **Rivers:** wherever a bank was lower than the river, the surface now settles down
+    to the bank, smoothly along the river and still deep enough to swim, or reaches out
+    to the ground. No more slabs of water hanging in the air with their sides showing.
+  - **Lakes:** shores spread out to meet the ground.
+  - **Prismere:** where the town sits below the lake, a stone quay wall holds the water.
+
 ## 0.60.0 — Archways set into the walls (2026-11-05)
 
 - **Dungeon archways line up with the ceiling:** every doorway arch now sits in a solid

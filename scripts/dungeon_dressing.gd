@@ -37,7 +37,7 @@ static func room(owner: Node3D, room_width: float, room_depth: float, room_shape
 
 
 func _free(p: Vector2, radius: float = 0.9) -> bool:
-	if absf(p.x) > width * 0.5 - 0.4 or absf(p.y) > depth * 0.5 - 0.4: return false
+	if absf(p.x) > width * 0.5 - 0.2 or absf(p.y) > depth * 0.5 - 0.2: return false
 	var q := Vector2(p.x / (width * 0.5), p.y / (depth * 0.5))
 	if shape == "ellipse" and q.length_squared() > 0.8: return false
 	if shape == "hex" and absf(q.x) + absf(q.y) * 0.5 > 0.88: return false

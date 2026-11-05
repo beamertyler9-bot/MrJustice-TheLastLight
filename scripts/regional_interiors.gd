@@ -128,8 +128,7 @@ func _build(id: String) -> void:
 	var record = S.site(id); var plan = S.layout(id)
 	live = Node3D.new(); live.name = id; live.position = S.origin(id); add_child(live); live.set_meta("interior", id)
 	for level in range(plan.levels): _shell(id, level)
-	if plan.castle: _stairs(id)
-	if record.kind != "cave": Architecture.portals(live, plan, func (p: Vector2, level: int) -> float: return S.floor_height(id, p, level), plan.castle, null if plan.castle else Architecture.stone(int(record.region), false, false, false))
+	if record.kind != "cave" and not plan.castle: Architecture.portals(live, plan, func (p: Vector2, level: int) -> float: return S.floor_height(id, p, level), plan.castle, null if plan.castle else Architecture.stone(int(record.region), false, false, false))
 	var furnished: Array[String] = []
 	for room in plan.rooms:
 		var local = S.point(id, room.p, int(room.level)) - S.origin(id) - Vector3.UP * 0.24
@@ -137,7 +136,7 @@ func _build(id: String) -> void:
 		if record.kind == "cave": _cave_art(decor, record, room)
 		else:
 			var purpose: String = room.name if plan.castle else _room_purpose(record, room, plan.rooms.find(room), plan.rooms.size())
-			if plan.castle: F.furnish(decor, maxf(7, room.size.x - 2), maxf(7, room.size.y - 2), purpose, int(record.region), record.region == 14, not plan.castle)
+			if plan.castle: load("res://scripts/castle_dressing.gd").furnish(decor, room, int(record.region))
 			else:
 				# Doorways lie on the line toward each linked room; keep them (and the way out) clear.
 				var index: int = plan.rooms.find(room)
@@ -149,7 +148,6 @@ func _build(id: String) -> void:
 					if other >= 0 and int(plan.rooms[other].level) == int(room.level): links.append(((plan.rooms[other].p as Vector2) - (room.p as Vector2)).normalized())
 				var keep: Array = [Vector2(0, 4) - (room.p as Vector2), Vector2(0, 6) - (room.p as Vector2), (plan.rooms.back().p as Vector2) + Vector2(0, 1.5) - (room.p as Vector2)]
 				Dungeon.room(decor, room.size.x - 0.6, room.size.y - 0.6, str(room.get("shape", "rect")), purpose, int(record.region), links, keep, id + ":" + str(index))
-			if plan.castle: Architecture.room(decor, room.size, 7.2, purpose)
 			P.signboard(decor, Vector3(0, 2.6, -room.size.y * 0.35), room.name, 0, minf(5, room.size.x * 0.6))
 			if not plan.castle:
 				_site_tools(decor, record, room)
@@ -157,6 +155,7 @@ func _build(id: String) -> void:
 		_ground_decor(decor, id, room)
 		furnished.append(room.name)
 	live.set_meta("furnished_rooms", furnished)
+	if plan.castle: load("res://scripts/castle_layout.gd").build(live, id, record)
 	if record.kind == "cave": load("res://scripts/cave_dressing.gd").dress(live, id, record)
 	elif not plan.castle: Dungeon.torches(live, id)
 	var mouth = S.entry_point(id) - S.origin(id)
@@ -228,15 +227,17 @@ func _surface(id: String, ceiling: bool, level: int) -> ArrayMesh:
 	for cell in S.cells(id):
 		var p = Vector2(cell) * S.STEP
 
-		if castle and p.x >= 36 and p.y >= -26 and p.y < 20: continue
+		if castle and level > 0 and p.x >= 36 and p.y >= -26 and p.y < 20: continue
 		if castle and ceiling and p.x >= 32: continue
 		for index in ([0, 2, 1, 1, 2, 3] if ceiling else [0, 1, 2, 1, 3, 2]):
 			var q = p + Vector2(2 if index in [1, 3] else 0, 2 if index in [2, 3] else 0)
 			var height = S.ceiling_height(id, q)
 			if castle and ceiling:
 				for room in S.layout(id).rooms:
-					if int(room.level) == level and Rect2(room.p - room.size * 0.5, room.size).has_point(q):
-						height = 5.2 + 1.8 * (1 - pow(clampf(absf(q.x - room.p.x) / (room.size.x * 0.5), 0, 1), 1.5)); break
+					# The vault spans wall to wall (rooms are a little larger than their plan size).
+					var span: Vector2 = room.size + Vector2(2.4, 1.6)
+					if int(room.level) == level and Rect2(room.p - span * 0.5, span).has_point(q):
+						height = 5.2 + 1.8 * (1 - pow(clampf(absf(q.x - room.p.x) / (span.x * 0.5), 0, 1), 1.5)); break
 			var y = S.floor_height(id, q, level) + (height if ceiling else 0)
 			verts.append(Vector3(q.x, y, q.y)); normals.append(Vector3.DOWN if ceiling else Vector3.UP); uvs.append(q * 0.3)
 	var arrays = []; arrays.resize(Mesh.ARRAY_MAX); arrays[Mesh.ARRAY_VERTEX] = verts; arrays[Mesh.ARRAY_NORMAL] = normals; arrays[Mesh.ARRAY_TEX_UV] = uvs

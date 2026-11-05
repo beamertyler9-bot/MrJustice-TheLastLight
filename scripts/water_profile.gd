@@ -7,6 +7,8 @@ static var _grid: Dictionary = {}
 static func _load() -> void:
 	if not _data.is_empty(): return
 	_data = FileAccess.open(PATH, FileAccess.READ).get_var()
+	for river in _data.rivers: _seat_river(river)
+	for lake in _data.lakes: _seat_lake(lake)
 	for river in _data.rivers:
 		for i in range(river.sections.size() - 1):
 			var a = river.sections[i]; var b = river.sections[i + 1]
@@ -14,6 +16,66 @@ static func _load() -> void:
 			_register(bounds, {"kind": river.kind, "a": a, "b": b})
 	for lake in _data.lakes:
 		_register(Rect2(lake.pos - lake.extent, lake.extent * 2), {"kind": lake.kind, "lake": lake})
+## Seats a river in its bed: where a bank is lower than the water, the surface comes down to
+## the bank (never below a swimmable depth over the bed, and smoothly along the river); where
+## a bank is still too low, that edge reaches outward to the ground. Without this the water's
+## edge hung in the air over low banks, showing its side like a floating slab.
+static func _seat_river(river: Dictionary) -> void:
+	var sections: Array = river.sections
+	var count := sections.size()
+	if count == 0: return
+	var wanted := PackedFloat32Array(); wanted.resize(count)
+	var bed := PackedFloat32Array(); bed.resize(count)
+	for i in range(count):
+		var s: Dictionary = sections[i]
+		bed[i] = terrain_height((s.left + s.right) * 0.5)
+		var bank := minf(terrain_height(s.left), terrain_height(s.right))
+		wanted[i] = minf(float(s.height), bank - 0.12)
+	for i in range(count):
+		var h := float(sections[i].height)
+		for j in range(maxi(0, i - 3), mini(count, i + 4)): h = minf(h, wanted[j])
+		sections[i].height = minf(float(sections[i].height), maxf(h, bed[i] + 1.4))
+	for s in sections:
+		var height := float(s.height)
+		var centre: Vector2 = (s.left + s.right) * 0.5
+		for key in ["left", "right"]:
+			var edge: Vector2 = s[key]
+			if terrain_height(edge) >= height - 0.02: continue
+			var out := (edge - centre).normalized()
+			for step in range(1, 21):
+				var q := edge + out * (step * 0.5)
+				if terrain_height(q) >= height + 0.05:
+					s[key] = q; break
+		var low := minf(terrain_height(s.left), terrain_height(s.right))
+		if low < height - 0.02: s.height = maxf(low - 0.12, terrain_height((s.left + s.right) * 0.5) + 0.4)
+
+
+## Seats a lake: shore points that hang over lower ground move out along their ray until
+## they meet the ground (the hollow fills with water), or else in toward the middle.
+static func _seat_lake(lake: Dictionary) -> void:
+	var height := float(lake.height)
+	var centre: Vector2 = lake.pos
+	var outline: PackedVector2Array = PackedVector2Array(lake.outline)
+	for i in range(outline.size()):
+		var edge: Vector2 = outline[i]
+		if terrain_height(edge) >= height - 0.02: continue
+		var out := (edge - centre).normalized()
+		var moved := false
+		for step in range(1, 41):
+			var q := edge + out * (step * 0.5)
+			if terrain_height(q) >= height + 0.05:
+				outline[i] = q; moved = true; break
+		if moved: continue
+		for step in range(1, 40):
+			var q := edge.lerp(centre, float(step) / 50.0)
+			if terrain_height(q) >= height + 0.05:
+				outline[i] = q; break
+	lake.outline = outline
+	var grown := Vector2.ZERO
+	for q in outline: grown = Vector2(maxf(grown.x, absf(q.x - centre.x)), maxf(grown.y, absf(q.y - centre.y)))
+	lake.extent = Vector2(maxf(lake.extent.x, grown.x), maxf(lake.extent.y, grown.y))
+
+
 static func _register(bounds: Rect2, entry: Dictionary) -> void:
 	for z in range(floori(bounds.position.y / 128), floori(bounds.end.y / 128) + 1):
 		for x in range(floori(bounds.position.x / 128), floori(bounds.end.x / 128) + 1):

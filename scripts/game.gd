@@ -1097,6 +1097,11 @@ func _underground_mood(interior_id: String) -> void:
 	if record.is_empty(): return
 	var env: Environment = environment.environment
 	var region := clampi(int(record.get("region", 9)) - 9, 0, 6)
+	if bool(record.get("castle", false)):
+		# Blackthorn Keep: a lived-in castle, lit warm by hearths, torches and chandeliers.
+		env.ambient_light_color = Color("#a08f7c"); env.ambient_light_energy = 0.34
+		env.fog_light_color = Color("#2a2420"); env.fog_density = 0.004
+		return
 	if str(record.get("kind", "")) == "cave":
 		var ambient := ["#5d7f78", "#7e6158", "#6c7a5c", "#86735a", "#6e4a3c", "#4d5a78", "#5f5585"]
 		var haze := ["#1e2b2a", "#2b1f1c", "#252a20", "#30281e", "#2e1610", "#161b2a", "#1f1a30"]

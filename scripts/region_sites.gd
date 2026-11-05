@@ -43,6 +43,10 @@ static func origin(id: String) -> Vector3:
 static func cells(id: String) -> Dictionary:
 	if masks.has(id): return masks[id]
 	var plan = layout(id); var result = {}
+	if bool(plan.castle):
+		# Blackthorn Keep: the solid main block and stair tower (its walls come from castle_layout.gd).
+		masks[id] = load("res://scripts/castle_layout.gd").cells()
+		return masks[id]
 	for room in plan.rooms:
 		if room.level != 0: continue
 		var half: Vector2 = room.size * 0.5
