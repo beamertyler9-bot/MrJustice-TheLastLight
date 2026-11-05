@@ -308,6 +308,8 @@ func projectile_node(spell: Dictionary) -> Node3D:
 	_projectiles[node.get_instance_id()] = data
 	_build_family(data, false)
 	_add_core(data, false)
+	if str(spell.get("motif", "none")) == "phoenix" and _family(spell) == "flame":
+		data.plumage = _flame_instances(node, "PhoenixWings", data.materials[0], 16)
 	_add_silhouette(data)
 	_add_projectile_orbit(data)
 	# Liquids and solids barely glow; fire glows the most.
@@ -325,7 +327,7 @@ func projectile_node(spell: Dictionary) -> Node3D:
 
 func _build_family(data: Dictionary, impact: bool) -> void:
 	var node: Node3D = data.node; var spell: Dictionary = data.spell
-	var unit := 1.0 if impact else _number(spell, "size", 0.18, 0.06, 0.75) * 2.7
+	var unit := 1.0 if impact else minf(_number(spell, "size", 0.18, 0.06, 0.75) * 2.7, 0.9)
 	var primary: Material = data.materials[0]; var energy: Material = data.materials[1]
 	var family: String = data.family
 	var count := 6 if impact else 3
@@ -420,7 +422,9 @@ func _add_core(data: Dictionary, impact: bool) -> void:
 	var unit := _number(data.spell, "size", 0.18, 0.06, 0.75) * 2.7
 	var size := unit * (0.78 if data.family == "flame" else 0.55)
 	var core := _piece(node, "ElementCore", "core_sphere", data.materials[3], Vector3.ONE * size)
-	data.parts.append({"node": core, "role": "core", "seed": 0.0, "unit": size})
+	# Darts, bolts, lances, shards and comets are streaks, not balls.
+	var streak := str(data.spell.get("projectile", "orb")) in ["bolt", "lance", "shard", "blade", "comet"]
+	data.parts.append({"node": core, "role": "core", "seed": 0.0, "unit": size, "stretch": Vector3(0.55, 0.55, 2.1) if streak else Vector3.ONE})
 
 ## Screen-space roll that points a camera-facing card's "up" away from the direction of travel.
 func _trailing_roll(data: Dictionary) -> float:
@@ -452,8 +456,8 @@ func _card_transform(container: Node3D, point: Vector3, size: Vector2, roll: flo
 	return Transform3D(basis.scaled(Vector3(size.x, size.y, 1.0)), point)
 
 func _animate_flame_instances(data: Dictionary, age: float) -> void:
-	var spell: Dictionary = data.spell; var unit := _number(spell, "size", 0.18, 0.06, 0.75) * 2.7
-	if data.has("plumage"): _animate_plumage(data, age, unit)
+	var spell: Dictionary = data.spell; var unit := minf(_number(spell, "size", 0.18, 0.06, 0.75) * 2.7, 0.9)
+	if data.has("plumage"): _animate_plumage(data, age, unit * 0.55)
 	_animate_wake(data, age, unit)
 
 func _animate_plumage(data: Dictionary, age: float, unit: float) -> void:
@@ -489,7 +493,7 @@ func _add_silhouette(data: Dictionary) -> void:
 		strip.mesh = ArrayMesh.new(); strip.material_override = data.materials[1]; strip.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF; node.add_child(strip)
 		data.parts.append({"node": strip, "role": "silhouette_ribbon", "seed": 0.0 if style == "serpent" else 1.0, "unit": unit})
 		selected = strip
-	elif style == "orb" and not data.family in SOLID_FAMILIES:
+	elif style == "orb" and (not data.family in SOLID_FAMILIES or data.family == "earth"):
 		return  # the element core already is the orb
 	else:
 		var mesh_name := "orb"; var dimensions := Vector3.ONE * unit; var base_rotation := Vector3.ZERO
@@ -734,8 +738,9 @@ func _animate(data: Dictionary, age: float, _dt: float, impact: bool) -> void:
 			"mist": piece.position = Vector3(sin(seed * 2.4) * 0.4, 0.1 + progress * (0.6 + seed * 0.25), cos(seed * 2.4) * 0.3); _face(piece)
 			"core":
 				var throb := 1.0 + sin(clock * 9.0 + seed) * 0.05
-				piece.scale = Vector3.ONE * unit * throb
-				piece.rotation = Vector3(clock * 0.9, clock * 1.7 * spin, 0)
+				var stretch: Vector3 = part.get("stretch", Vector3.ONE)
+				piece.scale = stretch * unit * throb
+				piece.rotation = Vector3(0, 0, clock * 1.7 * spin) if stretch != Vector3.ONE else Vector3(clock * 0.9, clock * 1.7 * spin, 0)
 			"tongue":
 				# Flames stream back off the fireball, flickering around its rim.
 				var trailing := _trailing_roll(data)
@@ -855,6 +860,8 @@ func glyph(point: Vector3, spell: Dictionary, kind: String, life: float, radius:
 		var seal := _piece(node, "ContactSigil", "sigil_" + sigil, data.materials[1], Vector3.ONE * 1.9)
 		seal.rotation.x = -PI * 0.5
 	data.halo = _piece(node, "ImpactHalo", "quad", data.materials[2], Vector3.ONE * 2.4)
+	var motif := str(spell.get("motif", "none"))
+	if motif != "none" and motif != "phoenix" and kind in ["burst", "field", "ward", "mend", "trap", "cone"]: _spawn_motif(spell, motif, kind, point, life, radius)
 	if kind in ["impact", "burst", "beam_end"]: _add_core(data, true)
 	if kind in ["impact", "burst", "beam_end"] and data.family != "void":
 		# Punch of contact: a white-hot star and a ring that races outward, both gone in ~0.25 s.
@@ -901,6 +908,20 @@ func _impact_accent(node: Node3D, data: Dictionary) -> void:
 		var shape := "blade" if accent == "shards" else "ring" if accent == "rings" else "spark" if accent == "sparks" else "quad"
 		var piece := _piece(node, title + str(i), shape, data.materials[2] if accent == "mist" else data.materials[1], Vector3.ONE * (0.7 if accent == "shards" else 1.0))
 		data.parts.append({"node": piece, "role": "ripple" if accent == "rings" else "mist" if accent == "mist" else "splinter", "seed": float(i) + 0.7, "unit": 1.0})
+
+func _spawn_motif(spell: Dictionary, motif: String, kind: String, point: Vector3, life: float, radius: float) -> void:
+	var runtime := _runtime()
+	if runtime == null: return
+	var hero: Node3D = null
+	if kind in ["ward", "mend"]:
+		var game: Variant = runtime.get("game")
+		if is_instance_valid(game) and is_instance_valid(game.get("player")): hero = game.player
+	var ground := point
+	if hero != null: ground = hero.global_position
+	elif kind in ["burst", "field", "trap"]: ground = point + Vector3.DOWN * 0.08
+	var node = preload("res://scripts/spell_motifs.gd").new()
+	node.setup(self, spell, motif, ground, radius * float(spell.get("impact_scale", 1.0)), maxf(life, 1.0 if kind == "burst" else life), hero)
+	runtime.add_child(node)
 
 ## A dash / teleport wake streaming out of the hero's back (see dash_trail.gd).
 func dash_trail(spell: Dictionary, hero: Node3D, from: Vector3) -> Node3D:

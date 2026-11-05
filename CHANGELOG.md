@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.45.0 — Spells look like their names (2026-11-04)
+
+- New per-spell signature visuals (`scripts/spell_motifs.gd`, `motif` field), built from the
+  shared magic shaders:
+  - **Tornado:** a spinning funnel with debris swirling up it.
+  - **Updraft:** a rising column of air.
+  - **Geyser:** a water column that erupts and rains spray.
+  - **Whirlpool:** rings spiralling into a pool of water.
+  - **Earthquake:** rocks heaving out of the ground in pulses.
+  - **Ring of Fire:** a circle of flames.
+  - **Static Field / Stasis Field:** a dome of crackling plasma or golden clockwork.
+  - **Overgrowth / Vine Snare:** a thicket of thorns sprouting up.
+  - **Healing Rain:** droplets falling on you.
+  - **Bloom Mend / Radiant Mend:** petals spiralling up around you.
+  - **Eclipse / Black Hole:** a black sun with a burning corona.
+  - **Magnet Pull:** field lines drawing inward.
+  - **Frost Nova:** a ring of ice shards bursting outward.
+  - **Gale Ring:** expanding rings of wind.
+  - **Wards:** a shell of the element around you, such as orbiting rock plates for Stone
+    Skin, steel for Steel Guard and embers for Cinder Ward.
+  - **Phoenix Dive:** a fireball with flapping wings of flame.
+- Projectile shapes match their names:
+  - Rock Throw, Pebble Spray, Boulder Crash and Landslide throw actual rocks.
+  - Ember Darts and every bolt, lance, shard and comet spell fly as streaks, not balls.
+  - Petal Storm throws pink petals.
+- Renamed "Shade Bolt" to **Shade Moth** and "Storm Crown" to **Thunderstorm**, so the names
+  describe what you see.
+- Big projectiles (fireballs, meteors) no longer swell large enough to fill the screen at
+  launch.
+
 ## 0.44.0 — Magic feel fixes (2026-11-04)
 
 - **Water looks like water.**

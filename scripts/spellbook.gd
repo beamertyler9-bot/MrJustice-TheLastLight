@@ -10,6 +10,8 @@ const COOLDOWN_SCALE := 0.5
 const FORMS := ["volley", "beam", "burst", "ward", "mend", "step", "touch", "field", "cone", "rain", "orbitals", "trap", "wall", "summon", "strike"]
 ## Where the spell leaves Mr. Justice: his casting hand or the lantern in his head.
 const ORIGINS := ["hand", "lantern"]
+## Signature visual that makes a spell look like its name (see spell_motifs.gd).
+const MOTIFS := ["none", "tornado", "updraft", "geyser", "whirlpool", "quake", "fire_ring", "dome", "thicket", "rain_heal", "bloom", "black_sun", "magnet", "nova", "gale", "shell", "phoenix"]
 const ELEMENTS := ["flame", "frost", "storm", "grove", "light", "shadow", "water", "wind", "earth", "metal", "void", "time"]
 const PROJECTILES := ["orb", "lance", "shard", "star", "comet", "ring", "cube", "blade", "bolt", "disc", "moth", "serpent", "ribbon"]
 const TRAJECTORIES := ["straight", "fan", "helix", "seeking", "lob", "wave", "rising", "returning", "spiral"]
@@ -29,7 +31,7 @@ const IMPACT_ACCENTS := ["bloom", "shards", "rings", "sparks", "mist"]
 const SUMMON_KINDS := ["sentinel", "familiar", "protector"]
 const ENUMS := {"form": FORMS, "element": ELEMENTS, "projectile": PROJECTILES, "trajectory": TRAJECTORIES, "particles": PARTICLES, "trail": TRAILS,
 	"effect": EFFECTS, "secondary_effect": SECONDARY_EFFECTS, "tertiary_effect": TERTIARY_EFFECTS, "targeting": TARGETING, "trigger": TRIGGERS, "impact": IMPACTS,
-	"when": STAGE_TRIGGERS, "condition": CONDITIONS, "material_style": MATERIAL_STYLES, "sigil": SIGILS, "impact_accent": IMPACT_ACCENTS, "summon_kind": SUMMON_KINDS, "origin": ORIGINS}
+	"when": STAGE_TRIGGERS, "condition": CONDITIONS, "material_style": MATERIAL_STYLES, "sigil": SIGILS, "impact_accent": IMPACT_ACCENTS, "summon_kind": SUMMON_KINDS, "origin": ORIGINS, "motif": MOTIFS}
 const INTEGER_FIELDS := ["count", "power", "intensity", "pulses", "pierces", "bounces", "chains", "repeat_contacts", "summon_count"]
 const LIMITS := {
 	"count": [1.0, 12.0], "power": [1.0, 5.0], "speed": [8.0, 28.0],
@@ -79,7 +81,7 @@ static func _flat_defaults(id: String) -> Dictionary:
 		"core_color": "#ffe6a0", "rim_color": "#ffe6a0", "trail_color": "#ff794e", "material_style": "elemental",
 		"edge_noise": 0.5, "trail_length": 1.0, "trail_fade": 1.0, "particle_drift": 1.0,
 		"impact_scale": 1.0, "cast_scale": 1.0, "residual_motes": 1.0, "sigil": "circle", "impact_accent": "bloom",
-		"charge": 0.0, "origin": "hand"}
+		"charge": 0.0, "origin": "hand", "motif": "none"}
 
 static func _valid_id(value: Variant) -> bool:
 	if not value is String or value.is_empty() or value.length() > 48:
