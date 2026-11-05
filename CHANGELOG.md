@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.52.0 — Longer-lasting spells (2026-11-05)
+
+- **Spells last longer:** every built-in spell with a lasting effect runs about 60% longer.
+  - Fields and pillars keep pulsing for the extra time, and so do traps, walls, summoned
+    guardians, slows, freezes, stasis and shields.
+  - Wards last 60% longer.
+  - Rain spells pour over a longer stretch.
+  - Orbiting spells hover around you longer before they fly.
+- **Spells cast for longer:**
+  - Beams pour for about 3 seconds instead of a quick flash, and keep burning whatever stands
+    in them every 0.4 seconds, with a slightly lighter hit than the first. Mr. Justice's
+    arm stays raised the whole time.
+  - Breath and gust cones (Frost Breath, Gust, Tide Splash and the rest) keep blowing for
+    over a second and keep hitting while they do.
+- **Effects linger:**
+  - Blasts, strikes, cones, heals and lightning bolts stay on screen longer.
+  - Magic circles do too, at the hand, at your feet, on the ground and in the sky.
+- The Railgun beam lasts 2.6 seconds.
+- Teleports and Levitation keep their old timing.
+- Because they do more now, the longest-lasting spells cost a little more mana. For
+  example, Judgement Pillar costs 50 (was 36) and Earthquake 49 (was 37).
+
 ## 0.51.0 — Longer Railgun charge, flat rain circles (2026-11-05)
 
 - **Railgun:** takes 3.5 seconds to charge fully, up from 2, so the metal circle array

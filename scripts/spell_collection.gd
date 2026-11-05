@@ -93,12 +93,32 @@ static func _add(recipe: Dictionary, purpose: String, summary: String, tactics: 
 		var finished := _complete(stage, str(raw.element))
 		finished.erase("stages")
 		full.stages.append(finished)
+	_lengthen(full)
+	for stage in full.stages: _lengthen(stage)
 	var clean := Book.sanitize(full)
 	if clean.is_empty():
 		push_error("Invalid fixed spell: " + str(raw.id))
 		return
 	_spells.append(clean)
 	_notes[str(raw.id)] = {"role": purpose, "summary": summary, "tactics": tactics, "tier": level}
+
+## Every built-in spell lasts longer: lingering effects (fields, traps, walls, summons,
+## statuses, stasis) run 60 % longer and keep pulsing for it, rain pours over a longer
+## stretch, and orbiting spells hover longer before they fly. Teleports and Levitation keep
+## their own timing.
+const LONGER := 1.6
+
+static func _lengthen(spell: Dictionary) -> void:
+	var form := str(spell.get("form", ""))
+	if form in ["step", "touch"]: return
+	if "levitate" in [spell.get("effect"), spell.get("secondary_effect"), spell.get("tertiary_effect")]: return
+	spell.duration = minf(float(spell.get("duration", 4.0)) * LONGER, 14.0)
+	if str(spell.get("trigger", "")) == "pulse":
+		spell.pulses = clampi(roundi(float(spell.get("pulses", 3)) * LONGER), 1, 10)
+	if form == "rain":
+		spell.stagger = minf(float(spell.get("stagger", 0.0)) * LONGER, 0.75)
+	if form == "orbitals":
+		spell.hold_time = minf(float(spell.get("hold_time", 0.8)) * 1.5, 3.0)
 
 static func _ensure_catalog() -> void:
 	if not _spells.is_empty(): return

@@ -190,11 +190,11 @@ func _deliver(spell: Dictionary, origin: Vector3, target: Vector3, direction: Ve
 		"summon": weave.summon(spell, origin, target, context)
 		"ward":
 			ward_strength = int(spell.power) + 1
-			ward_remaining = 3.0 + float(spell.power) * 0.8
+			ward_remaining = (3.0 + float(spell.power) * 0.8) * 1.6
 			_glyph(game.player.global_position + Vector3.UP * 0.62, spell, "ward", ward_remaining, 0.6)
 		"mend":
 			game.state.health = mini(game.state.max_health, game.state.health + maxi(1, int(ceilf(float(spell.power) * 0.6))))
-			_glyph(game.player.global_position + Vector3.UP * 0.2, spell, "mend", 1.25, 1.0)
+			_glyph(game.player.global_position + Vector3.UP * 0.2, spell, "mend", 2.0, 1.0)
 		"step": _step(spell, target)
 		"strike": _strike_cast(spell, origin, target, context)
 
@@ -203,6 +203,45 @@ func _crown_center() -> Vector3:
 	if is_instance_valid(visual) and is_instance_valid(visual.get("lantern")):
 		return (visual.lantern as Node3D).global_position + Vector3.UP * 0.38
 	return game.player.global_position + Vector3.UP * 2.2
+
+## Beams and breath cones keep hitting while they pour (a lighter hit every tick).
+const SUSTAIN_TICK := 0.4
+var sustains: Array = []
+
+func _sustain_spell(spell: Dictionary) -> Dictionary:
+	var tick: Dictionary = spell.duplicate()
+	tick.power = maxi(1, int(spell.power) - 1)
+	return tick
+
+func sustain_cone(spell: Dictionary, origin: Vector3, direction: Vector3, context: Dictionary, life: float) -> void:
+	sustains.append({"kind": "cone", "spell": _sustain_spell(spell), "context": context, "origin": origin, "direction": direction,
+		"wait": SUSTAIN_TICK, "remaining": life})
+
+func _tick_sustains(dt: float) -> void:
+	for i in range(sustains.size() - 1, -1, -1):
+		var entry: Dictionary = sustains[i]
+		entry.remaining -= dt; entry.wait -= dt
+		if entry.wait <= 0.0 and entry.remaining > 0.0:
+			entry.wait += SUSTAIN_TICK
+			if entry.kind == "beam": _sustain_beam_hit(entry)
+			else: _sustain_cone_hit(entry)
+		if entry.remaining <= 0.0: sustains.remove_at(i)
+
+func _sustain_beam_hit(entry: Dictionary) -> void:
+	var hit := _sweep(entry.origin, entry.end, float(entry.radius))
+	if hit.is_empty(): return
+	var target: Variant = hit.collider
+	if _target_allowed(target, entry.spell) and _live(target): _elemental_hit(target, entry.spell, entry.context, false)
+
+func _sustain_cone_hit(entry: Dictionary) -> void:
+	var spell: Dictionary = entry.spell
+	var scan := spell.duplicate(); scan.radius = float(spell.range)
+	var cosine := cos(deg_to_rad(float(spell.cone_angle)) * 0.5)
+	for target in _near_targets(entry.origin, scan):
+		var center: Vector3 = _target_center(target)
+		var delta: Vector3 = center - entry.origin
+		if delta.length_squared() < 0.01 or (delta.normalized().dot(entry.direction) >= cosine and _clear_line(entry.origin, center, target)):
+			if _live(target): _elemental_hit(target, spell, entry.context, false)
 
 ## Set by the player while a charged spell's own circle is already on screen.
 var suppress_hand_circle := false
@@ -218,10 +257,10 @@ func _cast_circles(spell: Dictionary, origin: Vector3, target: Vector3) -> void:
 	var direction := (target - origin).normalized()
 	if direction.length_squared() < 0.5: direction = -game.player.camera.global_basis.z if is_instance_valid(game.player.camera) else Vector3.FORWARD
 	if not suppress_hand_circle and str(spell.get("motif", "none")) != "railgun":
-		Circle.at_hand(self, spell, origin + direction * 0.35, direction, 0.42 + float(spell.power) * 0.06, 0.75)
+		Circle.at_hand(self, spell, origin + direction * 0.35, direction, 0.42 + float(spell.power) * 0.06, 1.2)
 	var form := str(spell.form)
 	if form in ["ward", "mend", "step", "summon"]:
-		Circle.on_ground(self, spell, game.player.global_position, 1.1, 1.1)
+		Circle.on_ground(self, spell, game.player.global_position, 1.1, 1.8)
 	elif form in ["burst", "field", "rain", "strike", "trap", "wall"]:
 		var aim := origin + (target - origin).limit_length(float(spell.range))
 		var ground := _ray(aim + Vector3.UP * 1.5, aim + Vector3.DOWN * 30.0, 1)
@@ -234,11 +273,11 @@ func _cast_circles(spell: Dictionary, origin: Vector3, target: Vector3) -> void:
 				sky_height = clampf(float(spell.get("rain_height", 7.0)) * 0.5, 3.2, 4.2) - 0.8
 			var lid := _ray(point + Vector3.UP * 0.2, point + Vector3.UP * sky_height, 1)
 			var sky: Vector3 = lid.position + Vector3.DOWN * 0.15 if not lid.is_empty() else point + Vector3.UP * sky_height
-			var pour := float(spell.count) * float(spell.stagger) + 1.0
-			Circle.in_sky(self, spell, sky, clampf(float(spell.radius) * 1.1, 1.2, 5.0), clampf(pour, 1.6, 6.0), game.player.global_position)
+			var pour := float(spell.count) * float(spell.stagger) + 1.6
+			Circle.in_sky(self, spell, sky, clampf(float(spell.radius) * 1.1, 1.2, 5.0), clampf(pour, 2.2, 8.0), game.player.global_position)
 			return
 		var size := float(spell.wall_width) * 0.55 if form == "wall" else float(spell.radius)
-		var duration := float(spell.duration) if form in ["field", "trap"] else 1.2
+		var duration := float(spell.duration) if form in ["field", "trap"] else 1.9
 		Circle.on_ground(self, spell, point, clampf(size, 0.8, 5.0), clampf(duration, 1.0, 8.0))
 
 ## How high rain spells pour from: the sky circle, low enough to stay in view.
@@ -277,8 +316,8 @@ func _strike_cast(spell: Dictionary, origin: Vector3, target: Vector3, context: 
 	var center: Vector3 = ground.position + Vector3.UP * 0.05 if not ground.is_empty() else aim
 	var stage := weave._stage(context)
 	if not stage.is_empty(): stage.point = center
-	presentation.sky_strike(center + Vector3.UP * 22.0, center, spell, 0.55 + release_charge * 0.3, clampf(float(spell.radius) / 1.8, 1.0, 2.4))
-	_glyph(center, spell, "burst", 0.8, float(spell.radius))
+	presentation.sky_strike(center + Vector3.UP * 22.0, center, spell, 0.9 + release_charge * 0.4, clampf(float(spell.radius) / 1.8, 1.0, 2.4))
+	_glyph(center, spell, "burst", 1.3, float(spell.radius))
 	_contact(null, center, spell, context, true)
 	if is_instance_valid(game.player):
 		game.player.camera_trauma = minf(1.0, game.player.camera_trauma + 0.35)
@@ -325,6 +364,7 @@ func _tick_slice(dt: float) -> void:
 	_tick_scheduled(dt)
 	cooldown_remaining = maxf(0.0, cooldown_remaining - dt)
 	beam_hold = maxf(0.0, beam_hold - dt)
+	_tick_sustains(dt)
 	game.state.recover_mana(dt)
 	ward_remaining = maxf(0.0, ward_remaining - dt)
 	if ward_remaining <= 0: ward_strength = 0
@@ -620,6 +660,10 @@ func _beam_cast(spell: Dictionary, origin: Vector3, direction: Vector3, context:
 		if is_instance_valid(node) and str(spell.get("origin", "hand")) != "lantern":
 			beam_hold = maxf(beam_hold, float(node.get("life")))
 			beam_hold_point = end
+		# The beam keeps pouring for its whole life, burning whatever stands in it.
+		if is_instance_valid(node):
+			sustains.append({"kind": "beam", "spell": _sustain_spell(spell), "context": context, "origin": origin, "end": end,
+				"radius": float(spell.size) * 0.9, "wait": SUSTAIN_TICK, "remaining": float(node.get("life")) * 0.85})
 	var impact_spell := spell.duplicate(); impact_spell["_surface_normal"] = hit.get("normal", Vector3.UP)
 	_glyph(end, impact_spell, "beam_end" if hit.is_empty() else "impact", 0.5, 0.65)
 
@@ -630,7 +674,7 @@ func _burst_cast(spell: Dictionary, origin: Vector3, target: Vector3, context: D
 	if not hit.is_empty(): center = hit.position + hit.normal * 0.08
 	var stage := weave._stage(context)
 	if not stage.is_empty(): stage.point = center
-	_glyph(center, spell, "field" if spell.form == "field" else "burst", float(spell.duration) if spell.form == "field" else 0.8, float(spell.radius))
+	_glyph(center, spell, "field" if spell.form == "field" else "burst", float(spell.duration) if spell.form == "field" else 1.3, float(spell.radius))
 	_beam_visual(origin, center, spell, 0.16, 0.035)
 	_contact(null, center, spell, context, true)
 	if not hit.is_empty() and is_instance_valid(hit.collider) and hit.collider is Node3D and not _target_allowed(hit.collider, spell): weave.hit(hit.collider, center, context, true)
@@ -900,6 +944,7 @@ func clear_effects() -> void:
 	ward_remaining = 0.0; ward_strength = 0
 	cooldown_remaining = 0.0
 	beam_hold = 0.0
+	sustains.clear()
 	for node in get_children(): node.free()
 	_materials.clear(); _meshes.clear(); _spheres.clear(); _target_spheres.clear()
 

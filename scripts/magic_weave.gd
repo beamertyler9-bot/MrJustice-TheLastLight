@@ -271,7 +271,9 @@ func cone(spell: Dictionary, origin: Vector3, direction: Vector3, context: Dicti
 		var delta := center - origin
 		if delta.length_squared() < 0.01 or (delta.normalized().dot(direction) >= cosine and runtime._clear_line(origin, center, target)):
 			runtime._contact(target, center, spell, context)
-	runtime._glyph(origin + direction * minf(2.0, float(spell.range) * 0.4), spell, "cone", 0.45, minf(3.0, float(spell.radius)))
+	runtime._glyph(origin + direction * minf(2.0, float(spell.range) * 0.4), spell, "cone", 1.2, minf(3.0, float(spell.radius)))
+	# Breath and gust spells keep pouring out for a while after the first blast.
+	runtime.sustain_cone(spell, origin, direction, context, 1.2)
 
 func rain(spell: Dictionary, origin: Vector3, target: Vector3, context: Dictionary) -> void:
 	var center: Vector3 = origin + (target - origin).limit_length(float(spell.range))
@@ -285,7 +287,7 @@ func rain(spell: Dictionary, origin: Vector3, target: Vector3, context: Dictiona
 		var cover: Dictionary = runtime._ray(floor_point + Vector3.UP * 0.1, sky, 1 | 8 | 16)
 		if not cover.is_empty(): sky = cover.position + cover.normal * 0.1
 		runtime._spawn_or_schedule(spell, sky, Vector3.DOWN, context, i, float(i) * float(spell.stagger))
-	runtime._glyph(center, spell, "rain", 0.8, float(spell.radius))
+	runtime._glyph(center, spell, "rain", 1.3, float(spell.radius))
 
 func trap(spell: Dictionary, origin: Vector3, target: Vector3, context: Dictionary) -> void:
 	var point: Vector3 = origin + (target - origin).limit_length(float(spell.range))
