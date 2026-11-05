@@ -30,6 +30,23 @@ func build(game: Node, camera: Camera3D) -> void:
 		_try(func(): _multi(world.mushroom_mesh(0), world.flower_material(), false))
 		_try(func(): _multi(world.leaf_mesh(), world.stone_material(false), true))
 		_try(func(): _single(world.leaf_mesh(), world.stone_material(true), true))
+	# Swaying ground plants (single meshes, with and without shadows) and the water.
+	var Assets = preload("res://scripts/imported_assets.gd")
+	for id in ["qnat_bush_common", "qnat_grass_wispy_tall", "qnat_flower_3_group", "qnat_fern_1"]:
+		var plant = Assets.mesh(id)
+		if plant != null:
+			_try(func(): _single(plant, plant.surface_get_material(0), true))
+			_try(func(): _single(plant, plant.surface_get_material(0), false))
+	var scenery = world.get("atlas_scenery") if world != null else null
+	if scenery != null and not scenery.water_materials.is_empty():
+		_try(func(): _single(QuadMesh.new(), scenery.water_materials[0], false))
+	# Damage numbers and the "!" (Label3D text, drawn on top of everything).
+	var label := Label3D.new(); label.text = "0123456789!"; label.billboard = BaseMaterial3D.BILLBOARD_ENABLED; label.no_depth_test = true
+	label.font_size = 72; label.outline_size = 18; label.pixel_size = 0.0002; label.transform = _place()
+	add_child(label)
+	var big := Label3D.new(); big.text = "!"; big.billboard = BaseMaterial3D.BILLBOARD_ENABLED; big.no_depth_test = true
+	big.font_size = 96; big.outline_size = 20; big.pixel_size = 0.0002; big.transform = _place()
+	add_child(big)
 	var magic = game.get("magic")
 	var presentation = magic.get("presentation") if magic != null else null
 	if presentation != null:

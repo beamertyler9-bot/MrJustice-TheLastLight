@@ -80,7 +80,7 @@ static func number(enemy: Node3D, amount: int, height: float) -> void:
 	label.set_meta("tween", tween)
 
 
-## The defeat pop: flash, sparks, dust and a ring on the ground.
+## The defeat pop: flash, sparks and a puff of dust.
 static func defeat(game, enemy: Node3D, height: float) -> void:
 	flash(enemy, 1.2)
 	var effects = game.get("effects")
@@ -88,11 +88,6 @@ static func defeat(game, enemy: Node3D, height: float) -> void:
 	if effects != null:
 		effects.burst(center, Color("#fff1c4"), 18, 1.35)
 		effects.burst(center, Color("#9c9488"), 10, 0.8)
-	var glow := OmniLight3D.new(); glow.light_color = Color("#ffe0a6"); glow.light_energy = 2.2; glow.omni_range = 4.5
-	glow.top_level = true; enemy.get_parent().add_child(glow); glow.global_position = center
-	var tween := glow.create_tween()
-	tween.tween_property(glow, "light_energy", 0.0, 0.35)
-	tween.tween_callback(glow.queue_free)
 
 
 ## "!" over the head when an enemy first spots Mr. Justice.

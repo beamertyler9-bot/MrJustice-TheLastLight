@@ -6,7 +6,12 @@ shader_type spatial;
 //  - a soft foam line where it meets the bank, white water down steep cascades;
 //  - the cola is dark and glossy, amber where it is shallow, with rising fizz.
 // Lava stays opaque and glowing.
-render_mode blend_mix, depth_draw_opaque, cull_disabled, shadows_disabled;
+// Lighting is worked out here from the sun (unshaded), so the water costs one pass however
+// many lamps are near: transparent lit surfaces are redrawn once per light on phones.
+render_mode unshaded, blend_mix, depth_draw_opaque, cull_disabled, shadows_disabled;
+uniform vec3 sun_dir = vec3(-0.45, 0.75, -0.45);
+uniform vec4 sun_color : source_color = vec4(1.0, 0.94, 0.82, 1.0);
+uniform float light_level = 1.0;
 uniform vec4 liquid_color : source_color = vec4(0.2, 0.5, 0.6, 1.0);
 uniform vec4 foam_color : source_color = vec4(0.9, 0.94, 0.85, 1.0);
 uniform vec4 sky_color : source_color = vec4(0.62, 0.78, 0.9, 1.0);
@@ -49,9 +54,9 @@ void fragment() {
 	if (lava) {
 		float churn = sin(flow_uv.y * 0.55 - world_time * 0.9 + sin(flow_uv.x * 19.0) * 0.4);
 		float crust = smoothstep(0.2, 0.9, sin(world.x * 0.9 + world_time * 0.2) * sin(world.z * 0.8 - world_time * 0.15));
-		ALBEDO = mix(liquid_color.rgb, vec3(0.16, 0.07, 0.05), crust * 0.6) * body_shade;
-		EMISSION = mix(liquid_color.rgb * 1.1, foam_color.rgb * 1.3, smoothstep(0.7, 1.0, churn)) * (1.0 - crust * 0.7);
-		ROUGHNESS = 0.8; ALPHA = 1.0;
+		vec3 glow = mix(liquid_color.rgb * 1.1, foam_color.rgb * 1.3, smoothstep(0.7, 1.0, churn)) * (1.0 - crust * 0.7);
+		ALBEDO = mix(liquid_color.rgb, vec3(0.16, 0.07, 0.05), crust * 0.6) * body_shade * 0.4 + glow;
+		ALPHA = 1.0;
 	} else {
 		// Ripples: rivers carry them downstream (UV.y is distance along the river).
 		vec2 p = world.xz;
@@ -65,8 +70,10 @@ void fragment() {
 		}
 		slope *= mix(1.0, 0.45, fall_factor);
 		vec3 n_world = normalize(vec3(-slope.x, 1.0, -slope.y));
-		vec3 n_view = normalize((VIEW_MATRIX * vec4(n_world, 0.0)).xyz);
-		NORMAL = normalize(mix(n_view, NORMAL, fall_factor));
+		vec3 face_world = normalize((INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
+		n_world = normalize(mix(n_world, face_world, fall_factor));
+		vec3 view_world = normalize(CAMERA_POSITION_WORLD - world);
+		vec3 sun = normalize(sun_dir);
 		// Depth: the shallows by the bank are clear and pale, the middle deep and dark.
 		// (Lakes shade from the middle out to the shore, so only the last stretch is shallow.)
 		float shallow = still_lake ? smoothstep(0.8, 1.0, bank_factor) : smoothstep(0.35, 1.0, bank_factor);
@@ -74,7 +81,7 @@ void fragment() {
 		vec3 shoal = cola ? liquid_color.rgb * 1.35 + vec3(0.06, 0.02, 0.0) : mix(liquid_color.rgb, vec3(0.55, 0.78, 0.66), 0.45);
 		vec3 body = mix(deep, shoal, shallow);
 		// The sky reflected at grazing angles.
-		float facing = clamp(dot(NORMAL, VIEW), 0.0, 1.0);
+		float facing = clamp(abs(dot(n_world, view_world)), 0.0, 1.0);
 		float fresnel = pow(1.0 - facing, 4.0);
 		body = mix(body, sky_color.rgb * (cola ? 0.5 : 0.9), fresnel * (cola ? 0.3 : 0.6));
 		// Foam: a soft, broken line along the bank, flecks on the ripples, white water on cascades.
@@ -92,10 +99,12 @@ void fragment() {
 			foam += bubble * smoothstep(0.22, 0.08, length(local)) * 0.8;
 		}
 		foam = clamp(foam, 0.0, 1.0);
-		ALBEDO = mix(body, foam_color.rgb, foam) * mix(1.0, body_shade, 0.5);
-		ROUGHNESS = mix(cola ? 0.06 : 0.04, 0.6, foam);
-		METALLIC = 0.0;
-		SPECULAR = 0.75;
+		// Sunlight: soft shading, then a sharp glint where the ripples catch the sun.
+		float sun_up = smoothstep(-0.05, 0.2, sun.y);
+		float diffuse = 0.62 + 0.38 * max(dot(n_world, sun), 0.0) * sun_up;
+		vec3 lit = mix(body, foam_color.rgb, foam) * mix(1.0, body_shade, 0.5) * diffuse * light_level * mix(vec3(1.0), sun_color.rgb, 0.35);
+		float glint = pow(max(dot(reflect(-sun, n_world), view_world), 0.0), cola ? 60.0 : 90.0) * (1.0 - foam) * sun_up;
+		ALBEDO = lit + sun_color.rgb * glint * (cola ? 0.9 : 1.4) * light_level;
 		// See-through in the shallows, more solid in the deep and wherever it foams.
 		float clear = cola ? mix(0.9, 0.62, shallow) : mix(0.84, 0.42, shallow);
 		ALPHA = clamp(max(clear + fresnel * 0.25, foam), 0.0, 1.0);
