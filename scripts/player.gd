@@ -106,6 +106,7 @@ var spell_charge := 0.0
 var spell_charge_time := 1.0
 var spell_charge_vfx: Node3D
 var arc_preview: MultiMeshInstance3D
+var railgun_charge: Node3D
 var shadow: MeshInstance3D
 var shadow_material: ShaderMaterial
 var dodge_time: float = 0.0
@@ -406,9 +407,11 @@ func _process(dt: float) -> void:
 	# The spell-charge camera borrows the aim view, but not the hand-aim pose (the grimoire
 	# cast needs the arms free).
 	var spell_view: bool = spell_charging or magic_contact >= 0.0 or (visual.has_method("is_grimoire_casting") and visual.is_grimoire_casting())
-	visual.aim_weight = 1.0 if visual.grapple_active() or beam_contact >= 0 or spell_charging else (0.0 if spell_view and not ability_aiming else aim_blend)
 	# Charging a spell: arm raised toward the target, palm open, the charge ball in it.
-	if spell_charging: visual.aim_kind = "beam"
+	# (Lantern spells charge in his head, so his arms stay down.)
+	var arm_up: bool = spell_charging and str(state.equipped_spell().get("origin", "hand")) != "lantern"
+	visual.aim_weight = 1.0 if visual.grapple_active() or beam_contact >= 0 or arm_up else (0.0 if spell_view and not ability_aiming else aim_blend)
+	if arm_up: visual.aim_kind = "beam"
 	visual.mantle_progress = 1.0 - mantle_time / Mantle.DURATION if mantle_time > 0 else -1.0
 	if beam_contact >= 0:
 		var tracked_point = beam_lock_point()
@@ -1732,6 +1735,7 @@ func release_spell_cast(canceled: bool = false) -> void:
 	if not canceled: cast_spell(amount)
 
 func cancel_spell_charge() -> void:
+	if railgun_charge != null: railgun_charge.visible = false
 	spell_charging = false
 	spell_charge = 0.0
 	if spell_charge_vfx != null: spell_charge_vfx.visible = false
@@ -1749,13 +1753,19 @@ func _tick_spell_charge(dt: float) -> void:
 	var anchor: Vector3 = runtime._spell_origin(spell) if runtime != null else visual.hands[1].global_position
 	spell_charge_vfx.global_position = anchor
 	spell_charge_vfx.update_charge(dt, amount, full, bool(state.settings.get("low_flash", false)))
+	if str(spell.get("motif", "none")) == "railgun":
+		if railgun_charge == null:
+			railgun_charge = preload("res://scripts/railgun_charge.gd").new(); add_child(railgun_charge)
+		railgun_charge.visible = true
+		var aim_dir := -camera.global_basis.z if camera != null else -visual.global_basis.z
+		railgun_charge.update_charge(runtime.presentation, spell, anchor, aim_dir, amount, dt)
 	if full: camera_trauma = maxf(camera_trauma, 0.08)
 	if not is_instance_valid(lock_target): visual.rotation.y = lerp_angle(visual.rotation.y, yaw, 1.0 - exp(-dt * 12.0))
 	_update_arc_preview(spell, anchor, amount)
 
 ## Dotted arc showing where a charged throw will land.
 func _update_arc_preview(spell: Dictionary, origin: Vector3, amount: float) -> void:
-	if str(spell.get("trajectory", "")) != "lob" or str(spell.get("form", "")) != "volley":
+	if str(spell.get("trajectory", "")) not in ["lob", "ballistic"] or str(spell.get("form", "")) != "volley":
 		if arc_preview != null: arc_preview.visible = false
 		return
 	var runtime = magic_runtime()
@@ -1773,11 +1783,20 @@ func _update_arc_preview(spell: Dictionary, origin: Vector3, amount: float) -> v
 	arc_preview.visible = true
 	var solution := ability_target()
 	var aim: Vector3 = lock_target.global_position + Vector3.UP if is_instance_valid(lock_target) else solution.point
-	var launch: Dictionary = runtime.lob_launch(spell, origin, aim, amount)
+	var ballistic := str(spell.trajectory) == "ballistic"
+	var launch: Dictionary = runtime.ballistic_launch(spell, origin, aim, amount) if ballistic else runtime.lob_launch(spell, origin, aim, amount)
+	var gravity: float = float(launch.get("gravity", 11.0))
 	var tone := Color(str(spell.color)).lerp(Color.WHITE, 0.35)
+	var landed := false
+	var previous := origin
 	for i in range(22):
 		var t: float = float(launch.time) * float(i + 1) / 22.0
-		var point: Vector3 = origin + launch.velocity * t + Vector3.DOWN * 5.5 * t * t
+		var point: Vector3 = origin + launch.velocity * t + Vector3.DOWN * 0.5 * gravity * t * t
+		if landed: point = previous
+		elif ballistic:
+			var hit := ray(previous, point)
+			if not hit.is_empty(): point = hit.position; landed = true
+		previous = point
 		var size := 0.11 if i < 21 else 0.38
 		tone.a = 0.9 if i == 21 else 0.8 * (1.0 - float(i) / 40.0)
 		arc_preview.multimesh.set_instance_transform(i, Transform3D(Basis.from_scale(Vector3.ONE * size), point))

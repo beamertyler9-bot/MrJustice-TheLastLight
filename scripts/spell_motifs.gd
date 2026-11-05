@@ -15,6 +15,11 @@ var radius := 1.5
 var life := 1.0
 var age := 0.0
 var follow: Node3D
+## Cone motifs blow along this direction; rain motifs hang their cloud this high.
+var direction := Vector3.FORWARD
+var height := 7.0
+var _flash_clock := 0.0
+var _streaks: Array = []
 var _parts: Array = []
 var _materials: Array = []
 var _rng := RandomNumberGenerator.new()
@@ -24,7 +29,7 @@ var _core: Color
 
 func setup(owner_presentation, recipe: Dictionary, kind: String, point: Vector3, size: float, duration: float, hero: Node3D) -> void:
 	presentation = owner_presentation; spell = recipe; motif = kind
-	radius = clampf(size, 0.6, 5.0); life = clampf(duration, 0.4, 12.0)
+	radius = clampf(size, 0.6, 9.0); life = clampf(duration, 0.4, 12.0)
 	position = point
 	follow = hero
 	_rng.seed = hash(point)
@@ -53,8 +58,24 @@ func _ready() -> void:
 		"gale": _build_gale()
 		"shell": _build_shell()
 		"phoenix": pass
+		"fire_ground": _build_fire_ground()
+		"storm_cloud": _build_cloud(true)
+		"frost_cloud":
+			if motif_kind_is_cone(): _build_frost_breath()
+			else: _build_cloud(false)
+		"pillar": _build_pillar()
+		"wind_cone": _build_wind_cone()
+		"tidal_wave": _build_tidal_wave()
+		"vortex":
+			_build_whirlpool(); _build_drain()
+		"fissure": _build_fissure()
+		"clockwork": _build_clockwork()
+		"clock_face": _build_clock_face()
 	_update(0.0)
 
+
+func motif_kind_is_cone() -> bool:
+	return radius > 5.0 or direction != Vector3.FORWARD
 
 func _process(dt: float) -> void:
 	age += dt
@@ -111,10 +132,16 @@ func _build_funnel(twister: bool) -> void:
 
 func _build_geyser() -> void:
 	var water_body := Color(str(spell.get("color", "#3fbbdf"))); var water_core := Color(str(spell.get("core_color", spell.get("accent", "#d0faff"))))
-	preload("res://scripts/kame_beam.gd").spawn(self, global_position, global_position + Vector3.UP * (3.4 + radius * 0.6), water_body, water_core, clampf(radius * 0.22, 0.25, 0.7), minf(life, 1.2), false, 0.9)
+	var column_height := 3.4 + radius * 0.6
+	var jet = preload("res://scripts/kame_beam.gd").spawn(self, global_position, global_position + Vector3.UP * column_height, water_body, water_core, clampf(radius * 0.22, 0.25, 0.7), life, false, 0.9)
 	var drop: Mesh = presentation._mesh("core_sphere"); var liquid := _spell_material(presentation.CORE)
-	for i in range(12):
-		_part(drop, liquid, "spray", {"seed": float(i)})
+	if jet != null: jet.set_body_material(liquid)
+	for i in range(16):
+		_part(drop, liquid, "spray", {"seed": float(i), "top": column_height})
+	# A frothy crown of water bursting over the top of the column.
+	_part(drop, liquid, "crown", {"top": column_height})
+	for i in range(10):
+		_part(drop, liquid, "crown_drop", {"seed": float(i), "top": column_height})
 
 func _build_whirlpool() -> void:
 	var ring := TorusMesh.new(); ring.inner_radius = 0.86; ring.outer_radius = 1.0; ring.rings = 32; ring.ring_segments = 4
@@ -211,6 +238,15 @@ func _update(dt: float) -> void:
 		else:
 			presentation._set_material_clock(material, spell, age, envelope)
 	var camera: Camera3D = presentation._camera()
+	if not _streaks.is_empty(): _update_streaks()
+	if motif == "storm_cloud" and age < life * 0.85:
+		# Lightning forks out of the thundercloud onto the ground beneath it.
+		_flash_clock -= dt
+		if _flash_clock <= 0.0:
+			_flash_clock = _rng.randf_range(0.18, 0.4)
+			var cloud := global_position + Vector3.UP * clampf(height * 0.5, 3.2, 4.2) + Vector3(_rng.randf_range(-1, 1), 0, _rng.randf_range(-1, 1)) * radius * 0.5
+			var strike := global_position + Vector3(_rng.randf_range(-1, 1), 0, _rng.randf_range(-1, 1)) * radius * 0.8
+			presentation.sky_strike(cloud, strike, spell, 0.28, 0.75)
 	for data in _parts:
 		var node: MeshInstance3D = data.node
 		var seed: float = data.get("seed", 0.0)
@@ -226,10 +262,22 @@ func _update(dt: float) -> void:
 				node.position = Vector3(cos(spin) * r, rise * float(data.height), sin(spin) * r)
 				node.scale = Vector3.ONE * 0.09 * (1.0 + seed * 0.05)
 			"spray":
-				var t := fposmod(age * 1.3 + seed / 12.0, 1.0)
+				# Falling back down from the top of the column all around it.
+				var t := fposmod(age * 0.9 + seed / 16.0, 1.0)
 				var dir := Vector3(cos(seed * 2.39996), 0.0, sin(seed * 2.39996))
-				node.position = dir * (0.3 + t * radius * 0.8) + Vector3.UP * (3.5 * t - 4.0 * t * t + 2.4)
-				node.scale = Vector3.ONE * 0.22 * (1.0 - t * 0.5)
+				var top: float = data.get("top", 3.5)
+				node.position = dir * (0.3 + t * radius * 0.9) + Vector3.UP * (top + 1.2 * t - (top + 1.2) * t * t)
+				node.scale = Vector3.ONE * 0.24 * (1.0 - t * 0.4)
+			"crown":
+				var top: float = data.get("top", 3.5)
+				node.position = Vector3.UP * (top + 0.15 + sin(age * 9.0) * 0.08)
+				node.scale = Vector3(radius * 0.55, 0.35, radius * 0.55) * (1.0 + sin(age * 7.0) * 0.08)
+			"crown_drop":
+				var t := fposmod(age * 1.6 + seed / 10.0, 1.0)
+				var dir := Vector3(cos(seed * 0.628 * 1.0 + age), 0.0, sin(seed * 0.628 + age))
+				var top: float = data.get("top", 3.5)
+				node.position = dir * (0.2 + t * radius * 0.5) + Vector3.UP * (top + 1.0 * t - 0.6 * t * t * 2.0)
+				node.scale = Vector3.ONE * 0.16 * (1.0 - t * 0.5)
 			"vortex_ring":
 				var shrink := 1.0 - fposmod(age * 0.6 + seed / 4.0, 1.0)
 				node.scale = Vector3(radius * shrink, 1.0, radius * shrink) * Vector3(1.0, 0.2, 1.0)
@@ -310,3 +358,237 @@ func _update(dt: float) -> void:
 				node.position = Vector3(cos(spin) * 0.85, height, sin(spin) * 0.85)
 				node.rotation = Vector3(0.0, -spin, 0.3)
 				node.scale = Vector3.ONE * (0.32 if str(data.family) in ["earth", "metal", "frost"] else 0.18)
+			"ground_flame":
+				var flicker := 1.0 + sin(age * 12.0 + seed * 1.9) * 0.2
+				var grow := smoothstep(0.0, 0.2, age / life) * (1.0 - smoothstep(0.85, 1.0, age / life))
+				node.global_position = global_position + data.at + Vector3.UP * 0.45 * float(data.size) * flicker * grow
+				node.scale = Vector3(0.75, 1.1 * flicker, 1.0) * float(data.size) * maxf(grow, 0.01)
+				if camera != null: node.look_at(camera.global_position, Vector3.UP, true)
+			"scorch_ring":
+				node.scale = Vector3(radius, 0.3, radius); node.position.y = 0.04
+			"cloud_puff":
+				var drift := Vector3(sin(age * 0.7 + seed) * 0.25, sin(age * 1.1 + seed * 0.7) * 0.12, cos(age * 0.6 + seed) * 0.25)
+				var swell := smoothstep(0.0, 0.25, age / life) * (1.0 - smoothstep(0.85, 1.0, age / life))
+				node.position = Vector3.UP * clampf(height * 0.5, 3.2, 4.2) + data.at + drift
+				node.scale = Vector3(1.0, 0.62, 1.0) * float(data.size) * maxf(swell, 0.01)
+			"hail":
+				var t := fposmod(age * 1.5 + float(data.phase), 1.0)
+				node.position = Vector3(cos(data.angle) * float(data.distance), clampf(height * 0.5, 3.2, 4.2) * (1.0 - t), sin(data.angle) * float(data.distance))
+				node.rotation = Vector3(age * 5.0 + seed, seed, age * 3.0)
+				node.scale = Vector3.ONE * 0.13
+			"breath_puff", "breath_ice":
+				var t := fposmod(age * 1.25 + float(data.phase), 1.0)
+				var side := direction.cross(Vector3.UP).normalized()
+				var d := t * radius
+				node.global_position = global_position + Vector3.UP * (1.1 + float(data.lift) * d * 0.25) + direction * (0.7 + d) + side * float(data.spread) * d * 0.42
+				if data.role == "breath_puff":
+					node.scale = Vector3.ONE * (0.35 + t * 1.5) * (1.0 - smoothstep(0.8, 1.0, t))
+				else:
+					node.scale = Vector3(0.08, 0.08, 0.22); node.rotation = Vector3(age * 6.0 + seed, seed, 0.0)
+			"pillar_ring":
+				var grow := fposmod(age * 0.7 + seed / 3.0, 1.0)
+				node.scale = Vector3(radius * (0.3 + grow), 0.4, radius * (0.3 + grow)); node.position.y = 0.06
+				node.transparency = grow * 0.6
+			"pillar_mote":
+				var t := fposmod(age * 0.5 + seed / 16.0, 1.0); var spin := seed * 2.39996 + age * 2.0
+				node.position = Vector3(cos(spin) * radius * 0.6, t * 5.0, sin(spin) * radius * 0.6)
+				node.scale = Vector3.ONE * 0.12
+			"wave_body", "wave_spray":
+				# The wall of water rolls out from the caster, rears up, then crashes.
+				var t := clampf(age / (life * 0.85), 0.0, 1.0)
+				var side := direction.cross(Vector3.UP).normalized()
+				var d := 0.8 + t * radius * 0.9
+				var width := (1.2 + t * radius * 0.55)
+				var rear := sin(clampf(t * 1.25, 0.0, 1.0) * PI)
+				var across: float = data.across
+				var crest := (1.0 - across * across * 0.6)
+				if data.role == "wave_body":
+					node.global_position = global_position + direction * d + side * across * width + Vector3.UP * (rear * 1.1 * crest)
+					node.scale = Vector3(width * 0.32 + 0.4, 0.7 + rear * 2.4 * crest, 0.9 + rear * 0.6) * (1.0 - smoothstep(0.88, 1.0, t))
+					node.global_basis = Basis(Quaternion(Vector3.FORWARD, direction)) * Basis(Vector3.RIGHT, -rear * 0.35) * Basis.from_scale(node.scale)
+				else:
+					var p := fposmod(age * 2.2 + float(data.phase), 1.0)
+					node.global_position = global_position + direction * (d + p * 0.8) + side * across * width + Vector3.UP * (rear * 2.2 * crest + p * 0.8 - p * p * 1.6)
+					node.scale = Vector3.ONE * 0.18 * (1.0 - p * 0.5) * rear
+			"drain":
+				node.rotation.y = age * 6.0
+			"gash":
+				var open := smoothstep(0.0, 0.3, age / life) * (1.0 - smoothstep(0.85, 1.0, age / life))
+				var mesh: ArrayMesh = node.mesh; mesh.clear_surfaces()
+				var verts := PackedVector3Array()
+				var path: PackedVector3Array = data.path
+				for i in range(path.size() - 1):
+					var w0: float = sin(float(i) / float(path.size() - 1) * PI) * open * radius * 0.12 + 0.01
+					var w1: float = sin(float(i + 1) / float(path.size() - 1) * PI) * open * radius * 0.12 + 0.01
+					var a0: Vector3 = path[i] - data.side * w0; var b0: Vector3 = path[i] + data.side * w0
+					var a1: Vector3 = path[i + 1] - data.side * w1; var b1: Vector3 = path[i + 1] + data.side * w1
+					verts.append_array(PackedVector3Array([a0 + Vector3.UP * 0.04, b0 + Vector3.UP * 0.04, a1 + Vector3.UP * 0.04, b0 + Vector3.UP * 0.04, b1 + Vector3.UP * 0.04, a1 + Vector3.UP * 0.04]))
+				var arrays := []; arrays.resize(Mesh.ARRAY_MAX); arrays[Mesh.ARRAY_VERTEX] = verts
+				mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+			"heave":
+				var pulse := fposmod(age / maxf(life / 3.0, 0.3) + seed * 0.05, 1.0)
+				var pop := sin(pulse * PI) * (1.0 - smoothstep(0.85, 1.0, age / life))
+				node.position = data.at + Vector3.UP * (pop * 1.1 - 0.3)
+				node.scale = Vector3.ONE * float(data.size) * (0.5 + pop * 0.7)
+				node.rotation = Vector3(seed + age * 2.0, seed, age)
+			"clock_dial":
+				node.position.y = 3.6
+				var size := radius * 0.8 * smoothstep(0.0, 0.15, age / life) + 0.001
+				if camera != null: node.global_basis = camera.global_basis * Basis.from_scale(Vector3(size, size, 1.0))
+			"gear":
+				node.position.y = 3.6
+				node.scale = Vector3(radius * (0.9 + seed * 0.12), 0.5, radius * (0.9 + seed * 0.12)) * smoothstep(0.0, 0.15, age / life)
+				if camera != null:
+					var to_cam := (camera.global_position - node.global_position).normalized()
+					node.global_basis = Basis(Quaternion(Vector3.UP, to_cam)) * Basis(Vector3.UP, age * (1.2 if int(seed) % 2 == 0 else -0.8)) * Basis.from_scale(node.scale)
+			"rewind_dial":
+				var cam_dir := Vector3.BACK
+				if camera != null: cam_dir = (camera.global_position - global_position); cam_dir.y = 0.0; cam_dir = cam_dir.normalized()
+				node.position = Vector3.UP * 1.35 - cam_dir * 0.75
+				var size := 0.85 * smoothstep(0.0, 0.2, age / life) + 0.001
+				if camera != null: node.global_basis = camera.global_basis * Basis.from_scale(Vector3(size, size, 1.0))
+			"rewind_ring":
+				# A big clock face just beyond Mr. Justice, facing the camera, hands running backwards.
+				var cam_dir := Vector3.BACK
+				if camera != null: cam_dir = (camera.global_position - global_position); cam_dir.y = 0.0; cam_dir = cam_dir.normalized()
+				node.position = Vector3.UP * 1.35 - cam_dir * 0.75
+				var size := (0.85 if data.role == "rewind_dial" else 0.92) * smoothstep(0.0, 0.2, age / life)
+				node.global_basis = Basis(Quaternion(Vector3.UP, cam_dir)) * Basis(Vector3.UP, -age * 4.0) * Basis.from_scale(Vector3(size, 1.0, size) + Vector3(0.001, 0.0, 0.001))
+
+
+# ------------------------------------------------------------------ more builders
+func _build_fire_ground() -> void:
+	var card := QuadMesh.new(); card.size = Vector2.ONE
+	var fire := _spell_material(presentation.FLAME)
+	for i in range(18):
+		var angle := _rng.randf() * TAU; var distance := radius * sqrt(_rng.randf())
+		_part(card, fire, "ground_flame", {"seed": float(i), "at": Vector3(cos(angle), 0.0, sin(angle)) * distance, "size": _rng.randf_range(0.6, 1.2)})
+	var scorch := TorusMesh.new(); scorch.inner_radius = 0.9; scorch.outer_radius = 1.0; scorch.rings = 32; scorch.ring_segments = 4
+	_part(scorch, _spell_material(presentation.ENERGY), "scorch_ring")
+
+func _cloud_material(storm: bool) -> StandardMaterial3D:
+	var puff := StandardMaterial3D.new()
+	puff.albedo_color = Color("2e3242") if storm else Color("dbeeff")
+	puff.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON; puff.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
+	puff.rim_enabled = true; puff.rim = 0.35; puff.rim_tint = 0.6
+	puff.emission_enabled = true; puff.emission = Color("161a26") if storm else Color("8fb6d6"); puff.emission_energy_multiplier = 0.4
+	if not storm:
+		puff.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA; puff.albedo_color.a = 0.8
+	return puff
+
+func _build_cloud(storm: bool) -> void:
+	var sphere := SphereMesh.new(); sphere.radius = 0.5; sphere.height = 1.0; sphere.radial_segments = 12; sphere.rings = 6
+	var puff := _cloud_material(storm)
+	for i in range(13):
+		var angle := float(i) * 2.39996; var distance := radius * 0.75 * sqrt(float(i) / 13.0)
+		_part(sphere, puff, "cloud_puff", {"seed": float(i), "at": Vector3(cos(angle) * distance, _rng.randf_range(-0.25, 0.35), sin(angle) * distance), "size": _rng.randf_range(1.2, 2.0) * clampf(radius / 2.6, 0.8, 1.4)})
+	if not storm:
+		var hail: Mesh = presentation._mesh("shard"); var ice := _spell_material(presentation.SURFACE)
+		for i in range(16):
+			_part(hail, ice, "hail", {"seed": float(i), "angle": _rng.randf() * TAU, "distance": radius * sqrt(_rng.randf()), "phase": _rng.randf()})
+
+func _build_frost_breath() -> void:
+	var sphere := SphereMesh.new(); sphere.radius = 0.5; sphere.height = 1.0; sphere.radial_segments = 12; sphere.rings = 6
+	var puff := _cloud_material(false)
+	for i in range(16):
+		_part(sphere, puff, "breath_puff", {"seed": float(i), "spread": _rng.randf_range(-1.0, 1.0), "lift": _rng.randf_range(-0.3, 0.6), "phase": float(i) / 16.0})
+	var spark: Mesh = presentation._mesh("shard"); var ice := _spell_material(presentation.SURFACE)
+	for i in range(12):
+		_part(spark, ice, "breath_ice", {"seed": float(i), "spread": _rng.randf_range(-1.0, 1.0), "lift": _rng.randf_range(-0.2, 0.7), "phase": _rng.randf()})
+
+func _build_pillar() -> void:
+	var beam_radius := clampf(radius * 0.38, 0.6, 1.4)
+	preload("res://scripts/kame_beam.gd").spawn(self, global_position + Vector3.UP * 26.0, global_position, _body, _core, beam_radius, life, bool(presentation._settings().get("low_flash", false)), 1.0)
+	var ring := TorusMesh.new(); ring.inner_radius = 0.9; ring.outer_radius = 1.0; ring.rings = 40; ring.ring_segments = 4
+	var glow := _spell_material(presentation.ENERGY)
+	for i in range(3):
+		_part(ring, glow, "pillar_ring", {"seed": float(i)})
+	var mote := SphereMesh.new(); mote.radius = 0.5; mote.height = 1.0; mote.radial_segments = 5; mote.rings = 3
+	var sparks := _spell_material(presentation.MOTE)
+	for i in range(16):
+		_part(mote, sparks, "pillar_mote", {"seed": float(i)})
+
+func _streak(material: ShaderMaterial) -> MeshInstance3D:
+	var strip := MeshInstance3D.new(); strip.mesh = ArrayMesh.new(); strip.material_override = material
+	strip.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF; strip.extra_cull_margin = 6.0
+	strip.top_level = true
+	add_child(strip)
+	return strip
+
+func _build_wind_cone() -> void:
+	var wind := _spell_material(presentation.ENERGY)
+	for i in range(14):
+		_streaks.append({"node": _streak(wind), "seed": float(i), "spread": _rng.randf_range(-1.0, 1.0), "lift": _rng.randf_range(0.2, 1.6), "phase": _rng.randf(), "curl": _rng.randf_range(-1.0, 1.0)})
+
+func _build_tidal_wave() -> void:
+	var water: Mesh = presentation._mesh("core_sphere"); var liquid := _spell_material(presentation.CORE)
+	for i in range(19):
+		_part(water, liquid, "wave_body", {"seed": float(i), "across": (float(i) / 18.0) * 2.0 - 1.0})
+	for i in range(16):
+		_part(water, liquid, "wave_spray", {"seed": float(i), "across": _rng.randf_range(-1.0, 1.0), "phase": _rng.randf()})
+
+func _build_drain() -> void:
+	var funnel := _part(_cone(radius * 0.95, radius * 0.08, 0.9), _kame(KAME_GLOW, {"turns": 4.0, "spiral": 1.0, "tube": true}), "drain")
+	funnel.position.y = 0.3
+
+func _build_fissure() -> void:
+	# A jagged split across the target: a dark gash in the ground with molten edges.
+	var dark := StandardMaterial3D.new(); dark.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; dark.albedo_color = Color("140b07")
+	var gash := MeshInstance3D.new(); gash.mesh = ArrayMesh.new(); gash.material_override = dark
+	gash.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF; gash.extra_cull_margin = 6.0
+	add_child(gash)
+	var path := PackedVector3Array()
+	var across := Vector3(cos(_rng.randf() * TAU), 0.0, 0.0); across.z = sqrt(maxf(0.0, 1.0 - across.x * across.x)); across = across.normalized()
+	var side := Vector3(-across.z, 0.0, across.x)
+	for i in range(13):
+		var t := float(i) / 12.0 * 2.0 - 1.0
+		path.append(across * t * radius * 1.3 + side * _rng.randf_range(-0.45, 0.45) * radius * 0.25)
+	_parts.append({"node": gash, "role": "gash", "path": path, "side": side})
+	var glow := _spell_material(presentation.ENERGY)
+	for edge in [-1.0, 1.0]:
+		_streaks.append({"node": _streak(glow), "role": "fissure_edge", "edge": edge, "path": path, "side": side})
+	var stone: Mesh = presentation._mesh("stone"); var rock := _spell_material(presentation.SURFACE)
+	for i in range(12):
+		var t := _rng.randf_range(-1.0, 1.0)
+		_part(stone, rock, "heave", {"seed": float(i), "at": across * t * radius * 1.2 + side * (0.5 if i % 2 == 0 else -0.5) * _rng.randf_range(0.5, 1.4), "size": _rng.randf_range(0.4, 0.85)})
+
+func _dial_material() -> ShaderMaterial:
+	var face := _spell_material(presentation.CORE)
+	face.set_shader_parameter("flat_dial", 1.0)
+	return face
+
+func _build_clockwork() -> void:
+	var dial := QuadMesh.new(); dial.size = Vector2.ONE * 2.0
+	_part(dial, _dial_material(), "clock_dial")
+	var gear := TorusMesh.new(); gear.inner_radius = 0.82; gear.outer_radius = 1.0; gear.rings = 24; gear.ring_segments = 4
+	var brass := _spell_material(presentation.SURFACE)
+	for i in range(3):
+		_part(gear, brass, "gear", {"seed": float(i)})
+
+func _build_clock_face() -> void:
+	var dial := QuadMesh.new(); dial.size = Vector2.ONE * 2.0
+	_part(dial, _dial_material(), "rewind_dial")
+	var gear := TorusMesh.new(); gear.inner_radius = 0.86; gear.outer_radius = 1.0; gear.rings = 24; gear.ring_segments = 4
+	_part(gear, _spell_material(presentation.SURFACE), "rewind_ring")
+
+func _update_streaks() -> void:
+	var envelope := _envelope()
+	for data in _streaks:
+		var node: MeshInstance3D = data.node
+		if str(data.get("role", "")) == "fissure_edge":
+			var open := smoothstep(0.0, 0.3, age / life) * (1.0 - smoothstep(0.85, 1.0, age / life))
+			var points := PackedVector3Array()
+			for p in data.path: points.append(global_position + p + data.side * float(data.edge) * open * radius * 0.12 + Vector3.UP * 0.05)
+			presentation._strip(node, points, 0.22)
+			continue
+		var travel := fposmod(age * 1.6 + float(data.phase), 1.0)
+		var reach := radius * travel
+		var side := direction.cross(Vector3.UP).normalized()
+		var points := PackedVector3Array()
+		for k in range(8):
+			var d := maxf(0.0, reach - float(k) * 0.35)
+			var spread: float = float(data.spread) * d * 0.45
+			var curl := sin(d * 1.6 + float(data.seed)) * float(data.curl) * 0.35
+			points.append(global_position + direction * (d + 0.6) + side * (spread + curl) + Vector3.UP * (float(data.lift) + sin(d * 2.0 + float(data.seed)) * 0.15))
+		presentation._strip(node, points, 0.16 + travel * 0.18)
+		node.transparency = 1.0 - envelope * (1.0 - travel * 0.6)

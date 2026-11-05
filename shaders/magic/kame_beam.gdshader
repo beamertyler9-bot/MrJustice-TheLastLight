@@ -10,6 +10,7 @@ uniform vec4 core_color : source_color = vec4(0.9, 0.98, 1.0, 1.0);
 uniform float age = 0.0;
 uniform float opacity = 1.0;
 uniform bool tube = true;
+uniform float dark_core = 0.0;
 uniform float brightness = 1.0;
 uniform float low_flash = 0.0;
 uniform float wave = 1.0;
@@ -36,6 +37,11 @@ void fragment() {
 	float streak = step(0.82, fract(UV.x * 5.0 + along * 0.35 - age * 6.0)) * step(0.5, fract(along * 0.9 - age * 9.0)) * wave;
 	v = clamp(v + streak * 0.22 * (1.0 - low_flash * 0.5), 0.0, 1.0);
 	vec3 col = energy_color(v, body_color.rgb, core_color.rgb) * clamp(brightness, 0.6, 1.8);
+	if (dark_core > 0.5) {
+		// Void: the ramp turned inside out - a black heart with a burning edge.
+		col = mix(energy_color(clamp(1.2 - v, 0.0, 1.0), body_color.rgb, core_color.rgb), vec3(0.015, 0.0, 0.03), toon_aa(0.42, v));
+	}
 	ALBEDO = col;
-	ALPHA = energy_alpha(max(v, 0.05)) * opacity;
+	// A solid column: only the outermost sliver of the silhouette fades.
+	ALPHA = toon_aa(0.02, max(v, 0.03)) * mix(0.75, 1.0, toon_aa(0.12, v)) * opacity;
 }

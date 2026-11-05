@@ -11,10 +11,11 @@ const FORMS := ["volley", "beam", "burst", "ward", "mend", "step", "touch", "fie
 ## Where the spell leaves Mr. Justice: his casting hand or the lantern in his head.
 const ORIGINS := ["hand", "lantern"]
 ## Signature visual that makes a spell look like its name (see spell_motifs.gd).
-const MOTIFS := ["none", "tornado", "updraft", "geyser", "whirlpool", "quake", "fire_ring", "dome", "thicket", "rain_heal", "bloom", "black_sun", "magnet", "nova", "gale", "shell", "phoenix"]
+const MOTIFS := ["none", "tornado", "updraft", "geyser", "whirlpool", "quake", "fire_ring", "dome", "thicket", "rain_heal", "bloom", "black_sun", "magnet", "nova", "gale", "shell", "phoenix",
+	"fire_ground", "storm_cloud", "pillar", "wind_cone", "frost_cloud", "tidal_wave", "railgun", "clockwork", "clock_face", "fissure", "vortex"]
 const ELEMENTS := ["flame", "frost", "storm", "grove", "light", "shadow", "water", "wind", "earth", "metal", "void", "time"]
 const PROJECTILES := ["orb", "lance", "shard", "star", "comet", "ring", "cube", "blade", "bolt", "disc", "moth", "serpent", "ribbon"]
-const TRAJECTORIES := ["straight", "fan", "helix", "seeking", "lob", "wave", "rising", "returning", "spiral"]
+const TRAJECTORIES := ["straight", "fan", "helix", "seeking", "lob", "wave", "rising", "returning", "spiral", "ballistic"]
 const PARTICLES := ["sparks", "runes", "petals", "embers", "stars"]
 const TRAILS := ["ribbon", "orbit", "none"]
 const EFFECTS := ["elemental", "levitate", "push", "pull", "suspend", "orbit", "gravity_well", "repel", "launch", "slow", "stasis", "projectile_stasis", "enchant", "heal", "shield"]

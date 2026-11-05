@@ -235,7 +235,7 @@ func _strike_cast(spell: Dictionary, origin: Vector3, target: Vector3, context: 
 	var center: Vector3 = ground.position + Vector3.UP * 0.05 if not ground.is_empty() else aim
 	var stage := weave._stage(context)
 	if not stage.is_empty(): stage.point = center
-	presentation.sky_strike(center + Vector3.UP * 22.0, center, spell, 0.55 + release_charge * 0.3)
+	presentation.sky_strike(center + Vector3.UP * 22.0, center, spell, 0.55 + release_charge * 0.3, clampf(float(spell.radius) / 1.8, 1.0, 2.4))
 	_glyph(center, spell, "burst", 0.8, float(spell.radius))
 	_contact(null, center, spell, context, true)
 	if is_instance_valid(game.player):
@@ -397,10 +397,20 @@ func _spawn_bolt(spell: Dictionary, origin: Vector3, direction: Vector3, context
 	weave.work(context, 1)
 
 func _launch_velocity(spell: Dictionary, origin: Vector3, aim: Vector3, release_target: Vector3, context: Dictionary) -> Vector3:
-	if spell.trajectory != "lob": return aim * float(spell.speed)
+	if spell.trajectory not in ["lob", "ballistic"]: return aim * float(spell.speed)
 	var pool: Variant = context.get("pool")
 	var charge := float(pool.get("charge", 0.0)) if pool is Dictionary else 0.0
+	if spell.trajectory == "ballistic": return ballistic_launch(spell, origin, release_target, charge).velocity
 	return lob_launch(spell, origin, release_target, charge).velocity
+
+const BALLISTIC_GRAVITY := 9.0
+
+## Shot straight at the aim point; gravity then pulls it down. Charge shoots it faster.
+func ballistic_launch(spell: Dictionary, origin: Vector3, aim_target: Vector3, charge: float) -> Dictionary:
+	var direction := (aim_target - origin).normalized()
+	if direction.length_squared() < 0.5: direction = -game.player.camera.global_basis.z if is_instance_valid(game.player.camera) else Vector3.FORWARD
+	var velocity := direction * float(spell.speed) * (1.0 + clampf(charge, 0.0, 1.0) * 0.8)
+	return {"velocity": velocity, "time": 2.2, "gravity": BALLISTIC_GRAVITY}
 
 func _tick_projectiles(dt: float) -> void:
 	for index in range(projectiles.size() - 1, -1, -1):
@@ -517,6 +527,10 @@ func _advance_bolt(bolt: Dictionary, dt: float) -> Vector3:
 		var displacement: Vector3 = bolt.velocity * dt + Vector3.DOWN * 5.5 * dt * dt
 		bolt.velocity += Vector3.DOWN * 11.0 * dt
 		return bolt.position + displacement
+	if trajectory == "ballistic":
+		var drop: Vector3 = bolt.velocity * dt + Vector3.DOWN * 0.5 * BALLISTIC_GRAVITY * dt * dt
+		bolt.velocity += Vector3.DOWN * BALLISTIC_GRAVITY * dt
+		return bolt.position + drop
 	if trajectory == "helix":
 		var age: float = bolt.age
 		var amplitude := minf(0.58, 0.2 + float(bolt.spell.spread) * 0.008) * minf(1.0, age * 7.0)
@@ -554,7 +568,11 @@ func _beam_cast(spell: Dictionary, origin: Vector3, direction: Vector3, context:
 	var stage := weave._stage(context)
 	if not stage.is_empty(): stage.point = end
 	if spell.targeting in ["caster", "projectiles"]: _contact(null, origin if spell.targeting == "caster" else end, spell, context, true)
-	_beam_visual(origin, end, spell, 0.26 + release_charge * 0.55, float(spell.size) * (1.0 + release_charge * 0.9))
+	if "levitate" in [spell.effect, spell.secondary_effect, spell.tertiary_effect]:
+		# Levitation is a fine thread of magic, not a blast.
+		_beam_visual(origin, end, spell, 0.3, 0.025)
+	else:
+		_beam_visual(origin, end, spell, 0.26 + release_charge * 0.55, float(spell.size) * (1.0 + release_charge * 0.9))
 	var impact_spell := spell.duplicate(); impact_spell["_surface_normal"] = hit.get("normal", Vector3.UP)
 	_glyph(end, impact_spell, "beam_end" if hit.is_empty() else "impact", 0.5, 0.65)
 

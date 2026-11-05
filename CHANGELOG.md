@@ -1,5 +1,46 @@
 # Changelog
 
+## 0.46.0 — Spell-by-spell rework (2026-11-04)
+
+- **Phoenix Dive:** a real firebird with a blazing body, a head with a golden beak, two great
+  flapping wings of flame and long tail plumes. It is fired from your hand, explodes, and
+  leaves the ground burning for four seconds.
+- **Fireball:** now fires straight at what you aim at, and gravity gradually pulls it down.
+  Charging makes it faster, bigger and longer-ranged. The dotted path shows where it will hit.
+- **Storm:**
+  - Thunder Lance (and every storm beam) crackles with forking lightning along the beam.
+  - Thunderclap is a massive bolt of lightning out of the sky.
+  - Thunderstorm summons a dark thundercloud over the target that rains lightning.
+- **Lantern Beam:** Mr. Justice no longer raises his hand while charging it (it comes from
+  his lantern).
+- **Beams:** solid columns of light, no longer see-through. Levitation draws a thin thread
+  instead of a blast.
+- **Judgement Pillar:** the pillar of light lasts five seconds and burns everything in it the
+  whole time.
+- **Wind and frost:**
+  - Gust is a cone of rushing wind streaks.
+  - Frost Breath blows a billowing cloud of frost and ice forward.
+  - Glacier Spike bursts a massive jagged spike of ice, ringed by smaller ones, up out of
+    the ground.
+  - Blizzard is a freezing cloud that rains hail and slows enemies.
+- **Water:**
+  - Tide Splash is a tidal wave that rolls out in front of you and crashes.
+  - Torrent Beam is a jet of real water.
+  - Whirlpool swirls down into a vortex.
+  - Geyser erupts for longer with a splashing crown on top.
+- **Earth:**
+  - Earthquake splits the ground open in a glowing fissure, with rocks heaving along it, for
+    massive damage.
+  - Landslide drops 12 boulders over a longer time.
+- **Railgun:** while charging, a magic circle opens in front of your hand, then three more
+  lock into a triangle and the array spins faster and faster. On release a colossal beam
+  fires with lightning crackling around it, and the circles blast down the barrel.
+- **Null Lance (and all void beams):** black at the heart with a burning edge.
+- **Time magic is clock-themed:**
+  - Every time spell has a real clock face with ticks, a bezel and moving hands.
+  - Hourglass Rain and Stasis Field show a giant clock with turning gears.
+  - Rewind shows a clock behind Mr. Justice with its hands running backwards.
+
 ## 0.45.0 — Spells look like their names (2026-11-04)
 
 - New per-spell signature visuals (`scripts/spell_motifs.gd`, `motif` field), built from the

@@ -20,6 +20,9 @@ var low_flash := false
 var body_color := Color("3fc8ff")
 var core_color := Color("e8fbff")
 var muzzle_scale := 1.7
+## Void beams: black heart, glowing edge.
+var dark_core := false
+var _body_override: Material
 
 var _pivot: Node3D
 var _body: MeshInstance3D
@@ -41,7 +44,7 @@ static func spawn(parent: Node, from: Vector3, to: Vector3, body: Color, core: C
 	if parent == null or not parent.is_inside_tree() or not from.is_finite() or not to.is_finite() or from.distance_squared_to(to) < 1.0e-4: return null
 	var beam = load("res://scripts/kame_beam.gd").new()
 	beam.start = from; beam.end = to; beam.body_color = body; beam.core_color = core
-	beam.radius = clampf(beam_radius, 0.015, 1.2); beam.life = clampf(duration, 0.12, 3.0); beam.low_flash = gentle; beam.muzzle_scale = muzzle_scale
+	beam.radius = clampf(beam_radius, 0.015, 1.2); beam.life = clampf(duration, 0.12, 8.0); beam.low_flash = gentle; beam.muzzle_scale = muzzle_scale
 	parent.add_child(beam)
 	return beam
 
@@ -66,6 +69,7 @@ func _ready() -> void:
 	tube.cap_top = false; tube.cap_bottom = false
 	_body = _part(tube, _material(BODY, {"wave": 1.0 if radius > 0.08 else 0.35, "length_m": _length}))
 	_body.position = Vector3(0, _length * 0.5, 0)
+	if _body_override != null: _body.material_override = _body_override
 	_body.scale = Vector3(radius, 1, radius)
 	_pivot.add_child(_body)
 	_sheath = _part(tube, _material(GLOW, {"turns": maxf(1.0, _length * 0.45), "spiral": 1.0 if radius > 0.08 else 0.0}))
@@ -84,6 +88,11 @@ func _ready() -> void:
 		add_child(_sparks)
 	_update()
 
+
+## Replace the beam's surface (water beams wear the sloshing water material).
+func set_body_material(material: Material) -> void:
+	_body_override = material
+	if _body != null: _body.material_override = material
 
 func _basis_along(direction: Vector3) -> Basis:
 	var y := direction
@@ -130,6 +139,11 @@ func _update() -> void:
 	for material in _materials:
 		material.set_shader_parameter("age", age)
 		material.set_shader_parameter("opacity", opacity)
+		if dark_core: material.set_shader_parameter("dark_core", 1.0)
+	if _body_override is ShaderMaterial:
+		_body_override.set_shader_parameter("age", age)
+		_body_override.set_shader_parameter("opacity", opacity)
+		_body_override.set_shader_parameter("brightness", 1.1)
 	_pivot.scale = Vector3(1, maxf(grow, 0.001), 1)
 	_body.scale = Vector3(radius * thickness, 1, radius * thickness)
 	_sheath.scale = Vector3(radius * thickness * 1.75, 1, radius * thickness * 1.75)

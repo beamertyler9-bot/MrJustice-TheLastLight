@@ -309,7 +309,19 @@ func projectile_node(spell: Dictionary) -> Node3D:
 	_build_family(data, false)
 	_add_core(data, false)
 	if str(spell.get("motif", "none")) == "phoenix" and _family(spell) == "flame":
+		# A firebird: blazing body, a bright head with a golden beak, two great flapping
+		# wings of flame and long tail plumes streaming behind.
 		data.plumage = _flame_instances(node, "PhoenixWings", data.materials[0], 16)
+		var bird_unit := minf(_number(spell, "size", 0.18, 0.06, 0.75) * 2.7, 0.9)
+		var head := _piece(node, "PhoenixHead", "core_sphere", data.materials[3], Vector3.ONE * bird_unit * 0.36, Vector3(0, 0.1, -0.62) * bird_unit)
+		data.parts.append({"node": head, "role": "phoenix_head", "seed": 0.0, "unit": bird_unit})
+		var beak_material := ShaderMaterial.new(); beak_material.shader = SURFACE
+		beak_material.set_shader_parameter("body_color", Color("ffcf4a")); beak_material.set_shader_parameter("core_color", Color("fff2b0")); beak_material.set_shader_parameter("rim_color", Color("ff8a1e"))
+		var beak := _piece(node, "PhoenixBeak", "selected_lance", beak_material, Vector3(0.22, 0.32, 0.22) * bird_unit, Vector3(0, 0.08, -0.86) * bird_unit)
+		beak.rotation.x = -PI * 0.5
+		for i in range(3):
+			var plume := _piece(node, "PhoenixTail%d" % i, "quad", data.materials[0], Vector3(0.5, 1.8, 1) * bird_unit)
+			data.parts.append({"node": plume, "role": "tongue", "seed": 0.6 + float(i) * 0.9, "unit": bird_unit * 1.5})
 	_add_silhouette(data)
 	_add_projectile_orbit(data)
 	# Liquids and solids barely glow; fire glows the most.
@@ -423,7 +435,7 @@ func _add_core(data: Dictionary, impact: bool) -> void:
 	var size := unit * (0.78 if data.family == "flame" else 0.55)
 	var core := _piece(node, "ElementCore", "core_sphere", data.materials[3], Vector3.ONE * size)
 	# Darts, bolts, lances, shards and comets are streaks, not balls.
-	var streak := str(data.spell.get("projectile", "orb")) in ["bolt", "lance", "shard", "blade", "comet"]
+	var streak: bool = str(data.spell.get("projectile", "orb")) in ["bolt", "lance", "shard", "blade", "comet"] and data.family != "time"
 	data.parts.append({"node": core, "role": "core", "seed": 0.0, "unit": size, "stretch": Vector3(0.55, 0.55, 2.1) if streak else Vector3.ONE})
 
 ## Screen-space roll that points a camera-facing card's "up" away from the direction of travel.
@@ -457,7 +469,7 @@ func _card_transform(container: Node3D, point: Vector3, size: Vector2, roll: flo
 
 func _animate_flame_instances(data: Dictionary, age: float) -> void:
 	var spell: Dictionary = data.spell; var unit := minf(_number(spell, "size", 0.18, 0.06, 0.75) * 2.7, 0.9)
-	if data.has("plumage"): _animate_plumage(data, age, unit * 0.55)
+	if data.has("plumage"): _animate_plumage(data, age, unit * 0.85)
 	_animate_wake(data, age, unit)
 
 func _animate_plumage(data: Dictionary, age: float, unit: float) -> void:
@@ -740,7 +752,8 @@ func _animate(data: Dictionary, age: float, _dt: float, impact: bool) -> void:
 				var throb := 1.0 + sin(clock * 9.0 + seed) * 0.05
 				var stretch: Vector3 = part.get("stretch", Vector3.ONE)
 				piece.scale = stretch * unit * throb
-				piece.rotation = Vector3(0, 0, clock * 1.7 * spin) if stretch != Vector3.ONE else Vector3(clock * 0.9, clock * 1.7 * spin, 0)
+				if data.family == "time": piece.rotation = Vector3.ZERO  # the dial faces you; its hands move
+				else: piece.rotation = Vector3(0, 0, clock * 1.7 * spin) if stretch != Vector3.ONE else Vector3(clock * 0.9, clock * 1.7 * spin, 0)
 			"tongue":
 				# Flames stream back off the fireball, flickering around its rim.
 				var trailing := _trailing_roll(data)
@@ -751,6 +764,7 @@ func _animate(data: Dictionary, age: float, _dt: float, impact: bool) -> void:
 				piece.position = Vector3.ZERO
 				_face(piece, roll)
 				piece.position = piece.basis.y.normalized() * unit * length * 0.42
+			"phoenix_head": piece.position = Vector3(0, 0.1 + sin(clock * 7.5) * 0.04, -0.62) * unit
 			"core_burst":
 				# The impact blooms as an expanding ball of the element, then dissolves.
 				var bloom := clampf(age / 0.32, 0.0, 1.0)
@@ -861,7 +875,7 @@ func glyph(point: Vector3, spell: Dictionary, kind: String, life: float, radius:
 		seal.rotation.x = -PI * 0.5
 	data.halo = _piece(node, "ImpactHalo", "quad", data.materials[2], Vector3.ONE * 2.4)
 	var motif := str(spell.get("motif", "none"))
-	if motif != "none" and motif != "phoenix" and kind in ["burst", "field", "ward", "mend", "trap", "cone"]: _spawn_motif(spell, motif, kind, point, life, radius)
+	if motif != "none" and motif not in ["phoenix", "railgun"] and kind in ["burst", "field", "ward", "mend", "trap", "cone", "rain"]: _spawn_motif(spell, motif, kind, point, life, radius)
 	if kind in ["impact", "burst", "beam_end"]: _add_core(data, true)
 	if kind in ["impact", "burst", "beam_end"] and data.family != "void":
 		# Punch of contact: a white-hot star and a ring that races outward, both gone in ~0.25 s.
@@ -918,9 +932,26 @@ func _spawn_motif(spell: Dictionary, motif: String, kind: String, point: Vector3
 		if is_instance_valid(game) and is_instance_valid(game.get("player")): hero = game.player
 	var ground := point
 	if hero != null: ground = hero.global_position
-	elif kind in ["burst", "field", "trap"]: ground = point + Vector3.DOWN * 0.08
+	elif kind in ["burst", "field", "trap", "rain"]: ground = point + Vector3.DOWN * 0.08
+	var size := radius * float(spell.get("impact_scale", 1.0))
+	var duration := maxf(life, 1.0 if kind == "burst" else life)
 	var node = preload("res://scripts/spell_motifs.gd").new()
-	node.setup(self, spell, motif, ground, radius * float(spell.get("impact_scale", 1.0)), maxf(life, 1.0 if kind == "burst" else life), hero)
+	if kind == "cone":
+		# Cones start at the caster and blow the way he is casting.
+		var game: Variant = runtime.get("game")
+		var player: Node3D = game.player if is_instance_valid(game) and is_instance_valid(game.get("player")) else null
+		if player != null:
+			var aim: Vector3 = -player.camera.global_basis.z if is_instance_valid(player.get("camera")) else -player.global_basis.z
+			aim.y = 0.0
+			node.direction = aim.normalized() if aim.length_squared() > 1.0e-4 else Vector3.FORWARD
+			ground = player.global_position
+		size = float(spell.get("range", 7.0)); duration = 1.1
+	elif kind == "rain":
+		node.height = float(spell.get("rain_height", 7.0))
+		duration = clampf(float(spell.get("count", 6)) * float(spell.get("stagger", 0.1)) + 1.4, 1.6, 4.5)
+	elif motif == "geyser":
+		duration = 2.6
+	node.setup(self, spell, motif, ground, size, duration, hero)
 	runtime.add_child(node)
 
 ## A dash / teleport wake streaming out of the hero's back (see dash_trail.gd).
@@ -933,11 +964,12 @@ func dash_trail(spell: Dictionary, hero: Node3D, from: Vector3) -> Node3D:
 	return trail
 
 ## A strike out of the sky (see sky_strike.gd).
-func sky_strike(top: Vector3, ground: Vector3, spell: Dictionary, life: float) -> Node3D:
+func sky_strike(top: Vector3, ground: Vector3, spell: Dictionary, life: float, scale: float = 1.0) -> Node3D:
 	var runtime := _runtime()
 	if runtime == null or not top.is_finite() or not ground.is_finite(): return null
 	var strike = preload("res://scripts/sky_strike.gd").new()
-	strike.setup(self, top, ground, spell, clampf(life, 0.2, 1.5))
+	strike.setup(self, top, ground, spell, clampf(life, 0.2, 6.0))
+	strike.scale_factor = scale
 	runtime.add_child(strike)
 	return strike
 
@@ -952,7 +984,37 @@ func beam(start: Vector3, end: Vector3, spell: Dictionary, life: float, width: f
 	var gentle := bool(_settings().get("low_flash", false))
 	# A beam from the lantern starts right in front of the camera: keep its muzzle small.
 	var muzzle := 0.7 if str(spell.get("origin", "hand")) == "lantern" else 1.7
-	return preload("res://scripts/kame_beam.gd").spawn(runtime, start, end, body, core, radius, clampf(life * 2.3, 0.3, 1.8), gentle, muzzle)
+	var duration := clampf(life * 2.3, 0.3, 1.8)
+	var family := _family(spell)
+	var motif := str(spell.get("motif", "none"))
+	if motif == "railgun":
+		radius = clampf(radius * 1.6, 0.35, 0.75); duration = maxf(duration, 1.3)
+	var node = preload("res://scripts/kame_beam.gd").spawn(runtime, start, end, body, core, radius, duration, gentle, muzzle)
+	if node == null: return null
+	match family:
+		"water":
+			# A jet of real water: the sloshing water surface wraps the beam.
+			node.set_body_material(_material(CORE, spell))
+		"void":
+			# Black at the heart, burning at the edge.
+			node.dark_core = true
+		"storm":
+			# Lightning crackles along (and around) the beam.
+			sky_strike(start, end, spell, duration * 0.85, maxf(radius * 2.2, 0.5))
+		"time":
+			_clock_rings(start, end, spell, duration)
+	if motif == "railgun":
+		var lightning: Dictionary = spell.duplicate(); lightning.element = "storm"
+		sky_strike(start, end, lightning, duration, 2.2)
+		var circles = preload("res://scripts/railgun_charge.gd").new(); runtime.add_child(circles)
+		circles.release(self, spell, start, (end - start).normalized())
+	return node
+
+## Clock faces strung along a time beam, ticking as it fires.
+func _clock_rings(start: Vector3, end: Vector3, spell: Dictionary, duration: float) -> void:
+	var circles = preload("res://scripts/railgun_charge.gd").new(); _runtime().add_child(circles)
+	var clock: Dictionary = spell.duplicate(); clock.sigil = "clock"
+	circles.release(self, clock, start, (end - start).normalized())
 
 func _animate_beam(data: Dictionary) -> void:
 	var node: Node3D = data.node; var age: float = data.age

@@ -19,6 +19,7 @@ uniform float family = 0.0;
 uniform float low_flash = 0.0;
 uniform float contact_flash = 0.0;
 uniform float is_contact = 0.0;
+uniform float flat_dial = 0.0;
 varying vec3 obj;
 
 float hash31(vec3 p) {
@@ -139,12 +140,27 @@ void fragment() {
 		float rim = 1.0 - facing;
 		col = mix(body * 0.08, energy_color(0.75, rim_color.rgb, core), toon_aa(0.55, rim));
 	} else {
-		// Time: a golden clock face with sweeping ticks.
-		float ang = atan(obj.y, obj.x);
-		float ticks = step(0.94, cos(ang * 12.0)) * step(0.55, facing);
-		float hand = (1.0 - toon_aa(0.06, abs(sin(ang - clock * 1.5)))) * step(0.5, facing);
-		v = 0.35 + facing * 0.2 + max(ticks, hand) * 0.4;
-		col = energy_color(v, body, core);
+		// Time: a real clock face always turned to the viewer - cream dial, twelve dark
+		// hour ticks, a gold bezel, and hour and minute hands sweeping round.
+		vec2 d = normalize(NORMAL).xy;
+		if (flat_dial > 0.5) { d = (UV * 2.0 - 1.0) * vec2(1.0, -1.0); facing = 1.0; }
+		float r = length(d);
+		float ang = atan(d.y, d.x);
+		float ticks = step(0.965, cos(ang * 12.0)) * toon_aa(0.58, r) * (1.0 - toon_aa(0.78, r));
+		float minor = step(0.995, cos(ang * 60.0)) * toon_aa(0.68, r) * (1.0 - toon_aa(0.78, r));
+		vec2 m = vec2(cos(-clock * 1.4 + 1.57), sin(-clock * 1.4 + 1.57));
+		vec2 h = vec2(cos(-clock * 0.12 + 0.5), sin(-clock * 0.12 + 0.5));
+		float mt = clamp(dot(d, m), 0.0, 0.66); float ht = clamp(dot(d, h), 0.0, 0.42);
+		float hands = max(1.0 - toon_aa(0.035, length(d - m * mt)), 1.0 - toon_aa(0.055, length(d - h * ht)));
+		float pin = 1.0 - toon_aa(0.08, r);
+		float bezel = toon_aa(0.84, r);
+		vec3 dial = mix(core, vec3(1.0, 0.97, 0.86), 0.55);
+		vec3 ink = toon_ink(body) * 0.55;
+		col = dial;
+		col = mix(col, ink, max(ticks, minor * 0.6));
+		col = mix(col, ink, max(hands, pin));
+		col = mix(col, mix(body, vec3(1.0, 0.85, 0.4), 0.45), bezel);
+		if (flat_dial > 0.5) alpha = 1.0 - toon_aa(0.98, r);
 	}
 	col = mix(col, vec3(1.0), flash * 0.35);
 	ALBEDO = col * clamp(brightness, 0.6, 1.6);
