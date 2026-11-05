@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.53.0 — Circles last as long as the spell (2026-11-05)
+
+- **Magic circles last as long as the spell:** every circle stays fully open for as long as
+  its spell is still doing something, then fades. Something counts as long as:
+  - projectiles are still in flight,
+  - a field is still pulsing,
+  - a trap, wall or summoned guardian is still standing,
+  - a ward is still up,
+  - a breath or beam is still pouring.
+  This applies to quick casts and charged spells, at the hand, at your feet, on the ground
+  and in the sky.
+- **Beam circles:** the circle a beam fires from stays open for the whole beam. That covers
+  the charging circle of charged beams and the lantern's circle for Lantern Beam.
+- **Lantern Beam:** fixed Mr. Justice raising his hand at the end of the cast. The brief
+  "beam firing" pose no longer plays for lantern spells, and his hands stay still for the
+  whole beam.
+
 ## 0.52.0 — Longer-lasting spells (2026-11-05)
 
 - **Spells last longer:** every built-in spell with a lasting effect runs about 60% longer.

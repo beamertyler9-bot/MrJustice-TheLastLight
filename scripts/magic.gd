@@ -243,6 +243,24 @@ func _sustain_cone_hit(entry: Dictionary) -> void:
 		if delta.length_squared() < 0.01 or (delta.normalized().dot(entry.direction) >= cosine and _clear_line(entry.origin, center, target)):
 			if _live(target): _elemental_hit(target, spell, entry.context, false)
 
+## Is the cast with this sequence number still doing something (projectiles in flight,
+## a field still pulsing, a trap, wall or guardian still standing, a beam or breath still
+## pouring)? Magic circles stay up for exactly as long as this is true.
+func cast_active(sequence: int, form: String = "") -> bool:
+	if form == "ward" and ward_remaining > 0.0: return true
+	for stage in weave.stages:
+		if int(stage.context.get("sequence", -1)) == sequence and not bool(stage.ended): return true
+	for group in [weave.traps, weave.constructs, weave.guardians, sustains]:
+		for entry in group:
+			var context: Variant = entry.get("context")
+			if context is Dictionary and int(context.get("sequence", -1)) == sequence: return true
+	return false
+
+## A check the circles can hold on to for the cast that was just released.
+func cast_keeper(spell: Dictionary) -> Callable:
+	var sequence := _sequence; var form := str(spell.get("form", ""))
+	return func() -> bool: return cast_active(sequence, form)
+
 ## Set by the player while a charged spell's own circle is already on screen.
 var suppress_hand_circle := false
 ## While a hand beam is still pouring out, the hero keeps his arm raised toward its end.
@@ -256,11 +274,12 @@ func _cast_circles(spell: Dictionary, origin: Vector3, target: Vector3) -> void:
 	var Circle = preload("res://scripts/magic_circle.gd")
 	var direction := (target - origin).normalized()
 	if direction.length_squared() < 0.5: direction = -game.player.camera.global_basis.z if is_instance_valid(game.player.camera) else Vector3.FORWARD
+	var keeper := cast_keeper(spell)
 	if not suppress_hand_circle and str(spell.get("motif", "none")) != "railgun":
-		Circle.at_hand(self, spell, origin + direction * 0.35, direction, 0.42 + float(spell.power) * 0.06, 1.2)
+		Circle.at_hand(self, spell, origin + direction * 0.35, direction, 0.42 + float(spell.power) * 0.06, 1.2).keep_alive(keeper)
 	var form := str(spell.form)
 	if form in ["ward", "mend", "step", "summon"]:
-		Circle.on_ground(self, spell, game.player.global_position, 1.1, 1.8)
+		Circle.on_ground(self, spell, game.player.global_position, 1.1, 1.8).keep_alive(keeper)
 	elif form in ["burst", "field", "rain", "strike", "trap", "wall"]:
 		var aim := origin + (target - origin).limit_length(float(spell.range))
 		var ground := _ray(aim + Vector3.UP * 1.5, aim + Vector3.DOWN * 30.0, 1)
@@ -274,11 +293,11 @@ func _cast_circles(spell: Dictionary, origin: Vector3, target: Vector3) -> void:
 			var lid := _ray(point + Vector3.UP * 0.2, point + Vector3.UP * sky_height, 1)
 			var sky: Vector3 = lid.position + Vector3.DOWN * 0.15 if not lid.is_empty() else point + Vector3.UP * sky_height
 			var pour := float(spell.count) * float(spell.stagger) + 1.6
-			Circle.in_sky(self, spell, sky, clampf(float(spell.radius) * 1.1, 1.2, 5.0), clampf(pour, 2.2, 8.0), game.player.global_position)
+			Circle.in_sky(self, spell, sky, clampf(float(spell.radius) * 1.1, 1.2, 5.0), clampf(pour, 2.2, 8.0), game.player.global_position).keep_alive(keeper)
 			return
 		var size := float(spell.wall_width) * 0.55 if form == "wall" else float(spell.radius)
 		var duration := float(spell.duration) if form in ["field", "trap"] else 1.9
-		Circle.on_ground(self, spell, point, clampf(size, 0.8, 5.0), clampf(duration, 1.0, 8.0))
+		Circle.on_ground(self, spell, point, clampf(size, 0.8, 5.0), clampf(duration, 1.0, 14.0)).keep_alive(keeper)
 
 ## How high rain spells pour from: the sky circle, low enough to stay in view.
 func rain_drop_height(spell: Dictionary) -> float:
@@ -663,7 +682,7 @@ func _beam_cast(spell: Dictionary, origin: Vector3, direction: Vector3, context:
 		# The beam keeps pouring for its whole life, burning whatever stands in it.
 		if is_instance_valid(node):
 			sustains.append({"kind": "beam", "spell": _sustain_spell(spell), "context": context, "origin": origin, "end": end,
-				"radius": float(spell.size) * 0.9, "wait": SUSTAIN_TICK, "remaining": float(node.get("life")) * 0.85})
+				"radius": float(spell.size) * 0.9, "wait": SUSTAIN_TICK, "remaining": float(node.get("life")) - 0.1})
 	var impact_spell := spell.duplicate(); impact_spell["_surface_normal"] = hit.get("normal", Vector3.UP)
 	_glyph(end, impact_spell, "beam_end" if hit.is_empty() else "impact", 0.5, 0.65)
 

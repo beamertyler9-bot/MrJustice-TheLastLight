@@ -368,7 +368,7 @@ func _physics_process(dt: float) -> void:
 		take_damage(1)
 	if global_position.y < -35 and (not world.has_method("interior_at") or world.interior_at(global_position).is_empty()):
 		respawn("A small stumble. A fresh start.")
-	if cast_time > 0:
+	if cast_time > 0 and lantern_still <= 0.0:
 		motion = "grimoire" if visual.has_method("is_grimoire_casting") and visual.is_grimoire_casting() else "beam" if hooking <= 0 else "hook"
 	visual.carry_pose = is_instance_valid(held_body)
 	state.player_position = global_position
@@ -1746,12 +1746,16 @@ func release_spell_cast(canceled: bool = false) -> void:
 	if not spell_charging: return
 	var amount := clampf(spell_charge / maxf(spell_charge_time, 0.05), 0.0, 1.0)
 	var had_circle := is_instance_valid(spell_circle)
+	var circle: Node3D = spell_circle
 	cancel_spell_charge()
 	if not canceled:
 		var runtime = magic_runtime()
 		if runtime != null: runtime.suppress_hand_circle = had_circle
-		cast_spell(amount)
+		var cast := cast_spell(amount)
 		if runtime != null: runtime.suppress_hand_circle = false
+		# The charge circle stays open for as long as the spell (or beam) it fired is active.
+		if cast and is_instance_valid(circle) and runtime != null and runtime.has_method("cast_keeper"):
+			circle.keep_alive(runtime.cast_keeper(state.equipped_spell()))
 
 func cancel_spell_charge() -> void:
 	if railgun_charge != null: railgun_charge.visible = false
@@ -1881,7 +1885,7 @@ func cast_spell(charge: float = -1.0) -> bool:
 		cast_turns_to_aim = true
 		if str(spell.get("origin", "hand")) == "lantern":
 			# The lantern does the casting; the arms do not move.
-			lantern_still = 2.2
+			lantern_still = 3.6
 		else:
 			visual_action("beam")
 		camera_trauma = minf(0.4, camera_trauma + 0.12 + charged * 0.18)

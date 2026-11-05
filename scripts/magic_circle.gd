@@ -20,6 +20,11 @@ var size := 1.0
 var spin := 1.0
 ## Held circles (spell charging) stay until released; their size is driven from outside.
 var held := false
+## While this returns true (the spell is still active) the circle stays at full strength.
+var keep_while := Callable()
+const POP := 0.22
+const FADE := 0.45
+const MAX_HOLD := 16.0
 var _card: MeshInstance3D
 var _material: ShaderMaterial
 
@@ -96,23 +101,42 @@ func set_charge(amount: float) -> void:
 	_material.set_shader_parameter("opacity", lerpf(0.5, 1.0, amount))
 
 
+## Let go of a charging circle: it stays fully open, then fades (or keeps going while
+## `keep_while` says the spell is still active).
 func release() -> void:
-	held = false; age = maxf(age, life * 0.55)
+	held = false
+	_hold_age = 0.0
+	age = POP
+	life = maxf(life, POP + FADE + 0.3)
 
+
+## Keep the circle up for as long as `check` returns true (the spell is still active).
+func keep_alive(check: Callable) -> void:
+	keep_while = check
+
+
+var _hold_age := 0.0
+var _clock := 0.0
 
 func _process(dt: float) -> void:
-	age += dt
+	_clock += dt
 	_card.rotate_object_local(Vector3.BACK, dt * spin * (2.4 if held else 1.2))
-	_material.set_shader_parameter("clock", age)
+	_material.set_shader_parameter("clock", _clock)
 	if held: return
+	_hold_age += dt
+	var plateau := maxf(life - FADE, POP)
+	if age + dt >= plateau and _hold_age < MAX_HOLD and keep_while.is_valid() and bool(keep_while.call()):
+		# Still active: stay fully open at the start of the fade.
+		age = maxf(age, plateau)
+	else:
+		age += dt
 	if age >= life:
 		queue_free(); return
 	_update()
 
 
 func _update() -> void:
-	var t := age / life
-	var pop := smoothstep(0.0, 0.18, t)
-	var overshoot := 1.0 + sin(clampf(t / 0.25, 0.0, 1.0) * PI) * 0.12
+	var pop := smoothstep(0.0, POP, age)
+	var overshoot := 1.0 + sin(clampf(age / 0.35, 0.0, 1.0) * PI) * 0.12
 	_card.scale = Vector3.ONE * size * maxf(pop * overshoot, 0.01)
-	_material.set_shader_parameter("opacity", 1.0 - smoothstep(0.65, 1.0, t))
+	_material.set_shader_parameter("opacity", 1.0 - smoothstep(maxf(life - FADE, POP), life, age))
