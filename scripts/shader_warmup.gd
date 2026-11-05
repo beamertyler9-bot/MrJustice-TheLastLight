@@ -47,6 +47,16 @@ func build(game: Node, camera: Camera3D) -> void:
 		circle.set_shader_parameter("sheet", preload("res://assets/magic_circles/flame.png"))
 		var card := QuadMesh.new()
 		_try(func(): _single(card, circle, false))
+		# Railgun lightning arcs (additive vertex-coloured ribbons).
+		var arc_material := StandardMaterial3D.new()
+		arc_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; arc_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		arc_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD; arc_material.cull_mode = BaseMaterial3D.CULL_DISABLED; arc_material.vertex_color_use_as_albedo = true
+		var ribbon := ImmediateMesh.new()
+		ribbon.surface_begin(Mesh.PRIMITIVE_TRIANGLES, arc_material)
+		for corner in [Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 1, 0)]:
+			ribbon.surface_set_color(Color(1, 1, 1, 0.01)); ribbon.surface_add_vertex(corner)
+		ribbon.surface_end()
+		_try(func(): _single(ribbon, arc_material, false))
 		var motes := ShaderMaterial.new(); motes.shader = Presentation.MOTE
 		_try(func(): _multi(presentation._mesh("spark"), motes, false, true))
 		var smoke := ShaderMaterial.new(); smoke.shader = Presentation.SMOKE

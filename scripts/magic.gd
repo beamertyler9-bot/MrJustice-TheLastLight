@@ -206,6 +206,9 @@ func _crown_center() -> Vector3:
 
 ## Set by the player while a charged spell's own circle is already on screen.
 var suppress_hand_circle := false
+## While a hand beam is still pouring out, the hero keeps his arm raised toward its end.
+var beam_hold := 0.0
+var beam_hold_point := Vector3.ZERO
 
 ## The element's magic circle where the spell is cast: standing in front of the hand (or
 ## lantern), facing the aim; and flat on the ground under spells that land on an area or
@@ -221,11 +224,26 @@ func _cast_circles(spell: Dictionary, origin: Vector3, target: Vector3) -> void:
 		Circle.on_ground(self, spell, game.player.global_position, 1.1, 1.1)
 	elif form in ["burst", "field", "rain", "strike", "trap", "wall"]:
 		var aim := origin + (target - origin).limit_length(float(spell.range))
-		var ground := _ray(aim + Vector3.UP * 1.5, aim + Vector3.DOWN * 30.0)
+		var ground := _ray(aim + Vector3.UP * 1.5, aim + Vector3.DOWN * 30.0, 1)
 		var point: Vector3 = ground.position if not ground.is_empty() else aim
+		if form == "rain":
+			# Rain pours out of a circle hanging in the sky over the target.
+			var sky_height := rain_drop_height(spell)
+			if str(spell.get("motif", "none")) in ["storm_cloud", "frost_cloud"]:
+				# Cloud spells: the circle hangs just under the cloud it pours from.
+				sky_height = clampf(float(spell.get("rain_height", 7.0)) * 0.5, 3.2, 4.2) - 0.8
+			var lid := _ray(point + Vector3.UP * 0.2, point + Vector3.UP * sky_height, 1)
+			var sky: Vector3 = lid.position + Vector3.DOWN * 0.15 if not lid.is_empty() else point + Vector3.UP * sky_height
+			var pour := float(spell.count) * float(spell.stagger) + 1.0
+			Circle.in_sky(self, spell, sky, clampf(float(spell.radius) * 1.1, 1.2, 5.0), clampf(pour, 1.6, 6.0), game.player.global_position)
+			return
 		var size := float(spell.wall_width) * 0.55 if form == "wall" else float(spell.radius)
 		var duration := float(spell.duration) if form in ["field", "trap"] else 1.2
 		Circle.on_ground(self, spell, point, clampf(size, 0.8, 5.0), clampf(duration, 1.0, 8.0))
+
+## How high rain spells pour from: the sky circle, low enough to stay in view.
+func rain_drop_height(spell: Dictionary) -> float:
+	return minf(float(spell.get("rain_height", 6.0)), 4.8)
 
 ## Lantern spells leave from the lantern in Mr. Justice's head; everything else from the hand.
 func _spell_origin(spell: Dictionary) -> Vector3:
@@ -306,6 +324,7 @@ func _tick_slice(dt: float) -> void:
 	object_magic.tick(dt)
 	_tick_scheduled(dt)
 	cooldown_remaining = maxf(0.0, cooldown_remaining - dt)
+	beam_hold = maxf(0.0, beam_hold - dt)
 	game.state.recover_mana(dt)
 	ward_remaining = maxf(0.0, ward_remaining - dt)
 	if ward_remaining <= 0: ward_strength = 0
@@ -596,7 +615,11 @@ func _beam_cast(spell: Dictionary, origin: Vector3, direction: Vector3, context:
 		# Levitation is a fine thread of magic, not a blast.
 		_beam_visual(origin, end, spell, 0.3, 0.025)
 	else:
-		_beam_visual(origin, end, spell, 0.26 + release_charge * 0.55, float(spell.size) * (1.0 + release_charge * 0.9))
+		var node: Variant = presentation.beam(origin, end, spell, 0.26 + release_charge * 0.55, float(spell.size) * (1.0 + release_charge * 0.9))
+		# Hand beams: the arm stays raised for as long as the beam pours out.
+		if is_instance_valid(node) and str(spell.get("origin", "hand")) != "lantern":
+			beam_hold = maxf(beam_hold, float(node.get("life")))
+			beam_hold_point = end
 	var impact_spell := spell.duplicate(); impact_spell["_surface_normal"] = hit.get("normal", Vector3.UP)
 	_glyph(end, impact_spell, "beam_end" if hit.is_empty() else "impact", 0.5, 0.65)
 
@@ -876,6 +899,7 @@ func clear_effects() -> void:
 	projectiles.clear(); visuals.clear(); statuses.clear()
 	ward_remaining = 0.0; ward_strength = 0
 	cooldown_remaining = 0.0
+	beam_hold = 0.0
 	for node in get_children(): node.free()
 	_materials.clear(); _meshes.clear(); _spheres.clear(); _target_spheres.clear()
 

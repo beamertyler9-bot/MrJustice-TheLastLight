@@ -988,7 +988,7 @@ func beam(start: Vector3, end: Vector3, spell: Dictionary, life: float, width: f
 	var family := _family(spell)
 	var motif := str(spell.get("motif", "none"))
 	if motif == "railgun":
-		radius = clampf(radius * 1.6, 0.35, 0.75); duration = maxf(duration, 1.3)
+		radius = clampf(radius * 1.7, 0.42, 0.68); duration = maxf(duration, 1.7); muzzle = 1.1
 	var node = preload("res://scripts/kame_beam.gd").spawn(runtime, start, end, body, core, radius, duration, gentle, muzzle)
 	if node == null: return null
 	match family:
@@ -1005,9 +1005,16 @@ func beam(start: Vector3, end: Vector3, spell: Dictionary, life: float, width: f
 			_clock_rings(start, end, spell, duration)
 	if motif == "railgun":
 		var lightning: Dictionary = spell.duplicate(); lightning.element = "storm"
-		sky_strike(start, end, lightning, duration, 2.2)
-		var circles = preload("res://scripts/railgun_charge.gd").new(); runtime.add_child(circles)
-		circles.release(self, spell, start, (end - start).normalized())
+		sky_strike(start, end, lightning, duration, 2.6)
+		sky_strike(start, end, lightning, duration * 0.7, 1.6)
+		var circles = preload("res://scripts/railgun_array.gd").new(); runtime.add_child(circles)
+		circles.release(self, spell, start, (end - start).normalized(), end)
+		# The blast where it lands: a lightning strike, a flash of light and a firestorm.
+		var flare: Dictionary = spell.duplicate(); flare.element = "light"
+		glyph(end, flare, "burst", 0.9, 3.2)
+		var blaze: Dictionary = spell.duplicate(); blaze.element = "flame"; blaze.color = "#ff8a3d"; blaze.accent = "#ffe2a8"; blaze.core_color = "#fff6d8"
+		glyph(end, blaze, "burst", 1.1, 2.4)
+		sky_strike(end + Vector3.UP * 14.0, end, lightning, 0.6, 1.4)
 	return node
 
 ## Clock faces strung along a time beam, ticking as it fires.

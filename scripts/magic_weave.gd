@@ -281,7 +281,7 @@ func rain(spell: Dictionary, origin: Vector3, target: Vector3, context: Dictiona
 		var angle := float(i) * 2.39996
 		var radius := 0.0 if i == 0 else sqrt(float(i) / float(spell.count)) * float(spell.radius) * 0.75
 		var floor_point := center + Vector3(cos(angle), 0, sin(angle)) * radius
-		var sky := floor_point + Vector3.UP * float(spell.rain_height)
+		var sky: Vector3 = floor_point + Vector3.UP * float(runtime.rain_drop_height(spell))
 		var cover: Dictionary = runtime._ray(floor_point + Vector3.UP * 0.1, sky, 1 | 8 | 16)
 		if not cover.is_empty(): sky = cover.position + cover.normal * 0.1
 		runtime._spawn_or_schedule(spell, sky, Vector3.DOWN, context, i, float(i) * float(spell.stagger))

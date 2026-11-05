@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.50.0 — Railgun array, held beams and sky circles (2026-11-05)
+
+- **Railgun, the most powerful spell in the game:**
+  - Charging opens a large **metal** magic circle in front of the hand as the base. Smaller
+    **storm**, **flame** and **light** circles rise out of it and orbit its rim faster and
+    faster, with lightning arcing between them.
+  - Past half charge, a barrel of metal accelerator rings lines up down the aim. At full
+    charge the whole array throbs and crackles.
+  - On release, the barrel rings are flung down the beam like shockwaves and the base flares
+    and spins out. Two layers of lightning wrap the beam.
+  - Where the shot lands, a second metal circle blooms with storm, flame and light circles
+    bursting outward, plus a flash of light, a firestorm and a lightning strike from the sky.
+  - The camera kicks, the controller rumbles and the game freezes for an instant on the shot.
+- **Beams:** Mr. Justice keeps his arm raised toward the target for as long as a beam lasts,
+  not just at the moment it fires.
+- **Lantern Beam:** his hands no longer move at all. It comes from the lantern, so his arms
+  stay exactly where they are while charging and firing.
+- **Rain spells** (Meteor Fall, Landslide, Seed Barrage, Needle Rain, Hourglass Rain) now pour
+  out of a magic circle hanging in the sky over the target, tipped toward you so it reads
+  face-on. The drops fall from the circle.
+- **Cloud spells** (Thunderstorm, Blizzard) hang their circle just under the cloud.
+- **Fix:** ground circles under area spells aimed at an enemy now sit on the ground instead
+  of on top of the enemy.
+
 ## 0.49.0 — Solid beams end-on (2026-11-05)
 
 - **Beams:** you could see through the middle of a beam when looking down it from behind

@@ -101,6 +101,7 @@ var beam_charge: float = 0.0
 var climb_detach: float = 0.0
 var charge_vfx: Node3D
 var spell_charging := false
+var lantern_still := 0.0
 var cast_turns_to_aim := true
 var spell_charge := 0.0
 var spell_charge_time := 1.0
@@ -410,8 +411,13 @@ func _process(dt: float) -> void:
 	var spell_view: bool = spell_charging or magic_contact >= 0.0 or (visual.has_method("is_grimoire_casting") and visual.is_grimoire_casting())
 	# Charging a spell: arm raised toward the target, palm open, the charge ball in it.
 	# (Lantern spells charge in his head, so his arms stay down.)
-	var arm_up: bool = spell_charging and str(state.equipped_spell().get("origin", "hand")) != "lantern"
-	visual.aim_weight = 1.0 if visual.grapple_active() or beam_contact >= 0 or arm_up else (0.0 if spell_view and not ability_aiming else aim_blend)
+	# A hand beam keeps the arm raised toward its end for as long as it lasts.
+	var runtime_now = magic_runtime()
+	var beam_held: bool = runtime_now != null and float(runtime_now.get("beam_hold")) > 0.0
+	var arm_up: bool = (spell_charging and str(state.equipped_spell().get("origin", "hand")) != "lantern") or beam_held
+	# Lantern spells come out of his head: his hands stay exactly where they are.
+	lantern_still = maxf(0.0, lantern_still - dt)
+	visual.aim_weight = 1.0 if visual.grapple_active() or beam_contact >= 0 or arm_up else (0.0 if (spell_view or lantern_still > 0.0) and not ability_aiming else aim_blend)
 	if arm_up: visual.aim_kind = "beam"
 	visual.mantle_progress = 1.0 - mantle_time / Mantle.DURATION if mantle_time > 0 else -1.0
 	if beam_contact >= 0:
@@ -422,6 +428,8 @@ func _process(dt: float) -> void:
 		visual.aim_target = hook_point
 	elif beam_contact >= 0:
 		visual.aim_target = beam_target
+	elif beam_held:
+		visual.aim_target = runtime_now.beam_hold_point
 	elif aim_blend > 0.001:
 		visual.aim_target = ability_target().point
 	if visual.has_method("set_motion_context"):
@@ -1772,7 +1780,7 @@ func _tick_spell_charge(dt: float) -> void:
 		spell_circle.set_charge(amount)
 	if str(spell.get("motif", "none")) == "railgun":
 		if railgun_charge == null:
-			railgun_charge = preload("res://scripts/railgun_charge.gd").new(); add_child(railgun_charge)
+			railgun_charge = preload("res://scripts/railgun_array.gd").new(); add_child(railgun_charge)
 		railgun_charge.visible = true
 		var aim_dir := -camera.global_basis.z if camera != null else -visual.global_basis.z
 		railgun_charge.update_charge(runtime.presentation, spell, anchor, aim_dir, amount, dt)
@@ -1871,9 +1879,18 @@ func cast_spell(charge: float = -1.0) -> bool:
 			return false
 		cast_time = 0.32
 		cast_turns_to_aim = true
-		visual_action("beam")
+		if str(spell.get("origin", "hand")) == "lantern":
+			# The lantern does the casting; the arms do not move.
+			lantern_still = 2.2
+		else:
+			visual_action("beam")
 		camera_trauma = minf(0.4, camera_trauma + 0.12 + charged * 0.18)
 		feel_rumble(int(16 + charged * 40.0), 0.35 + charged * 0.4)
+		if str(spell.get("motif", "none")) == "railgun":
+			# The strongest spell in the game: the whole world kicks.
+			camera_trauma = maxf(camera_trauma, 0.55 + charged * 0.35)
+			feel_rumble(260, 1.0)
+			if game != null and game.get("feel") != null: game.feel.hit_stop(0.06)
 		if is_instance_valid(lock_target): face_lock_target()
 		else: visual.rotation.y = yaw
 		return true
