@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.48.0 — New magic circle designs (2026-11-05)
+
+- **Magic circles:** replaced all twelve circle designs with the new elemental set: a clean
+  double ring with diamond points around a glowing element symbol (a flame, a snowflake, a
+  thundercloud, a sprout, a four-point star, a crescent moon, a water drop, gusts of wind,
+  mountains, an anvil, a spiral and an hourglass). Each one animates on a 16-frame loop.
+  They still appear in the same places: at the hand, growing while you charge, on the ground
+  under area spells and at Mr. Justice's feet for wards, heals and teleports.
+
 ## 0.47.0 — Magic circles (2026-11-05)
 
 - **Magic circles:** every spell now opens an animated magic circle where it is cast, drawn
