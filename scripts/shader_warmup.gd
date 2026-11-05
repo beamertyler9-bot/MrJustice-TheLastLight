@@ -43,6 +43,10 @@ func build(game: Node, camera: Camera3D) -> void:
 			var beam_material := ShaderMaterial.new(); beam_material.shader = shader
 			var tube := CylinderMesh.new(); tube.radial_segments = 8; tube.rings = 2
 			_try(func(): _single(tube, beam_material, false))
+		var circle := ShaderMaterial.new(); circle.shader = preload("res://shaders/magic/magic_circle.gdshader")
+		circle.set_shader_parameter("sheet", preload("res://assets/magic_circles/flame.png"))
+		var card := QuadMesh.new()
+		_try(func(): _single(card, circle, false))
 		var motes := ShaderMaterial.new(); motes.shader = Presentation.MOTE
 		_try(func(): _multi(presentation._mesh("spark"), motes, false, true))
 		var smoke := ShaderMaterial.new(); smoke.shader = Presentation.SMOKE

@@ -107,6 +107,7 @@ var spell_charge_time := 1.0
 var spell_charge_vfx: Node3D
 var arc_preview: MultiMeshInstance3D
 var railgun_charge: Node3D
+var spell_circle: Node3D
 var shadow: MeshInstance3D
 var shadow_material: ShaderMaterial
 var dodge_time: float = 0.0
@@ -1726,16 +1727,28 @@ func begin_spell_cast() -> void:
 	var presentation = runtime.get("presentation")
 	spell_charge_vfx.use_element_core(presentation._material(presentation.CORE, spell) if presentation != null else null)
 	spell_charge_vfx.visible = true
+	# The element's magic circle opens in front of the hand and grows as the charge builds.
+	if is_instance_valid(spell_circle): spell_circle.queue_free()
+	if str(spell.get("motif", "none")) != "railgun":
+		spell_circle = preload("res://scripts/magic_circle.gd").at_hand(self, spell, global_position, -visual.global_basis.z, 0.85, 1.0)
+		spell_circle.set_charge(0.0)
 	cue("bag", 1.25)
 
 func release_spell_cast(canceled: bool = false) -> void:
 	if not spell_charging: return
 	var amount := clampf(spell_charge / maxf(spell_charge_time, 0.05), 0.0, 1.0)
+	var had_circle := is_instance_valid(spell_circle)
 	cancel_spell_charge()
-	if not canceled: cast_spell(amount)
+	if not canceled:
+		var runtime = magic_runtime()
+		if runtime != null: runtime.suppress_hand_circle = had_circle
+		cast_spell(amount)
+		if runtime != null: runtime.suppress_hand_circle = false
 
 func cancel_spell_charge() -> void:
 	if railgun_charge != null: railgun_charge.visible = false
+	if is_instance_valid(spell_circle): spell_circle.release()
+	spell_circle = null
 	spell_charging = false
 	spell_charge = 0.0
 	if spell_charge_vfx != null: spell_charge_vfx.visible = false
@@ -1753,6 +1766,10 @@ func _tick_spell_charge(dt: float) -> void:
 	var anchor: Vector3 = runtime._spell_origin(spell) if runtime != null else visual.hands[1].global_position
 	spell_charge_vfx.global_position = anchor
 	spell_charge_vfx.update_charge(dt, amount, full, bool(state.settings.get("low_flash", false)))
+	if is_instance_valid(spell_circle):
+		var facing := -camera.global_basis.z if camera != null else -visual.global_basis.z
+		spell_circle.place_facing(anchor + facing * 0.42, facing)
+		spell_circle.set_charge(amount)
 	if str(spell.get("motif", "none")) == "railgun":
 		if railgun_charge == null:
 			railgun_charge = preload("res://scripts/railgun_charge.gd").new(); add_child(railgun_charge)

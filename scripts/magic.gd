@@ -172,6 +172,7 @@ func release() -> bool:
 	release_charge = float(transaction.get("charge", 0.0))
 	weave.begin(spell, origin, target, _sequence)
 	release_charge = 0.0
+	_cast_circles(spell, origin, target)
 	if game.get("audio") != null:
 		if game.audio.has_method("magic_cue"): game.audio.magic_cue(str(spell.element), "release", float(spell.power))
 		elif game.audio.has_method("cue"): game.audio.cue("beam", 0.85 + float(spell.power) * 0.04)
@@ -202,6 +203,29 @@ func _crown_center() -> Vector3:
 	if is_instance_valid(visual) and is_instance_valid(visual.get("lantern")):
 		return (visual.lantern as Node3D).global_position + Vector3.UP * 0.38
 	return game.player.global_position + Vector3.UP * 2.2
+
+## Set by the player while a charged spell's own circle is already on screen.
+var suppress_hand_circle := false
+
+## The element's magic circle where the spell is cast: standing in front of the hand (or
+## lantern), facing the aim; and flat on the ground under spells that land on an area or
+## surround Mr. Justice.
+func _cast_circles(spell: Dictionary, origin: Vector3, target: Vector3) -> void:
+	var Circle = preload("res://scripts/magic_circle.gd")
+	var direction := (target - origin).normalized()
+	if direction.length_squared() < 0.5: direction = -game.player.camera.global_basis.z if is_instance_valid(game.player.camera) else Vector3.FORWARD
+	if not suppress_hand_circle and str(spell.get("motif", "none")) != "railgun":
+		Circle.at_hand(self, spell, origin + direction * 0.35, direction, 0.42 + float(spell.power) * 0.06, 0.75)
+	var form := str(spell.form)
+	if form in ["ward", "mend", "step", "summon"]:
+		Circle.on_ground(self, spell, game.player.global_position, 1.1, 1.1)
+	elif form in ["burst", "field", "rain", "strike", "trap", "wall"]:
+		var aim := origin + (target - origin).limit_length(float(spell.range))
+		var ground := _ray(aim + Vector3.UP * 1.5, aim + Vector3.DOWN * 30.0)
+		var point: Vector3 = ground.position if not ground.is_empty() else aim
+		var size := float(spell.wall_width) * 0.55 if form == "wall" else float(spell.radius)
+		var duration := float(spell.duration) if form in ["field", "trap"] else 1.2
+		Circle.on_ground(self, spell, point, clampf(size, 0.8, 5.0), clampf(duration, 1.0, 8.0))
 
 ## Lantern spells leave from the lantern in Mr. Justice's head; everything else from the hand.
 func _spell_origin(spell: Dictionary) -> Vector3:

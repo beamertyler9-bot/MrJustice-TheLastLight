@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.47.0 — Magic circles (2026-11-05)
+
+- **Magic circles:** every spell now opens an animated magic circle where it is cast, drawn
+  from twelve hand-made circle designs, one for each element (flame, frost, storm, grove,
+  light, shadow, water, wind, earth, metal, void and time).
+  - **At the hand:** a circle flares open in front of Mr. Justice's hand (or lantern) as the
+    spell leaves it, facing the direction he casts.
+  - **While charging:** hold-to-charge spells (Fireball, Lantern Beam and the others) open
+    the circle as soon as you start holding. It follows your aim and grows and brightens as the
+    charge builds, then bursts when you let go.
+  - **On the ground:** area spells (bursts, fields, rains, strikes, traps and walls) also draw
+    a circle on the ground under the target, sized to the area. Lasting fields keep theirs for
+    as long as they last.
+  - **At his feet:** wards, heals, teleports and summons draw the circle beneath Mr. Justice.
+  - The Railgun keeps its own triangle of charging seals.
+- The circle shader is warmed up behind the loading screen, so the first cast does not hitch.
+
 ## 0.46.0 — Spell-by-spell rework (2026-11-04)
 
 - **Phoenix Dive:** a real firebird with a blazing body, a head with a golden beak, two great
