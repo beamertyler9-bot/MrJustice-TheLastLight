@@ -101,6 +101,7 @@ var beam_charge: float = 0.0
 var climb_detach: float = 0.0
 var charge_vfx: Node3D
 var spell_charging := false
+var cast_turns_to_aim := true
 var spell_charge := 0.0
 var spell_charge_time := 1.0
 var spell_charge_vfx: Node3D
@@ -339,7 +340,7 @@ func _physics_process(dt: float) -> void:
 		pass
 	elif melee_contact >= 0.0 and strike_facing.length_squared() > 0.5:
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(-strike_facing.x, -strike_facing.z), 1.0 - exp(-dt * 22.0))
-	elif visual.is_throwing() or ability_aiming or cast_time > 0 or visual.grapple_active():
+	elif visual.is_throwing() or ability_aiming or (cast_time > 0 and cast_turns_to_aim) or visual.grapple_active():
 		visual.rotation.y = lerp_angle(visual.rotation.y, yaw, 1.0 - exp(-dt * 15))
 	elif move.length() > 0.08 and not climbing and hooking <= 0:
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(-move.x, -move.z), 1.0 - exp(-dt * 13))
@@ -405,7 +406,9 @@ func _process(dt: float) -> void:
 	# The spell-charge camera borrows the aim view, but not the hand-aim pose (the grimoire
 	# cast needs the arms free).
 	var spell_view: bool = spell_charging or magic_contact >= 0.0 or (visual.has_method("is_grimoire_casting") and visual.is_grimoire_casting())
-	visual.aim_weight = 1.0 if visual.grapple_active() or beam_contact >= 0 else (0.0 if spell_view and not ability_aiming else aim_blend)
+	visual.aim_weight = 1.0 if visual.grapple_active() or beam_contact >= 0 or spell_charging else (0.0 if spell_view and not ability_aiming else aim_blend)
+	# Charging a spell: arm raised toward the target, palm open, the charge ball in it.
+	if spell_charging: visual.aim_kind = "beam"
 	visual.mantle_progress = 1.0 - mantle_time / Mantle.DURATION if mantle_time > 0 else -1.0
 	if beam_contact >= 0:
 		var tracked_point = beam_lock_point()
@@ -1825,14 +1828,30 @@ func cast_spell(charge: float = -1.0) -> bool:
 		return false
 	cancel_melee()
 	attack_cooldown = 0.0
+	if float(spell.get("charge", 0.0)) > 0.0:
+		# Charged spells leave straight from the raised hand (or lantern) the moment you let go.
+		if not runtime.release():
+			if not str(runtime.last_release_error).is_empty(): toast(str(runtime.last_release_error))
+			return false
+		cast_time = 0.32
+		cast_turns_to_aim = true
+		visual_action("beam")
+		camera_trauma = minf(0.4, camera_trauma + 0.12 + charged * 0.18)
+		feel_rumble(int(16 + charged * 40.0), 0.35 + charged * 0.4)
+		if is_instance_valid(lock_target): face_lock_target()
+		else: visual.rotation.y = yaw
+		return true
 	visual.begin_grimoire_cast(Color(str(spell.color)), 0.62)
 	if not visual.is_grimoire_casting():
 		runtime.cancel()
 		return false
 	magic_contact = visual.grimoire_release_time()
 	cast_time = 0.62
-	if is_instance_valid(lock_target): face_lock_target()
-	else: visual.rotation.y = yaw
+	# Teleports keep the way he is facing; everything else turns to the aim.
+	cast_turns_to_aim = str(spell.form) != "step"
+	if cast_turns_to_aim:
+		if is_instance_valid(lock_target): face_lock_target()
+		else: visual.rotation.y = yaw
 	if game != null and game.get("audio") != null and game.audio.has_method("magic_cue"):
 		game.audio.magic_cue(str(spell.element), "flight", 0.5)
 	else: cue("bag", 1.16)

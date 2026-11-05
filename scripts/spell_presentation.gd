@@ -310,7 +310,9 @@ func projectile_node(spell: Dictionary) -> Node3D:
 	_add_core(data, false)
 	_add_silhouette(data)
 	_add_projectile_orbit(data)
-	var halo := _piece(node, "ContainedHalo", "quad", data.materials[2], Vector3.ONE * _number(spell, "size", 0.18, 0.06, 0.75) * (5.5 if _family(spell) == "flame" else 4.6))
+	# Liquids and solids barely glow; fire glows the most.
+	var halo_size: float = {"flame": 5.5, "water": 2.6, "earth": 1.8, "metal": 2.4}.get(_family(spell), 4.6)
+	var halo := _piece(node, "ContainedHalo", "quad", data.materials[2], Vector3.ONE * _number(spell, "size", 0.18, 0.06, 0.75) * halo_size)
 	data.halo = halo
 	var trail := MeshInstance3D.new(); trail.name = "WorldTrail"; trail.mesh = ArrayMesh.new()
 	trail.material_override = data.materials[1]; trail.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -370,12 +372,11 @@ func _build_family(data: Dictionary, impact: bool) -> void:
 				var ink := _piece(node, "InkMoth" if i == 0 else "TornWisp%d" % i, _selected_shape(spell, "moth"), primary, Vector3.ONE * unit)
 				data.parts.append({"node": ink, "role": "ink", "seed": float(i), "unit": unit})
 		"water":
-			for i in range(3):
-				var sheet := _piece(node, "WaterSheet%d" % i, "crescent", energy, Vector3(1.1, 1.4, 1) * unit)
-				data.parts.append({"node": sheet, "role": "water", "seed": float(i), "unit": unit})
-			for i in range(3):
-				var drop := _piece(node, "PressureDrop%d" % i, _selected_shape(spell, "orb"), primary, Vector3(0.17, 0.28, 0.17) * unit)
-				data.parts.append({"node": drop, "role": "drop", "seed": float(i), "unit": unit})
+			# Liquid, not ribbons: droplets of the same sloshing water as the core, trailing
+			# behind in flight or thrown out in a splash on impact.
+			for i in range(8 if impact else 5):
+				var drop := _piece(node, "WaterDroplet%d" % i, "core_sphere", data.materials[3], Vector3.ONE * unit * 0.2)
+				data.parts.append({"node": drop, "role": "splash" if impact else "droplet", "seed": float(i), "unit": unit})
 		"wind":
 			for i in range(4):
 				var stream := _piece(node, "PressureCrescent%d" % i, "crescent", energy, Vector3.ONE * unit)
@@ -538,7 +539,12 @@ func animate_projectile(bolt: Dictionary, dt: float) -> void:
 	node.global_position = point
 	var data: Dictionary = _projectiles[node.get_instance_id()]
 	data.age = age
-	_record_trail(data, point, age)
+	if bool(bolt.get("held", false)):
+		# Circling in a crown: no streaks between the pieces.
+		data.trail.clear()
+		data.trail_node.visible = false
+	else:
+		_record_trail(data, point, age)
 	_animate(data, age, maxf(0.0, dt) if is_finite(dt) else 0.0, false)
 
 func _record_trail(data: Dictionary, point: Vector3, age: float) -> void:
@@ -686,6 +692,16 @@ func _animate(data: Dictionary, age: float, _dt: float, impact: bool) -> void:
 			"ink": piece.position = Vector3(sin(angle) * 0.25, cos(angle) * 0.2, seed * 0.25) * unit; piece.rotation = Vector3(sin(clock * 2.0 + seed) * 0.5, age * spin * 0.3, seed * 0.9)
 			"water": piece.rotation = Vector3(0.4 * seed, seed * 0.6 + age * spin * 0.7, seed * 1.9); piece.position.z = (seed - 1.0) * unit * 0.24
 			"drop": piece.position = Vector3(cos(angle) * 0.35, sin(angle) * 0.35, 0.2 + seed * 0.22) * unit * (1 + progress)
+			"droplet":
+				# Trailing behind the ball (+Z is behind a flying projectile), wobbling.
+				var lag := 0.38 + seed * 0.24
+				piece.position = Vector3(sin(clock * 5.0 + seed * 2.1) * 0.12, cos(clock * 4.3 + seed * 1.7) * 0.1 - seed * 0.03, lag) * unit
+				piece.scale = Vector3.ONE * unit * (0.24 - seed * 0.035) * (1.0 + sin(clock * 9.0 + seed) * 0.08)
+			"splash":
+				# Thrown out and falling back under gravity, shrinking as they go.
+				var out := Vector3(cos(seed * 2.39996), 0.0, sin(seed * 2.39996)) * (0.2 + progress * (1.1 + fposmod(seed * 0.37, 0.5)))
+				piece.position = out + Vector3.UP * (0.15 + progress * 1.6 - progress * progress * 1.9) * (0.8 + fposmod(seed * 0.53, 0.4))
+				piece.scale = Vector3.ONE * 0.16 * (1.0 - progress * 0.7)
 			"wind": piece.rotation = Vector3(0.25 * seed, seed * 0.7 + age * spin, seed * 1.8); piece.scale = Vector3.ONE * unit * (0.9 + seed * 0.17 + progress * 0.6)
 			"stone": piece.position = Vector3(cos(angle) * 0.4, sin(angle) * 0.2, seed * 0.18) * unit * (0.4 + progress * 1.8 if impact else 1.0); piece.rotation = Vector3(age * spin * 0.7 + seed, seed * 0.7, seed)
 			"metal": piece.position = Vector3(cos(angle) * 0.27, sin(angle) * 0.27, seed * 0.15) * unit * (1 + progress); piece.rotation = Vector3(0.0, seed * 0.2, angle)
@@ -885,6 +901,15 @@ func _impact_accent(node: Node3D, data: Dictionary) -> void:
 		var shape := "blade" if accent == "shards" else "ring" if accent == "rings" else "spark" if accent == "sparks" else "quad"
 		var piece := _piece(node, title + str(i), shape, data.materials[2] if accent == "mist" else data.materials[1], Vector3.ONE * (0.7 if accent == "shards" else 1.0))
 		data.parts.append({"node": piece, "role": "ripple" if accent == "rings" else "mist" if accent == "mist" else "splinter", "seed": float(i) + 0.7, "unit": 1.0})
+
+## A dash / teleport wake streaming out of the hero's back (see dash_trail.gd).
+func dash_trail(spell: Dictionary, hero: Node3D, from: Vector3) -> Node3D:
+	var runtime := _runtime()
+	if runtime == null or not is_instance_valid(hero) or not from.is_finite(): return null
+	var trail = preload("res://scripts/dash_trail.gd").new()
+	trail.setup(self, spell, hero, from)
+	runtime.add_child(trail)
+	return trail
 
 ## A strike out of the sky (see sky_strike.gd).
 func sky_strike(top: Vector3, ground: Vector3, spell: Dictionary, life: float) -> Node3D:

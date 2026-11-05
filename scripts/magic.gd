@@ -197,6 +197,12 @@ func _deliver(spell: Dictionary, origin: Vector3, target: Vector3, direction: Ve
 		"step": _step(spell, target)
 		"strike": _strike_cast(spell, origin, target, context)
 
+func _crown_center() -> Vector3:
+	var visual: Variant = game.player.get("visual")
+	if is_instance_valid(visual) and is_instance_valid(visual.get("lantern")):
+		return (visual.lantern as Node3D).global_position + Vector3.UP * 0.38
+	return game.player.global_position + Vector3.UP * 2.2
+
 ## Lantern spells leave from the lantern in Mr. Justice's head; everything else from the hand.
 func _spell_origin(spell: Dictionary) -> Vector3:
 	if str(spell.get("origin", "hand")) == "lantern":
@@ -412,11 +418,17 @@ func _tick_projectiles(dt: float) -> void:
 			bolt.hold_wait -= local_dt
 			if float(bolt.hold_wait) > 0:
 				var phase: float = float(bolt.phase) + (float(bolt.spell.hold_time) - float(bolt.hold_wait)) * 2.2
-				var desired: Vector3 = _origin() + (bolt.right * cos(phase) + bolt.up * sin(phase)) * float(bolt.spell.orbit_radius)
+				# Held orbitals sit as a crown: a level ring circling above Mr. Justice's head
+				# that travels with him, then each piece fires from its place in the ring.
+				var desired: Vector3 = _crown_center() + Vector3(cos(phase), 0.0, sin(phase)) * minf(float(bolt.spell.orbit_radius), 0.75)
 				var barrier := _sweep(bolt.position, desired, float(bolt.spell.size))
 				bolt.position = barrier.position if not barrier.is_empty() else desired
-				bolt.node.global_position = bolt.position; _animate_projectile(bolt); continue
+				bolt.node.global_position = bolt.position
+				bolt.node.quaternion = Quaternion(Vector3.FORWARD, Vector3(cos(phase), 0.0, sin(phase)))
+				bolt.node.scale = Vector3.ONE * 0.72
+				_animate_projectile(bolt); continue
 			local_dt = minf(local_dt, -float(bolt.hold_wait)); bolt.held = false; bolt.origin = bolt.position
+			bolt.node.scale = Vector3.ONE
 			bolt.direction = (bolt.release_target - bolt.position).normalized(); bolt.velocity = bolt.direction * float(bolt.spell.speed)
 		var remaining := maxf(0.0, float(bolt.spell.lifetime) - float(bolt.age))
 		var travel_time := minf(local_dt, remaining)
@@ -641,7 +653,9 @@ func _tick_statuses(dt: float) -> void:
 
 func _step(spell: Dictionary, target: Vector3) -> void:
 	var start: Vector3 = game.player.global_position
-	var direction := target - (start + Vector3.UP * 0.82)
+	# Teleports go where Mr. Justice is facing (his movement direction while running).
+	var visual: Variant = game.player.get("visual")
+	var direction: Vector3 = -(visual as Node3D).global_basis.z if is_instance_valid(visual) else target - (start + Vector3.UP * 0.82)
 	direction.y = 0.0
 	if direction.length_squared() < 0.001: direction = Vector3.FORWARD
 	direction = direction.normalized()
@@ -666,8 +680,8 @@ func _step(spell: Dictionary, target: Vector3) -> void:
 		query.transform.origin = grounded + _step_offset
 		if space.intersect_shape(query, 1).is_empty(): end = grounded
 	_glyph(start + Vector3.UP * 0.15, spell, "step", 0.65, 0.8)
-	_beam_visual(start + Vector3.UP, end + Vector3.UP, spell, 0.24, 0.065)
 	game.player.global_position = end
+	presentation.dash_trail(spell, game.player, start + Vector3.UP * 1.0 - direction * 0.28)
 	if game.player is CharacterBody3D:
 		game.player.velocity.x = 0.0; game.player.velocity.z = 0.0
 	if is_instance_valid(game.world) and game.world.has_method("stream_at"): game.world.stream_at(end)

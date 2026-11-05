@@ -463,8 +463,12 @@ func _draw_play(controls: bool) -> void:
 		if game.player.ability_cooldown > 0:
 			draw_arc(Vector2(1178, 473), 40, -PI / 2, -PI / 2 + TAU * minf(1, game.player.ability_cooldown / 1.6), 40, GOLD, 3, true)
 		var aim_color = Color("#b4f6ec") if game.player.ability_aiming else IVORY
-		if not _cached_vector(Vector2(640, 332), Rect2(-18, -18, 36, 36), "reticle:%s" % game.player.ability_aiming, _draw_reticle.bind(game.player.ability_aiming)):
-			_draw_reticle(self, game.player.ability_aiming, Vector2(640, 332))
+		var reticle_active: bool = game.player.ability_aiming or game.player.spell_charging
+		if not _cached_vector(Vector2(640, 332), Rect2(-18, -18, 36, 36), "reticle:%s" % reticle_active, _draw_reticle.bind(reticle_active)):
+			_draw_reticle(self, reticle_active, Vector2(640, 332))
+		if game.player.spell_charging and not game.player.ability_aiming:
+			panel(Rect2(514, 357, 252, 28), Color(INK, 0.75), Color(CYAN, 0.25), 4)
+			centered(Vector2(640, 362), "DRAG TO AIM · RELEASE TO CAST", 11, Color("#b4f6ec"))
 		if game.player.ability_aiming:
 			panel(Rect2(514, 357, 252, 28), Color(INK, 0.75), Color(aim_color, 0.25), 4)
 			var hint = "DRAG TO AIM / RELEASE TO CAST"
@@ -688,7 +692,7 @@ func _input(event: InputEvent) -> void:
 				var gesture: Dictionary = camera_gesture.drag(event.index, pos)
 				if gesture.has("zoom"): game.player.adjust_zoom(float(gesture.zoom))
 				elif gesture.has("look"): game.player.look(gesture.look)
-			elif hold_buttons.get(event.index, "") in ["ability", "primary"] and camera_gesture.points.size() < 2:
+			elif hold_buttons.get(event.index, "") in ["ability", "primary", "cast"] and camera_gesture.points.size() < 2:
 				game.player.look(design_position(event.relative))
 	elif event is InputEventMagnifyGesture:
 		if game.mode in ["play", "rest", "sleep"] and is_finite(event.factor) and event.factor > 0:
@@ -702,7 +706,7 @@ func _input(event: InputEvent) -> void:
 		if pending_actions.has(-2):
 			pending_actions[-2].dragged = mouse_pos.distance_to(pending_actions[-2].origin) > 12
 			pending_actions[-2].position = mouse_pos
-		if (mouse_camera or hold_buttons.get(-2, "") in ["ability", "primary"]) and game.mode in ["play", "rest", "sleep"]:
+		if (mouse_camera or hold_buttons.get(-2, "") in ["ability", "primary", "cast"]) and game.mode in ["play", "rest", "sleep"]:
 			game.player.look(design_position(event.relative))
 		if joy_id == -2:
 			joy_value = ((design_position(event.position) - joy_center) / STICK_TRAVEL).limit_length()
@@ -1201,7 +1205,7 @@ func _draw_desktop_play() -> void:
 	_draw_magic_controls()
 	_draw_lock_target()
 	fieldbook.workshop.draw_hotbar()
-	_draw_reticle(self, game.player.ability_aiming, Vector2(640, 332))
+	_draw_reticle(self, game.player.ability_aiming or game.player.spell_charging, Vector2(640, 332))
 	txt(Vector2(968, 32), "TAB  SATCHEL   ·   ESC  MENU", 13, IVORY)
 	panel(Rect2(24, 620, 310, 80), Color(INK, 0.8), Color(IVORY, 0.18), 4)
 	txt(Vector2(38, 630), "WASD  MOVE   ·   SPACE  JUMP", 12, IVORY)

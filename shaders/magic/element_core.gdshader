@@ -43,8 +43,12 @@ void vertex() {
 		float lick = fbm3(VERTEX * 3.2 + vec3(0.0, -clock * 3.4, 0.0));
 		VERTEX += NORMAL * (lick - 0.45) * 0.34 * (0.6 + edge_noise * 0.5) * (0.5 + max(VERTEX.y + 0.1, 0.0));
 	} else if (is_family(6.0)) {
-		// Water: a wobbling liquid drop.
-		VERTEX += NORMAL * (sin(VERTEX.x * 7.0 + clock * 6.0) * sin(VERTEX.y * 6.0 - clock * 5.0)) * 0.07;
+		// Water: a heavy, sloshing liquid drop (several slow waves, not a vibration).
+		float slosh = sin(VERTEX.x * 5.0 + clock * 4.2) * sin(VERTEX.y * 4.0 - clock * 3.1) * 0.08
+			+ sin(VERTEX.z * 7.0 - clock * 5.3 + VERTEX.y * 3.0) * 0.045
+			+ sin(dot(VERTEX, vec3(3.0, 5.0, 2.0)) + clock * 6.4) * 0.025;
+		VERTEX += NORMAL * slosh;
+		VERTEX.y *= 0.92 + sin(clock * 3.6) * 0.06;
 	} else if (is_family(8.0)) {
 		// Earth: a lumpy boulder.
 		VERTEX += NORMAL * (noise3(VERTEX * 4.0) - 0.5) * 0.28;
@@ -99,11 +103,21 @@ void fragment() {
 		v = clamp(rim * 1.15, 0.0, 1.0);
 		col = mix(toon_ink(body) * 0.35, energy_color(0.4 + rim * 0.5, body, core), toon_aa(0.45, rim));
 	} else if (is_family(6.0)) {
-		// Water: clear body, bright caustic bands, a white glint.
-		float caustic = step(0.75, sin(obj.x * 9.0 + sin(obj.y * 8.0 + clock * 2.0) * 1.5 + clock * 1.3));
-		v = 0.32 + facing * 0.18 + caustic * 0.28 + step(0.96, facing) * 0.4;
-		col = energy_color(v, body, core);
-		alpha = mix(0.62, 0.95, 1.0 - facing) + caustic * 0.2;
+		// Water: see-through deep blue in the middle, a bright reflective rim, soft rippling
+		// caustics, and two hard specular glints from a fixed sky light, like a toon water drop.
+		vec3 n = normalize(NORMAL);
+		vec3 sky = normalize(vec3(-0.45, 0.65, 0.6));
+		float glint = pow(max(dot(reflect(-normalize(VIEW), n), sky), 0.0), 28.0);
+		float glint2 = pow(max(dot(reflect(-normalize(VIEW), n), normalize(vec3(0.5, -0.3, 0.8))), 0.0), 40.0);
+		float rim = 1.0 - facing;
+		float ripple = sin(obj.x * 7.0 + sin(obj.y * 6.0 + clock * 2.4) * 1.6 + clock * 1.7) * sin(obj.z * 6.0 - clock * 1.3);
+		float caustic = toon_aa(0.55, ripple);
+		vec3 deep = mix(body * 0.55, body, 0.4);
+		vec3 shallow = mix(body, core, 0.55);
+		col = mix(deep, shallow, toon_aa(0.45, rim));
+		col = mix(col, mix(shallow, core, 0.6), caustic * 0.55);
+		col = mix(col, vec3(1.0), max(toon_aa(0.5, glint), toon_aa(0.6, glint2) * 0.8));
+		alpha = mix(0.55, 0.92, toon_aa(0.4, rim)) + caustic * 0.12 + toon_aa(0.5, glint);
 	} else if (is_family(7.0)) {
 		// Wind: a translucent swirl of streaks.
 		float swirl = step(0.55, fract(atan(obj.z, obj.x) * 0.477 + obj.y * 1.5 - clock * 2.2));

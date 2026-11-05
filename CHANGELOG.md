@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.44.0 — Magic feel fixes (2026-11-04)
+
+- **Water looks like water.**
+  - The core is a sloshing, see-through drop with a bright reflective rim, rippling caustics
+    and hard sky glints.
+  - Water projectiles trail real droplets, and impacts throw droplets that arc and fall.
+  - The crescent ribbons are gone, and water glows much less.
+- **Aim while charging.** Hold the cast button and drag the same finger (or move the mouse)
+  to aim. The reticle and a "drag to aim" hint show while charging.
+- **Arm up while charging.** Mr. Justice raises his casting arm, palm out, with the ball of
+  the element growing in it.
+- **Instant charged release.** Charged spells fire from the hand (or lantern) the moment you
+  let go, with no book flourish in between.
+- **Crowns sit properly.** Orbiting spells (Frozen Orbit, Petal Storm, Cyclone Blades, Blade
+  Wheel, Second Hands, Rift Pearls, Riptide Discs) now form a level crown circling just above
+  Mr. Justice's head. The crown follows him, has no streaks between pieces, and fires from it.
+- **Teleports go where you face.** Zephyr Dash, Shadow Step and Blink move Mr. Justice the way
+  he is facing. A ribbon of the spell's energy streams out of his back, from where he left to
+  where he lands, and pulls back into him as it fades.
+
 ## 0.43.0 — The magic overhaul (2026-11-04)
 
 ### A whole new spellbook
