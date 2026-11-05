@@ -217,9 +217,29 @@ func sustain_cone(spell: Dictionary, origin: Vector3, direction: Vector3, contex
 	sustains.append({"kind": "cone", "spell": _sustain_spell(spell), "context": context, "origin": origin, "direction": direction,
 		"wait": SUSTAIN_TICK, "remaining": life})
 
+## Swing a live beam to the caster's current hand (or lantern) and aim.
+func _follow_beam(entry: Dictionary) -> void:
+	var node: Variant = entry.get("node")
+	if not is_instance_valid(node) or not is_instance_valid(game) or not is_instance_valid(game.player): return
+	var player = game.player
+	var origin: Vector3 = _spell_origin({"origin": "lantern" if bool(entry.get("lantern", false)) else "hand"})
+	var aim: Vector3
+	var lock: Variant = player.get("lock_target")
+	if is_instance_valid(lock) and lock is Node3D: aim = _target_center(lock)
+	else: aim = player.ability_target().get("point", origin + (-player.camera.global_basis.z) * 10.0)
+	var direction := (aim - origin).normalized()
+	if direction.length_squared() < 0.5: return
+	var end: Vector3 = origin + direction * float(entry.reach)
+	var hit := _sweep(origin, end, float(entry.sweep))
+	if not hit.is_empty(): end = hit.position
+	node.retarget(origin, end)
+	entry.origin = origin; entry.end = end
+	if not bool(entry.get("lantern", false)): beam_hold_point = end
+
 func _tick_sustains(dt: float) -> void:
 	for i in range(sustains.size() - 1, -1, -1):
 		var entry: Dictionary = sustains[i]
+		if entry.kind == "beam": _follow_beam(entry)
 		entry.remaining -= dt; entry.wait -= dt
 		if entry.wait <= 0.0 and entry.remaining > 0.0:
 			entry.wait += SUSTAIN_TICK
@@ -700,10 +720,12 @@ func _beam_cast(spell: Dictionary, origin: Vector3, direction: Vector3, context:
 		if is_instance_valid(node) and str(spell.get("origin", "hand")) != "lantern":
 			beam_hold = maxf(beam_hold, float(node.get("life")))
 			beam_hold_point = end
-		# The beam keeps pouring for its whole life, burning whatever stands in it.
+		# The beam keeps pouring for its whole life, burning whatever stands in it, and
+		# follows Mr. Justice's hand (or lantern) and aim while it does.
 		if is_instance_valid(node):
 			sustains.append({"kind": "beam", "spell": _sustain_spell(spell), "context": context, "origin": origin, "end": end,
-				"radius": float(spell.size) * 0.9, "wait": SUSTAIN_TICK, "remaining": float(node.get("life")) - 0.1})
+				"radius": float(spell.size) * 0.9, "wait": SUSTAIN_TICK, "remaining": float(node.get("life")) - 0.1, "node": node,
+				"reach": _line_delivery_reach(spell), "sweep": float(spell.size) * 0.7, "lantern": str(spell.get("origin", "hand")) == "lantern"})
 	var impact_spell := spell.duplicate(); impact_spell["_surface_normal"] = hit.get("normal", Vector3.UP)
 	_glyph(end, impact_spell, "beam_end" if hit.is_empty() else "impact", 0.5, 0.65)
 

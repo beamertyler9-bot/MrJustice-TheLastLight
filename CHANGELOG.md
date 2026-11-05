@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.55.0 — Beams follow Mr. Justice (2026-11-05)
+
+- **Beams follow Mr. Justice:** a beam keeps coming out of his hand (or lantern) for as long
+  as it lasts.
+  - Walk and it moves with you. Turn or move your aim and it sweeps after it. With lock-on,
+    it stays on the locked target.
+  - Whatever the beam sweeps across gets burned, and his raised arm keeps pointing down the
+    beam.
+  - Storm lightning along Thunder Lance and the Railgun moves with the beam too.
+
 ## 0.54.0 — Circles follow Mr. Justice (2026-11-05)
 
 - **Magic circles follow Mr. Justice:**

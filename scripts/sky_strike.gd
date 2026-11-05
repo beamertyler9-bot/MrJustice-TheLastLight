@@ -6,6 +6,7 @@ extends Node3D
 var presentation
 var spell: Dictionary
 var top := Vector3.ZERO
+var _core_beam: Node3D
 var ground := Vector3.ZERO
 var life := 0.5
 var age := 0.0
@@ -36,7 +37,7 @@ func _ready() -> void:
 		_bolt = MeshInstance3D.new(); _bolt.mesh = ArrayMesh.new(); _bolt.material_override = _material
 		_bolt.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF; _bolt.extra_cull_margin = 4.0
 		add_child(_bolt)
-		preload("res://scripts/kame_beam.gd").spawn(self, top, ground, body, core, 0.08 * scale_factor, life * 0.8, gentle, 1.2)
+		_core_beam = preload("res://scripts/kame_beam.gd").spawn(self, top, ground, body, core, 0.08 * scale_factor, life * 0.8, gentle, 1.2)
 	elif str(spell.get("element", "")) == "frost":
 		# A massive jagged spike of ice bursts up out of the ground, ringed by smaller ones.
 		life = maxf(life, 1.7)
@@ -55,6 +56,13 @@ func _ready() -> void:
 	else:
 		preload("res://scripts/kame_beam.gd").spawn(self, top, ground, body, core, clampf(float(spell.get("radius", 1.5)) * 0.32, 0.3, 1.1), life, gentle)
 	_update()
+
+
+## Re-aim lightning that runs along a moving beam.
+func retarget(from: Vector3, to: Vector3) -> void:
+	top = from; ground = to
+	if is_instance_valid(_core_beam) and _core_beam.has_method("retarget"): _core_beam.retarget(from, to)
+	_flicker = -1.0
 
 
 func _process(dt: float) -> void:

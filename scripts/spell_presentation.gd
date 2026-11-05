@@ -1000,13 +1000,13 @@ func beam(start: Vector3, end: Vector3, spell: Dictionary, life: float, width: f
 			node.dark_core = true
 		"storm":
 			# Lightning crackles along (and around) the beam.
-			sky_strike(start, end, spell, duration * 0.85, maxf(radius * 2.2, 0.5))
+			node.followers.append(sky_strike(start, end, spell, duration * 0.85, maxf(radius * 2.2, 0.5)))
 		"time":
 			_clock_rings(start, end, spell, duration)
 	if motif == "railgun":
 		var lightning: Dictionary = spell.duplicate(); lightning.element = "storm"
-		sky_strike(start, end, lightning, duration, 2.6)
-		sky_strike(start, end, lightning, duration * 0.7, 1.6)
+		node.followers.append(sky_strike(start, end, lightning, duration, 2.6))
+		node.followers.append(sky_strike(start, end, lightning, duration * 0.7, 1.6))
 		var circles = preload("res://scripts/railgun_array.gd").new(); runtime.add_child(circles)
 		circles.release(self, spell, start, (end - start).normalized(), end)
 		# The blast where it lands: a lightning strike, a flash of light and a firestorm.

@@ -34,7 +34,11 @@ var _sparks: MultiMeshInstance3D
 var _materials: Array[ShaderMaterial] = []
 var _orb_materials: Array[ShaderMaterial] = []
 var _length := 1.0
+## The beam's current length (it can be re-aimed after it is built: see retarget).
+var _reach := 1.0
 var _orbs := true
+## Effects riding along the beam (storm lightning): re-aimed with it.
+var followers: Array = []
 
 static var _sphere: SphereMesh
 static var _spark_mesh: SphereMesh
@@ -59,6 +63,7 @@ func _ready() -> void:
 		_spark_mesh = SphereMesh.new(); _spark_mesh.radius = 0.5; _spark_mesh.height = 1.0; _spark_mesh.radial_segments = 4; _spark_mesh.rings = 2
 	var delta := end - start
 	_length = delta.length()
+	_reach = _length
 	_orbs = radius >= 0.06
 	# Pivot sits at the hands with +Y pointing down the beam; scaling it along Y "grows" the beam.
 	_pivot = Node3D.new(); add_child(_pivot)
@@ -88,6 +93,17 @@ func _ready() -> void:
 		_sparks.material_override = spark_material; _sparks.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(_sparks)
 	_update()
+
+
+## Swing the beam to a new start and end (it follows the caster's hand and aim).
+func retarget(from: Vector3, to: Vector3) -> void:
+	if not from.is_finite() or not to.is_finite() or from.distance_squared_to(to) < 1.0e-4: return
+	start = from; end = to
+	_reach = from.distance_to(to)
+	if _pivot != null: _pivot.global_transform = Transform3D(_basis_along((to - from).normalized()), from)
+	for follower in followers:
+		if is_instance_valid(follower) and follower.has_method("retarget"): follower.retarget(from, to)
+	if _pivot != null: _update()
 
 
 ## Replace the beam's surface (water beams wear the sloshing water material).
@@ -152,16 +168,16 @@ func _update() -> void:
 		_body_override.set_shader_parameter("age", age)
 		_body_override.set_shader_parameter("opacity", opacity)
 		_body_override.set_shader_parameter("brightness", 1.1)
-	_pivot.scale = Vector3(1, maxf(grow, 0.001), 1)
+	_pivot.scale = Vector3(1, maxf(grow, 0.001) * _reach / maxf(_length, 0.001), 1)
 	_body.scale = Vector3(radius * thickness, 1, radius * thickness)
 	if _inner != null: _inner.scale = Vector3(radius * thickness * 0.6, 1, radius * thickness * 0.6)
 	_sheath.scale = Vector3(radius * thickness * 1.75, 1, radius * thickness * 1.75)
 	if not _orbs: return
-	var direction := (end - start) / maxf(_length, 0.001)
+	var direction := (end - start) / maxf(_reach, 0.001)
 	var beat := 1.0 + sin(age * (14.0 if low_flash else 30.0)) * 0.06
 	_muzzle.global_position = start
 	_muzzle.scale = Vector3.ONE * radius * muzzle_scale * thickness * beat
-	_head.global_position = start + direction * _length * grow
+	_head.global_position = start + direction * _reach * grow
 	_head.scale = Vector3.ONE * radius * (3.6 - grow * 0.6) * thickness * beat
 	# Sparks race down the beam just outside its surface.
 	var side := _pivot.global_basis.x; var up := _pivot.global_basis.z
@@ -171,7 +187,7 @@ func _update() -> void:
 		var run := fposmod(age * 1.6 + float(i) / float(SPARKS), 1.0) * grow
 		var spin := seed + age * 9.0
 		var offset := (side * cos(spin) + up * sin(spin)) * radius * thickness * (1.25 + 0.4 * sin(seed * 3.1))
-		var point := start + direction * _length * run + offset
+		var point := start + direction * _reach * run + offset
 		var size := radius * 0.22 * (1.0 - run * 0.4) * thickness
 		_sparks.multimesh.set_instance_transform(i, Transform3D(Basis.from_scale(Vector3.ONE * maxf(size, 0.001)), point))
 		var color := tone; color.a = opacity * 0.9
