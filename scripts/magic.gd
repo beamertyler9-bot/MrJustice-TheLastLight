@@ -223,11 +223,7 @@ func _follow_beam(entry: Dictionary) -> void:
 	if not is_instance_valid(node) or not is_instance_valid(game) or not is_instance_valid(game.player): return
 	var player = game.player
 	var origin: Vector3 = _spell_origin({"origin": "lantern" if bool(entry.get("lantern", false)) else "hand"})
-	var aim: Vector3
-	var lock: Variant = player.get("lock_target")
-	if is_instance_valid(lock) and lock is Node3D: aim = _target_center(lock)
-	else: aim = player.ability_target().get("point", origin + (-player.camera.global_basis.z) * 10.0)
-	var direction := (aim - origin).normalized()
+	var direction: Vector3 = entry.get("direction", Vector3.ZERO)
 	if direction.length_squared() < 0.5: return
 	var end: Vector3 = origin + direction * float(entry.reach)
 	var hit := _sweep(origin, end, float(entry.sweep))
@@ -293,6 +289,11 @@ func feet_tracker() -> Callable:
 		if not is_instance_valid(game) or not is_instance_valid(game.player): return []
 		return [game.player.global_position + Vector3.UP * 0.06, Vector3.ZERO]
 
+## Spells that keep pouring out of the hand after the cast (beams, breath cones).
+func long_cast(spell: Dictionary) -> bool:
+	if "levitate" in [spell.get("effect"), spell.get("secondary_effect"), spell.get("tertiary_effect")]: return false
+	return str(spell.get("form", "")) in ["beam", "cone"]
+
 ## A check the circles can hold on to for the cast that was just released.
 func cast_keeper(spell: Dictionary) -> Callable:
 	var sequence := _sequence; var form := str(spell.get("form", ""))
@@ -303,6 +304,10 @@ var suppress_hand_circle := false
 ## While a hand beam is still pouring out, the hero keeps his arm raised toward its end.
 var beam_hold := 0.0
 var beam_hold_point := Vector3.ZERO
+## While any of Mr. Justice's beams is firing: he is held facing it, slowed, and can't look
+## around. The beam keeps the direction it was fired in.
+var beam_firing := 0.0
+var beam_direction := Vector3.FORWARD
 
 ## The element's magic circle where the spell is cast: standing in front of the hand (or
 ## lantern), facing the aim; and flat on the ground under spells that land on an area or
@@ -312,14 +317,16 @@ func _cast_circles(spell: Dictionary, origin: Vector3, target: Vector3) -> void:
 	var direction := (target - origin).normalized()
 	if direction.length_squared() < 0.5: direction = -game.player.camera.global_basis.z if is_instance_valid(game.player.camera) else Vector3.FORWARD
 	var keeper := cast_keeper(spell)
+	var pouring := long_cast(spell)
 	if not suppress_hand_circle and str(spell.get("motif", "none")) != "railgun":
-		var hand_circle = Circle.at_hand(self, spell, origin + direction * 0.35, direction, 0.42 + float(spell.power) * 0.06, 1.2)
-		hand_circle.keep_alive(keeper)
+		# The casting circle flashes and fades right after the cast, except for spells that
+		# keep pouring out of the hand (beams, breath): those keep it open while they last.
+		var hand_circle = Circle.at_hand(self, spell, origin + direction * 0.35, direction, 0.42 + float(spell.power) * 0.06, 1.2 if pouring else 0.75)
+		if pouring: hand_circle.keep_alive(keeper)
 		hand_circle.follow(hand_tracker(spell))
 	var form := str(spell.form)
 	if form in ["ward", "mend", "step", "summon"]:
-		var feet_circle = Circle.on_ground(self, spell, game.player.global_position, 1.1, 1.8)
-		feet_circle.keep_alive(keeper)
+		var feet_circle = Circle.on_ground(self, spell, game.player.global_position, 1.1, 0.85)
 		feet_circle.follow(feet_tracker())
 	elif form in ["burst", "field", "rain", "strike", "trap", "wall"]:
 		var aim := origin + (target - origin).limit_length(float(spell.range))
@@ -337,8 +344,10 @@ func _cast_circles(spell: Dictionary, origin: Vector3, target: Vector3) -> void:
 			Circle.in_sky(self, spell, sky, clampf(float(spell.radius) * 1.1, 1.2, 5.0), clampf(pour, 2.2, 8.0), game.player.global_position).keep_alive(keeper)
 			return
 		var size := float(spell.wall_width) * 0.55 if form == "wall" else float(spell.radius)
-		var duration := float(spell.duration) if form in ["field", "trap"] else 1.9
-		Circle.on_ground(self, spell, point, clampf(size, 0.8, 5.0), clampf(duration, 1.0, 14.0)).keep_alive(keeper)
+		var duration := float(spell.duration) if form in ["field", "trap"] else 0.85
+		var area_circle = Circle.on_ground(self, spell, point, clampf(size, 0.8, 5.0), clampf(duration, 0.75, 14.0))
+		# Lasting areas (fields, traps) keep their circle; instant blasts fade right away.
+		if form in ["field", "trap"]: area_circle.keep_alive(keeper)
 
 ## How high rain spells pour from: the sky circle, low enough to stay in view.
 func rain_drop_height(spell: Dictionary) -> float:
@@ -424,6 +433,7 @@ func _tick_slice(dt: float) -> void:
 	_tick_scheduled(dt)
 	cooldown_remaining = maxf(0.0, cooldown_remaining - dt)
 	beam_hold = maxf(0.0, beam_hold - dt)
+	beam_firing = maxf(0.0, beam_firing - dt)
 	_tick_sustains(dt)
 	game.state.recover_mana(dt)
 	ward_remaining = maxf(0.0, ward_remaining - dt)
@@ -720,10 +730,13 @@ func _beam_cast(spell: Dictionary, origin: Vector3, direction: Vector3, context:
 		if is_instance_valid(node) and str(spell.get("origin", "hand")) != "lantern":
 			beam_hold = maxf(beam_hold, float(node.get("life")))
 			beam_hold_point = end
-		# The beam keeps pouring for its whole life, burning whatever stands in it, and
-		# follows Mr. Justice's hand (or lantern) and aim while it does.
+		# The beam keeps pouring for its whole life, burning whatever stands in it. It stays
+		# locked in the direction it was fired, coming out of Mr. Justice's hand (or lantern)
+		# as he moves.
 		if is_instance_valid(node):
-			sustains.append({"kind": "beam", "spell": _sustain_spell(spell), "context": context, "origin": origin, "end": end,
+			beam_firing = maxf(beam_firing, float(node.get("life")))
+			beam_direction = direction
+			sustains.append({"kind": "beam", "spell": _sustain_spell(spell), "context": context, "origin": origin, "end": end, "direction": direction,
 				"radius": float(spell.size) * 0.9, "wait": SUSTAIN_TICK, "remaining": float(node.get("life")) - 0.1, "node": node,
 				"reach": _line_delivery_reach(spell), "sweep": float(spell.size) * 0.7, "lantern": str(spell.get("origin", "hand")) == "lantern"})
 	var impact_spell := spell.duplicate(); impact_spell["_surface_normal"] = hit.get("normal", Vector3.UP)
@@ -1006,6 +1019,7 @@ func clear_effects() -> void:
 	ward_remaining = 0.0; ward_strength = 0
 	cooldown_remaining = 0.0
 	beam_hold = 0.0
+	beam_firing = 0.0
 	sustains.clear()
 	for node in get_children(): node.free()
 	_materials.clear(); _meshes.clear(); _spheres.clear(); _target_spheres.clear()

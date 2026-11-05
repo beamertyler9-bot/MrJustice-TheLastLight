@@ -984,11 +984,11 @@ func beam(start: Vector3, end: Vector3, spell: Dictionary, life: float, width: f
 	var gentle := bool(_settings().get("low_flash", false))
 	# A beam from the lantern starts right in front of the camera: keep its muzzle small.
 	var muzzle := 0.7 if str(spell.get("origin", "hand")) == "lantern" else 1.7
-	var duration := clampf(life * 3.6, 0.6, 3.0)
+	var duration := clampf(life * 2.2, 0.5, 1.6)
 	var family := _family(spell)
 	var motif := str(spell.get("motif", "none"))
 	if motif == "railgun":
-		radius = clampf(radius * 1.7, 0.42, 0.68); duration = maxf(duration, 2.6); muzzle = 1.1
+		radius = clampf(radius * 1.7, 0.42, 0.68); duration = maxf(duration, 2.0); muzzle = 1.1
 	var node = preload("res://scripts/kame_beam.gd").spawn(runtime, start, end, body, core, radius, duration, gentle, muzzle)
 	if node == null: return null
 	match family:

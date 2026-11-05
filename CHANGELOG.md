@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.56.0 — Braced beams, snappy casting circles (2026-11-05)
+
+- **Casting circles fade right after the cast:** the circle at the hand (or lantern) and at
+  the feet flashes open and fades straight away for most spells, quick-cast or charged.
+  - Spells that keep pouring out of the hand keep theirs open while they last. Those are
+    beams (Thunder Lance, Lantern Beam, Torrent Beam, Null Lance, Chrono Lance, Railgun)
+    and breath cones.
+  - Ground circles under instant blasts fade straight away. Fields and traps keep theirs
+    for as long as they last, and rain keeps its sky circle while it pours.
+- **Firing a beam:**
+  - You can't look around while a beam is firing; the camera holds still.
+  - Mr. Justice is locked facing the beam, and the beam keeps the direction it was fired
+    in (it still comes out of his hand or lantern as he moves).
+  - He is slowed to a braced shuffle, about a third of walking speed.
+- **Shorter beams:** beams last about 1 to 1.6 seconds (the Railgun 2 seconds) instead of
+  up to 3.
+
 ## 0.55.0 — Beams follow Mr. Justice (2026-11-05)
 
 - **Beams follow Mr. Justice:** a beam keeps coming out of his hand (or lantern) for as long

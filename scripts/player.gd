@@ -102,6 +102,11 @@ var climb_detach: float = 0.0
 var charge_vfx: Node3D
 var spell_charging := false
 var lantern_still := 0.0
+## Firing a beam: view frozen, facing locked to the beam, movement slowed.
+var beam_locked := false
+var _beam_lock_yaw := 0.0
+var _beam_lock_pitch := 0.0
+const BEAM_MOVE_SCALE := 0.35
 var cast_turns_to_aim := true
 var spell_charge := 0.0
 var spell_charge_time := 1.0
@@ -322,6 +327,9 @@ func _physics_process(dt: float) -> void:
 			speed = CARRY_SPEED
 
 
+		if beam_locked:
+			# Pouring a beam: a slow, braced shuffle.
+			run = false; speed = WALK_SPEED * BEAM_MOVE_SCALE
 		floor_snap_length = 0.16 if run else 0.45
 		speed *= supply_speed_multiplier()
 		var acceleration = 23.0 if is_on_floor() else 8.0
@@ -336,7 +344,11 @@ func _physics_process(dt: float) -> void:
 		motion = "run" if run else "walk" if Vector2(velocity.x, velocity.z).length() > 0.12 else "idle"
 		if not is_on_floor():
 			motion = "jump"
-	if is_instance_valid(lock_target) and not climbing and hooking <= 0 and not visual.grapple_active():
+	if beam_locked and not climbing and magic_runtime() != null:
+		# Braced behind the beam: he faces the way it fires.
+		var beam_dir: Vector3 = magic_runtime().beam_direction
+		visual.rotation.y = atan2(-beam_dir.x, -beam_dir.z)
+	elif is_instance_valid(lock_target) and not climbing and hooking <= 0 and not visual.grapple_active():
 		var toward: Vector3 = lock_target.global_position - global_position
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(-toward.x, -toward.z), 1.0 - exp(-dt * 18))
 	elif dodge_time > 0.0:
@@ -387,6 +399,7 @@ func _process(dt: float) -> void:
 		clear_lock_on()
 		if spell_charging: cancel_spell_charge()
 	forward_dodge_progress()
+	_tick_beam_lock()
 	_tick_spell_charge(dt)
 	_tick_flip(dt)
 	if visual.has_method("set_weapon"):
@@ -512,7 +525,7 @@ func update_camera(dt: float) -> void:
 	var flat_velocity := Vector3(velocity.x, 0, velocity.z)
 	# Gentle auto-follow: after the player stops steering the camera, swing it in behind a
 	# running hero. Never while aiming, carrying the bag view, or running toward the camera.
-	if active and camera_idle > CAMERA_FOLLOW_DELAY and aim_blend < 0.1 and bag < 0.02 and flat_velocity.length() > 2.2 and not climbing:
+	if active and not beam_locked and camera_idle > CAMERA_FOLLOW_DELAY and aim_blend < 0.1 and bag < 0.02 and flat_velocity.length() > 2.2 and not climbing:
 		var heading: float = atan2(-flat_velocity.x, -flat_velocity.z)
 		var turn: float = angle_difference(yaw, heading)
 		if absf(turn) < 2.1:
@@ -754,7 +767,7 @@ func update_lock_on(dt: float) -> void:
 	if not lock_target_alive(lock_target) or not lock_controls_available() or global_position.distance_to(lock_target.global_position) > LOCK_RANGE:
 		clear_lock_on()
 		return
-	if lock_suspended(): return
+	if lock_suspended() or beam_locked: return
 	lock_occlusion = 0.0 if lock_sight_clear(lock_target) else lock_occlusion + dt
 	if lock_occlusion >= 1.5:
 		clear_lock_on()
@@ -818,7 +831,7 @@ func update_zoom(dt: float) -> void:
 	camera_distance = lerpf(camera_distance, zoom_target, 1.0 - exp(-dt * 7.0))
 
 func look(delta: Vector2) -> void:
-	if not camera_input_allowed() or not delta.is_finite():
+	if not camera_input_allowed() or not delta.is_finite() or beam_locked:
 		return
 	if delta.length_squared() > 0.01:
 		camera_idle = 0.0
@@ -1754,9 +1767,18 @@ func release_spell_cast(canceled: bool = false) -> void:
 		var cast := cast_spell(amount)
 		if runtime != null: runtime.suppress_hand_circle = false
 		# The charge circle stays open for as long as the spell (or beam) it fired is active.
-		if cast and is_instance_valid(circle) and runtime != null and runtime.has_method("cast_keeper"):
+		if cast and is_instance_valid(circle) and runtime != null and runtime.has_method("cast_keeper") and runtime.long_cast(state.equipped_spell()):
 			circle.keep_alive(runtime.cast_keeper(state.equipped_spell()))
 			circle.follow(runtime.hand_tracker(state.equipped_spell(), 0.42))
+
+func _tick_beam_lock() -> void:
+	var runtime = magic_runtime()
+	var firing: bool = runtime != null and float(runtime.get("beam_firing")) > 0.0
+	if firing and not beam_locked:
+		_beam_lock_yaw = yaw; _beam_lock_pitch = pitch
+	beam_locked = firing
+	if beam_locked:
+		yaw = _beam_lock_yaw; pitch = _beam_lock_pitch
 
 func cancel_spell_charge() -> void:
 	if railgun_charge != null: railgun_charge.visible = false
