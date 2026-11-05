@@ -84,6 +84,15 @@ func _mesh(kind: String) -> Mesh:
 	match kind:
 		"quad":
 			var quad := QuadMesh.new(); quad.size = Vector2.ONE; mesh = quad
+		"shock_card", "star_card":
+			# Same unit quad, tagged through vertex colour so the halo shader draws a
+			# shockwave ring (red) or a contact star-burst (green).
+			var source := QuadMesh.new(); source.size = Vector2.ONE
+			var arrays := source.get_mesh_arrays()
+			var tag := Color(1, 0, 0, 1) if kind == "shock_card" else Color(0, 1, 0, 1)
+			var colors := PackedColorArray(); colors.resize((arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array).size()); colors.fill(tag)
+			arrays[Mesh.ARRAY_COLOR] = colors
+			var tagged := ArrayMesh.new(); tagged.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays); mesh = tagged
 		"blade", "shard", "bolt", "leaf", "stone", "moth", "rune", "spark": mesh = _faceted_mesh(kind)
 		"crystal_ribs": mesh = _crystal_rib_mesh()
 		"clock_arc": mesh = _clock_arc_mesh()
@@ -660,6 +669,20 @@ func _animate(data: Dictionary, age: float, _dt: float, impact: bool) -> void:
 			"projectile_orbit": piece.rotation = Vector3(0.65, age * spin * 0.5, 0.2 + age * spin * 0.8)
 			"ripple": piece.rotation.x = -PI * 0.5; piece.scale = Vector3.ONE * (0.6 + progress * (1.2 + seed * 0.35)); piece.position.y = 0.015 + seed * 0.025
 			"mist": piece.position = Vector3(sin(seed * 2.4) * 0.4, 0.1 + progress * (0.6 + seed * 0.25), cos(seed * 2.4) * 0.3); _face(piece)
+			"contact_star":
+				var pop := clampf(age / 0.16, 0.0, 1.0)
+				piece.visible = pop < 1.0
+				if piece.visible:
+					piece.scale = Vector3.ONE * lerpf(2.6, 0.9, pop * pop)
+					piece.position = Vector3(0, 0.25, 0)
+					_face(piece, pop * 0.6)
+			"shockwave":
+				var wave := clampf(age / 0.26, 0.0, 1.0)
+				piece.visible = wave < 1.0
+				if piece.visible:
+					piece.scale = Vector3.ONE * (0.6 + (1.0 - pow(1.0 - wave, 3.0)) * 3.6)
+					piece.position = Vector3(0, 0.2, 0)
+					_face(piece)
 	if data.has("halo"): _face(data.halo)
 	if data.has("selected"): data.selected.rotation = data.get("selected_rotation", Vector3.ZERO) + Vector3(0, 0, age * spin * 2.0)
 	if data.has("plumage"): _animate_flame_instances(data, clock)
@@ -746,6 +769,12 @@ func glyph(point: Vector3, spell: Dictionary, kind: String, life: float, radius:
 		var seal := _piece(node, "ContactSigil", "sigil_" + sigil, data.materials[1], Vector3.ONE * 1.9)
 		seal.rotation.x = -PI * 0.5
 	data.halo = _piece(node, "ImpactHalo", "quad", data.materials[2], Vector3.ONE * 3.0)
+	if kind in ["impact", "burst", "beam_end"] and data.family != "void":
+		# Punch of contact: a white-hot star and a ring that races outward, both gone in ~0.25 s.
+		var star := _piece(node, "ContactStar", "star_card", data.materials[2], Vector3.ONE * 2.2)
+		data.parts.append({"node": star, "role": "contact_star", "seed": 0.0, "unit": 1.0})
+		var shock := _piece(node, "Shockwave", "shock_card", data.materials[2], Vector3.ONE)
+		data.parts.append({"node": shock, "role": "shockwave", "seed": 0.0, "unit": 1.0})
 	if is_flame and not kind in ["cast", "anticipation"]: _contact_smoke(node, data)
 	if not kind in ["cast", "anticipation"]: _impact_accent(node, data)
 	_ornament(node, data)

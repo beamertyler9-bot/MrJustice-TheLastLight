@@ -97,6 +97,8 @@ var beam_charging: bool = false
 var beam_charge: float = 0.0
 var climb_detach: float = 0.0
 var charge_vfx: Node3D
+var charge_glow: MeshInstance3D
+var charge_glow_material: ShaderMaterial
 var shadow: MeshInstance3D
 var shadow_material: ShaderMaterial
 var dodge_time: float = 0.0
@@ -131,6 +133,15 @@ func _ready() -> void:
 		var ring = preload("res://scripts/build.gd").ring(charge_vfx, Vector3(0, 0, 0.08 + i * 0.02), 0.07 + i * 0.015, 0.009, preload("res://scripts/build.gd").mat("#9cfff0", 0, 0.8))
 		ring.rotation.x = PI * 0.5
 		ring.layers = 1 << 3
+	# A toon glow that swells in the palm while the beam charges.
+	charge_glow_material = ShaderMaterial.new(); charge_glow_material.shader = preload("res://shaders/magic/halo.gdshader")
+	charge_glow_material.set_shader_parameter("body_color", Color("4fe3d0")); charge_glow_material.set_shader_parameter("rim_color", Color("9cfff0"))
+	charge_glow_material.set_shader_parameter("core_color", Color("f0fffb")); charge_glow_material.set_shader_parameter("family", 4.0)
+	charge_glow = MeshInstance3D.new(); charge_glow.name = "ChargeGlow"
+	var glow_quad := QuadMesh.new(); glow_quad.size = Vector2.ONE; charge_glow.mesh = glow_quad
+	charge_glow.material_override = charge_glow_material; charge_glow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	charge_glow.layers = 1 << 3; charge_glow.top_level = true
+	charge_vfx.add_child(charge_glow)
 	charge_vfx.visible = false
 	camera = Camera3D.new()
 	camera.top_level = true
@@ -385,6 +396,16 @@ func _process(dt: float) -> void:
 	if charge_vfx.visible:
 		charge_vfx.scale = Vector3.ONE * (0.65 + beam_charge / 1.3 * 0.25)
 		charge_vfx.rotation.z += dt * (0.5 + beam_charge * 0.5)
+		var full := beam_charge >= 1.29
+		var swell := clampf(beam_charge / 1.3, 0.0, 1.0)
+		var beat := 1.0 + (sin(camera_clock * 18.0) * 0.12 if full else 0.0)
+		if camera != null:
+			var palm: Vector3 = charge_vfx.global_position
+			var toward := (camera.global_position - palm).normalized()
+			charge_glow.global_transform = Transform3D(camera.global_basis.scaled(Vector3.ONE * (0.28 + swell * 0.42) * beat), palm + toward * 0.05)
+		charge_glow_material.set_shader_parameter("age", camera_clock)
+		charge_glow_material.set_shader_parameter("opacity", 0.55 + swell * 0.45)
+		charge_glow_material.set_shader_parameter("brightness", 1.0 + (0.4 if full else swell * 0.2))
 	if ability_aiming and (not active or climbing or mantle_time > 0 or hooking > 0 or is_instance_valid(held_body) or visual.is_throwing()):
 		end_ability_aim(false)
 	visual.aim_kind = "hook" if visual.grapple_active() else "beam" if beam_contact >= 0 else ability_id

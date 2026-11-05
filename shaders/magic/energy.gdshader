@@ -48,12 +48,17 @@ void fragment() {
 		core = mix(rim_color.rgb, core_color.rgb, 0.5);
 	}
 	float flash = contact_flash * is_contact;
-	vec3 col = toon_ramp(shape + flash * 0.18, ink, body, core, 0.28, core_at);
+	float lifted = shape + flash * 0.18;
+	vec3 col = toon_ramp(lifted, ink, body, core, 0.34, core_at);
+	// Outer fringe: a translucent glow band outside the thin ink line, so strokes read
+	// as light rather than as flat paper cut-outs.
+	float fringe = 1.0 - toon_aa(0.24, lifted);
+	col = mix(col, mix(body, core, 0.35) * 1.15, fringe);
 	// Small hard highlight glints sliding along the core.
 	float glint = step(0.93, fract(UV.x * 3.0 - clock * 1.4)) * toon_aa(0.8, shape);
 	col = mix(col, vec3(1.0), glint * 0.6 * (1.0 - low_flash * 0.6));
 	col *= clamp(brightness, 0.6, 1.6);
 	ALBEDO = col;
 	EMISSION = col * 0.35;
-	ALPHA = toon_aa(0.08, shape) * opacity * COLOR.a * cut;
+	ALPHA = toon_aa(0.03, shape) * mix(1.0, 0.42, fringe) * opacity * COLOR.a * cut;
 }
