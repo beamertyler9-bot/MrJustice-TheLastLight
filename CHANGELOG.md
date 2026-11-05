@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.62.1 — Smoother running (2026-11-05)
+
+- **Butterflies and fireflies removed.**
+- **Rivers, lakes and the cola draw in a single pass.** They work out their own sunlight,
+  glints and night-time darkening instead of being redrawn once for every lamp nearby,
+  so being near water with the lantern lit costs much less. They look the same.
+- **Cheaper wind:** the sway on trees and plants is a few simple waves per vertex, with
+  no matrix work, since it runs on every plant on screen.
+- **No first-time stutters:**
+  - **Warmed up while loading:** the swaying-plant materials, the water and the
+    damage-number text are prepared behind the loading screen, so the first walk into a
+    meadow, the first river and the first hit no longer hitch.
+  - **Defeat flash:** it no longer adds a temporary light; the sparks and dust remain.
+
 ## 0.62.0 — Full polish pass (2026-11-05)
 
 ### Combat
