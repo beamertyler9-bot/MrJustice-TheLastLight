@@ -10,6 +10,9 @@ static func ceiling_vertex(cells: Dictionary, step: float, floor_at: Callable, h
     var key = cell + Vector2i(x, z)
     if not cells.has(key): distance = minf(distance, maxf(0, p.distance_to((Vector2(key) + Vector2.ONE * 0.5) * step) - step * 0.7071))
   height = lerpf(minf(height, maxf(1.75, height * 0.62)), height, smoothstep(0, step * 2, distance))
+  # A lumpy, faceted roof: rises and sags across the cave, never below head room.
+  var lump = sin(p.x * 0.83 + p.y * 0.37) * 0.5 + sin(p.x * 0.29 - p.y * 1.13) * 0.35 + sin(p.x * 1.7 + p.y * 1.9) * 0.15
+  height = maxf(minf(height, 2.6), height + lump * 0.75 * smoothstep(0, step, distance))
  return floor_at.call(p) + height
 static func ceiling_at(cells: Dictionary, step: float, floor_at: Callable, height_at: Callable, cave: bool, p: Vector2) -> float:
 
@@ -43,13 +46,18 @@ static func build(parent: Node3D, cells: Dictionary, step: float, floor_at: Call
   var mesh = st.commit(); var art = B.mesh(parent, mesh, wall_material if ceiling else floor_material)
   art.name = "TunnelCeiling" if ceiling else "TunnelFloor"; B.solid(parent, Vector3.ZERO, mesh.create_trimesh_shape())
  var st = SurfaceTool.new(); st.begin(Mesh.PRIMITIVE_TRIANGLES)
+ # Cave walls: six rows, each bulging in or out so the rock reads as lumpy, layered stone
+ # rather than flat panels (shared corner points keep neighbouring walls joined).
+ var wall_rows: int = 6 if cave else 2
  for edge in edges:
   var a: Vector2 = edge[0]; var b: Vector2 = edge[1]; var outward: Vector2 = edge[2]; var rows = []
-  for i in range(4 if cave else 2):
-   var row = []; var t = float(i) / (3 if cave else 1)
+  for i in range(wall_rows):
+   var row = []; var t = float(i) / float(wall_rows - 1)
    for p in [a, b]:
     var base: float = floor_at.call(p); var top: float = roof.call(p); var at = p
-    if cave and i > 0 and i < 3: at += edge_normals[p].normalized() * (0.12 + 0.045 * sin(p.x * 0.7 + p.y * 0.9 + i))
+    if cave and i > 0 and i < wall_rows - 1:
+     var lump = sin(p.x * 0.7 + p.y * 0.9 + i * 1.3) * 0.6 + sin(p.x * 1.9 - p.y * 1.3 + i * 2.1) * 0.4
+     at += edge_normals[p].normalized() * (0.2 + 0.5 * lump)
     row.append(Vector3(at.x, lerpf(base - 0.14, top, t), at.y))
    rows.append(row)
   for i in range(rows.size() - 1):

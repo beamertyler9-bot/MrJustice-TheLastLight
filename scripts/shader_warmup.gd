@@ -47,6 +47,13 @@ func build(game: Node, camera: Camera3D) -> void:
 		circle.set_shader_parameter("sheet", preload("res://assets/magic_circles/flame.png"))
 		var card := QuadMesh.new()
 		_try(func(): _single(card, circle, false))
+		# Cave and dungeon surfaces: glowing crystals / mushrooms / lava, and the shared stone.
+		var cave_glow := ShaderMaterial.new(); cave_glow.shader = preload("res://shaders/cave_glow.gdshader")
+		_try(func(): _single(card, cave_glow, false))
+		_try(func(): _multi(card, cave_glow, false))
+		var cave_stone = preload("res://scripts/interior_architecture.gd").stone(9, false, false, true)
+		_try(func(): _single(card, cave_stone, false))
+		_try(func(): _multi(card, cave_stone, false))
 		# Railgun lightning arcs (additive vertex-coloured ribbons).
 		var arc_material := StandardMaterial3D.new()
 		arc_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; arc_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA

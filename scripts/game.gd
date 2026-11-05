@@ -1003,7 +1003,8 @@ func _weather() -> void:
 	if player == null:
 		return
 	rain_amount = smoothstep(0.25, 0.8, sin(clock / 38.0 - 1.0))
-	var indoors = world.interior_at(player.position) != ""
+	var interior_id: String = world.interior_at(player.position)
+	var indoors = interior_id != ""
 	var protected = indoors or sheltered_at(player.position)
 	rain.visible = rain_amount > 0.03 and not protected
 	motes.visible = not protected
@@ -1068,6 +1069,7 @@ func _weather() -> void:
 		environment.environment.ambient_light_energy = 0.28
 		environment.environment.ambient_light_color = Color("#718f9e")
 		environment.environment.fog_density = 0.003
+		_underground_mood(interior_id)
 	_grade_lighting(daylight, height, indoors)
 	if world.water != null:
 		world.water.material_override.set_shader_parameter("world_time", clock)
@@ -1088,6 +1090,22 @@ func _weather() -> void:
 ## Lighting grade layered on top of the per-biome weather above: golden-hour warmth and
 ## sun-tinted fog when the sun is low, a cool moonlit night, and a hero lantern that only
 ## blooms when it is actually dark.
+## Caves sink into darkness tinted by their region (so glowing crystals, lava, mushrooms and
+## Mr. Justice's lantern carry the light); dungeons feel close, warm and smoky.
+func _underground_mood(interior_id: String) -> void:
+	var record: Dictionary = world.RegionSites.site(interior_id) if world != null else {}
+	if record.is_empty(): return
+	var env: Environment = environment.environment
+	var region := clampi(int(record.get("region", 9)) - 9, 0, 6)
+	if str(record.get("kind", "")) == "cave":
+		var ambient := ["#5d7f78", "#7e6158", "#6c7a5c", "#86735a", "#6e4a3c", "#4d5a78", "#5f5585"]
+		var haze := ["#1e2b2a", "#2b1f1c", "#252a20", "#30281e", "#2e1610", "#161b2a", "#1f1a30"]
+		env.ambient_light_color = Color(ambient[region]); env.ambient_light_energy = 0.19
+		env.fog_light_color = Color(haze[region]); env.fog_density = 0.016
+	else:
+		env.ambient_light_color = Color("#8a7a6a" if region != 5 else "#6c7286"); env.ambient_light_energy = 0.23
+		env.fog_light_color = Color("#2a221c" if region != 5 else "#1a1d26"); env.fog_density = 0.008
+
 func _grade_lighting(daylight: float, sun_height: float, indoors: bool) -> void:
 	var env: Environment = environment.environment
 	var golden := (1.0 - smoothstep(0.06, 0.42, sun_height)) * smoothstep(-0.1, 0.04, sun_height)

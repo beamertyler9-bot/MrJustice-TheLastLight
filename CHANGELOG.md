@@ -1,5 +1,57 @@
 # Changelog
 
+## 0.59.0 — Caves, dungeons, homes and land (2026-11-05)
+
+- **Caves** (all 52):
+  - **Shape:** lumpy, faceted ceilings and walls that bulge in and out instead of flat
+    panels.
+  - **Formations:** stalactites hang everywhere the roof is high enough (always above head
+    height). Stalagmite clusters and boulders crowd the foot of the walls.
+  - **Rock:** layered strata, fine cracks, darker ceilings, and moss, sand or ash
+    gathering on the ground.
+  - **Each region grows its own features:**
+    - Glowing teal mushrooms in the valley.
+    - Candy crystals and chocolate drips in the sweets lands.
+    - Mushrooms and blue crystals in the plains.
+    - Sand drifts and old skulls in the desert.
+    - Glowing lava cracks and lava pools in volcanic caves.
+    - Ghost-blue mushrooms, drifting wisps and skulls in haunted caves.
+    - Big glowing crystal clusters in the crystal caves.
+  - **Lighting:** caves now sink into darkness tinted by their region, with a little haze.
+    Glowing features cast coloured light, so Mr. Justice's lantern really matters.
+  - The old flat mushroom discs, sticks and pale puddles are gone.
+- **Dungeons** (all 40 outside Blackthorn Keep): every room is dressed for its purpose
+  instead of with bedroom furniture.
+  - **Room themes:**
+    - Entry halls: runner carpets, banners and braziers.
+    - Libraries: wall shelves, a reading table and candles.
+    - Armories: sword-and-shield racks, keys, barrels and crates.
+    - Tombs: an altar between candles, stone sarcophagi and urns.
+    - Stores: stacked barrels and boxes and a laden table.
+    - Boss sanctums: a ring of stone pillars, braziers and red banners.
+    - Vaults: gold chests and coin piles.
+  - Big rooms get carved stone pillars, and rubble lies about.
+  - **Torches:** wall torches line the walls and corridors with real flickering
+    torchlight.
+  - **Walls:** masonry blocks vary in shade, with damp and mossy patches. The air is
+    warmer and dimmer.
+  - Doorways and the way out are always kept clear.
+- **Homes:**
+  - **Hearth:** every home has a stone hearth opposite the door, with a mantel, chimney
+    breast, logs, a woodpile, a candle and a jug, a patterned rug, and a fire that throws
+    flickering warm light.
+  - **Decoration:** paintings on the walls, a bottle shelf over the table, potted plants,
+    and warmer room light.
+  - **Shops:** pictures, plants by the door and warm light too.
+- **Terrain:**
+  - **Meadows:** broad lush and sun-dried patches across the land, so the ground no
+    longer reads as one repeated tile.
+  - **Wildflowers:** tiny white, pink and violet blossom clusters up close (blue in the
+    crystal lands), never on paths.
+  - **Cliffs and rock:** warm grey stone with mottling, ledges, rain streaks and moss on
+    the tops, instead of one flat dark tone.
+- New cave and dungeon shaders are warmed up behind the loading screen.
+
 ## 0.58.0 — Judgement Pillar unleashed (2026-11-05)
 
 - **Judgement Pillar is now one of the strongest spells in the game:**

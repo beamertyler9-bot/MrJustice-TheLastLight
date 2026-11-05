@@ -23,6 +23,7 @@ static func furnish(parent: Node3D, width: float, depth: float, purpose: String,
 	var shops = load("res://scripts/shop_architecture.gd")
 	if shops.service(purpose):
 		shops.furnish(parent, width, depth, purpose, identity, region)
+		load("res://scripts/household_comfort.gd").shop(parent, width, depth, identity)
 		return
 	var room = Node3D.new(); room.name = "IndividualInterior"; parent.add_child(room)
 	var floor = 0.035; var table: Vector3 = p.table; var top = table.y + 0.78
@@ -68,4 +69,5 @@ static func furnish(parent: Node3D, width: float, depth: float, purpose: String,
 	prop(room, "qprop_barrel", Vector3(side * (width * 0.5 - 0.65), floor, (-1 if p.bed.z > 0 else 1) * (depth * 0.5 - 0.65)), Vector3(0.7, 0.8, 0.7), p.yaw, true)
 	var light = OmniLight3D.new(); light.position = Vector3(0, 2.35, 0); light.omni_range = 5; light.light_energy = 0.55; light.light_color = Color("#ffe1b0"); light.shadow_enabled = false; light.distance_fade_enabled = true; light.distance_fade_begin = 24; room.add_child(light)
 	prop(room, "kaykit_lantern", Vector3(-side * (width * 0.5 - 0.65), floor, 0), Vector3(0.38, 0.62, 0.35), p.yaw)
+	load("res://scripts/household_comfort.gd").add(room, width, depth, p, region)
 	parent.set_meta("fixtures", fixtures); parent.set_meta("asset_dressing", true)

@@ -12,7 +12,12 @@ static func stone(region: int, floor: bool = false, castle: bool = false, cave: 
   var palette = ["#697463", "#aa828c", "#99917a", "#bfa27f", "#514d4d", "#5f5b69", "#8495ac"]
   var m = ShaderMaterial.new(); m.shader = preload("res://shaders/interior_stone.gdshader")
   m.set_shader_parameter("stone_color", Color("#454552" if castle and floor else "#666575" if castle else palette[clampi(region - 9, 0, 6)]))
-  m.set_shader_parameter("detail_tex", preload("res://assets/surfaces/stone.png")); m.set_shader_parameter("masonry", not cave); m.set_shader_parameter("polished", castle and floor); materials[key] = m
+  m.set_shader_parameter("detail_tex", preload("res://assets/surfaces/stone.png")); m.set_shader_parameter("masonry", not cave); m.set_shader_parameter("polished", castle and floor)
+  # What gathers on the rock: moss, caramel, dust, sand, ash, lichen, crystal bloom.
+  var accents = ["#5e7c3c", "#9a6236", "#6d8b45", "#cfa76c", "#2f2b2a", "#7f918a", "#9a86cf"]
+  m.set_shader_parameter("accent_color", Color("#56693f" if not cave else accents[clampi(region - 9, 0, 6)]))
+  m.set_shader_parameter("accent_amount", (0.55 if floor else 0.6) if cave else 0.5)
+  materials[key] = m
  return materials[key]
 static func arch(parent: Node3D, width: float, spring: float, rise: float, depth: float, material: Material) -> void:
  var key = Vector4(width, spring, rise, depth)

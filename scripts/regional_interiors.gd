@@ -9,6 +9,7 @@ const P = preload("res://scripts/locations.gd")
 const F = preload("res://scripts/regional_furnishings.gd")
 const Enemy = preload("res://scripts/enemy.gd")
 const Deep = preload("res://scripts/deep_adventure.gd")
+const Dungeon = preload("res://scripts/dungeon_dressing.gd")
 const Creatures = preload("res://scripts/creature_catalog.gd")
 const RegionalModels = preload("res://scripts/regional_creature_models.gd")
 const Occupancy = preload("res://scripts/world_occupancy.gd")
@@ -136,23 +137,39 @@ func _build(id: String) -> void:
 		if record.kind == "cave": _cave_art(decor, record, room)
 		else:
 			var purpose: String = room.name if plan.castle else _room_purpose(record, room, plan.rooms.find(room), plan.rooms.size())
-			F.furnish(decor, maxf(7, room.size.x - 2), maxf(7, room.size.y - 2), purpose, int(record.region), record.region == 14, not plan.castle)
+			if plan.castle: F.furnish(decor, maxf(7, room.size.x - 2), maxf(7, room.size.y - 2), purpose, int(record.region), record.region == 14, not plan.castle)
+			else:
+				# Doorways lie on the line toward each linked room; keep them (and the way out) clear.
+				var index: int = plan.rooms.find(room)
+				var links: Array = []
+				for edge in plan.links:
+					var other := -1
+					if int(edge[0]) == index: other = int(edge[1])
+					elif int(edge[1]) == index: other = int(edge[0])
+					if other >= 0 and int(plan.rooms[other].level) == int(room.level): links.append(((plan.rooms[other].p as Vector2) - (room.p as Vector2)).normalized())
+				var keep: Array = [Vector2(0, 4) - (room.p as Vector2), Vector2(0, 6) - (room.p as Vector2), (plan.rooms.back().p as Vector2) + Vector2(0, 1.5) - (room.p as Vector2)]
+				Dungeon.room(decor, room.size.x - 0.6, room.size.y - 0.6, str(room.get("shape", "rect")), purpose, int(record.region), links, keep, id + ":" + str(index))
 			if plan.castle: Architecture.room(decor, room.size, 7.2, purpose)
 			P.signboard(decor, Vector3(0, 2.6, -room.size.y * 0.35), room.name, 0, minf(5, room.size.x * 0.6))
 			if not plan.castle:
 				_site_tools(decor, record, room)
-				load("res://scripts/world_overhaul.gd").cave(decor, record, room)
 		_register_room_treasure(decor, id, furnished.size())
 		_ground_decor(decor, id, room)
 		furnished.append(room.name)
 	live.set_meta("furnished_rooms", furnished)
+	if record.kind == "cave": load("res://scripts/cave_dressing.gd").dress(live, id, record)
+	elif not plan.castle: Dungeon.torches(live, id)
 	var mouth = S.entry_point(id) - S.origin(id)
 	P.entrance(live, "SiteExit", mouth + Vector3(0, 0.4, 1.5), _return_point(id), "The open road", "Return to the surface")
 	P.signboard(live, mouth + Vector3(0, 2.5, 2), "SURFACE RETURN", PI, 4)
 	for i in range(mini(6 if plan.castle else 3, plan.rooms.size())):
 		var room: Dictionary = plan.rooms[i]
 		var lamp = OmniLight3D.new(); lamp.position = S.point(id, room.p, int(room.level)) - S.origin(id) + Vector3.UP * 3
-		lamp.light_color = Color("#a2c8d6" if record.region == 15 else "#efc193" if plan.castle else "#bcc5d7" if record.region == 14 else "#edd4a2"); lamp.light_energy = 0.85 if plan.castle else 1.0; lamp.omni_range = 13 if plan.castle else 23; live.add_child(lamp); room_lights.append(lamp)
+		# Caves are lit in their region's own colour; dungeons by warm torchlight.
+		var cave_tones := ["#9fd8bb", "#f2b783", "#d4e3b0", "#f3cd8f", "#ff8a4a", "#93b2dc", "#bba0f2"]
+		lamp.light_color = Color(cave_tones[clampi(int(record.region) - 9, 0, 6)] if record.kind == "cave" else "#efc193" if plan.castle else "#bcc5d7" if record.region == 14 else "#f2bd7d")
+		lamp.light_energy = 0.85 if plan.castle else 1.15; lamp.omni_range = 13 if plan.castle else 20; lamp.shadow_enabled = false
+		live.add_child(lamp); room_lights.append(lamp)
 	if id in ["desert-d02", "desert-d03"]: _mechanism(id)
 	_cache(id)
 	if record.kind != "cave" and plan.rooms.size() > 4: _side_cache(id)
@@ -264,29 +281,15 @@ func _stairs(id: String) -> void:
 	live.set_meta("stairs", 6)
 
 func _cave_art(parent: Node3D, record: Dictionary, room: Dictionary) -> void:
+	# Stalactites, boulders, crystals, mushrooms and lava come from cave_dressing.gd; each
+	# room keeps its own rocks, pools and wildlife here.
 	load("res://scripts/world_overhaul.gd").cave(parent, record, room)
-	var region = int(record.region); var stone = B.world_surface("stone", "#8c8e7e")
-	for i in range(6):
-		var angle = float(i) * TAU / 6; var p = Vector3(cos(angle) * room.size.x * 0.28, 0.15, sin(angle) * room.size.y * 0.28)
-		if region == 15:
-			B.facet(parent, p + Vector3.UP * 0.7, Vector3(0.55, 1.7 + (i % 3) * 0.45, 0.7), B.mat(["#9ac7c7", "#b8a0cf", "#ddb6cf"][i % 3], 0.12, 0.12)).rotation.z = cos(angle) * 0.25
-		elif region in [9, 10, 14]:
-			B.cyl(parent, p + Vector3.UP * 0.3, 0.06, 0.6, B.mat("#c4b28b")); B.ball(parent, p + Vector3.UP * 0.64, Vector3(0.7, 0.18, 0.7), B.mat("#749e9b" if region != 14 else "#9e97ac", 0, 0.14))
-			if i % 2 == 0:
-				var root_material = B.world_surface("timber", "#605546")
-				var previous = p * Vector3(1.4, 1, 1.4)
-				for part in range(4):
-					var next = p * Vector3(1.4 - part * 0.08, 0, 1.4 - part * 0.08) + Vector3(sin(part * 1.7) * 0.16, 1.0 + part * 0.7, cos(part) * 0.16)
-					B.branch(parent, previous, next, 0.13 - part * 0.022, root_material, 0.7); previous = next
-		elif region == 13:
-			B.facet(parent, p, Vector3(1.3, 0.7, 1.1), stone); B.cyl(parent, p + Vector3.UP * 0.25, 0.2, 0.08, B.mat("#c9864b", 0, 0.25))
-		else:
-			B.cyl(parent, p + Vector3.UP * 0.65, 0.08, 1.3, stone, false, 0.4)
+	var region = int(record.region)
 	if any_word(record.hook, ["pool", "basin", "water", "cola"]):
-		B.cyl(parent, Vector3(room.size.x * 0.22, 0.02, -room.size.y * 0.17), minf(room.size.x, room.size.y) * 0.13, 0.03, B.mat("#78553a" if region == 10 else "#759b9c", 0.18, 0.08))
+		B.cyl(parent, Vector3(room.size.x * 0.22, 0.02, -room.size.y * 0.17), minf(room.size.x, room.size.y) * 0.13, 0.03, B.mat("#4a2c1c" if region == 10 else "#24484f", 0.35))
 	if region == 13:
 		var p = Vector3(room.size.x * 0.23, 0.025, room.size.y * 0.2)
-		B.cyl(parent, p, 1.15, 0.03, B.mat("#6b9295", 0.15, 0.06))
+		B.cyl(parent, p, 1.15, 0.03, B.mat("#2c4a4f", 0.35))
 		if swimmers.size() < 4:
 			var fish = Node3D.new(); parent.add_child(fish); RegionalModels.wildlife(fish, "cinderfin_fish"); swimmers.append({"node": fish, "center": p, "phase": float(swimmers.size()) * PI})
 	parent.set_meta("natural_dressing", true)
