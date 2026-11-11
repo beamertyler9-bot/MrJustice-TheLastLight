@@ -51,7 +51,7 @@ func populate_loading(report: Callable, draw: Callable) -> void:
 		var label = Catalog.entry(species[i]).get("name", Models.NAMES.get(species[i], species[i]))
 		report.call("Wildlife %d/%d: %s" % [i + 1, species.size(), label])
 		_build_critter(species[i], i)
-		await draw.call()
+		if i % 4 == 3: await draw.call()
 	deferred_population = false
 
 func _build_critter(species: String, index: int) -> void:

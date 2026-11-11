@@ -142,6 +142,8 @@ func rows() -> Array:
 				if Catalog.WEAPONS.has(id): actions.append(_command("Equip", "equip", id))
 				result.append(_row(Catalog.item_name(id), detail, actions, str(id)))
 		2:
+			var flight: bool = is_instance_valid(game.player) and game.player.light_flight.enabled
+			result.append(_row("Seraph Flight: " + ("ON" if flight else "OFF"), "Double jump + hold to fly. Stop to hover; double-tap and hold A/Space to boost.", [_command("Turn off" if flight else "Turn on", "light_flight")]))
 			result.append(_row("Spell library & quick slots", "Browse and equip existing magic anywhere.", [_command("Open library", "open", "grimoire")]))
 			result.append(_row("Wizard's spell archive", "Visit the tower and browse predefined spells.", [_command("Travel archive", "travel", "spell_altar"), _command("Browse here", "altar")]))
 			var infinite: bool = game.state.infinite_mana()

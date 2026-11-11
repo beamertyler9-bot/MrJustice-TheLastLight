@@ -297,7 +297,7 @@ func _clear_projectiles() -> void:
 	projectiles.clear()
 
 func _strike_clear(player: Node3D, reach: float) -> bool:
-	var delta = player.global_position - global_position
+	var delta = preload("res://scripts/target_bounds.gd").closest(player, global_position + Vector3.UP * 0.65) - (global_position + Vector3.UP * 0.65)
 	if Vector2(delta.x, delta.z).length() >= reach or absf(delta.y) >= 1.35:
 		return false
 	var flat = Vector3(delta.x, 0, delta.z)
@@ -343,6 +343,7 @@ func take_damage(amount: int) -> void:
 		set_deferred("collision_layer", 0)
 		game.state.taken[id] = true
 		_drop_light_essence(2)
+		if posmod(hash(id), 3) == 0: game.state.award_reward("string", 1)
 		game.toast(display_name + " quieted")
 		if game.get("quests") != null:
 			game.quests.enemy_defeated(id, global_position, species_id)

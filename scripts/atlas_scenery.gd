@@ -18,6 +18,8 @@ var clock := 0.0
 var terrain_mask: ImageTexture
 var terrain_mask_data: Image
 var forest_mask: ImageTexture
+var _forest_mask_data: Image
+var _coverage_signature: int = -1
 
 func setup(context) -> void:
 	name = "AtlasScenery"; world = context; atlas = world.atlas
@@ -27,6 +29,7 @@ func setup(context) -> void:
 	_distant_forests()
 	for water in atlas.watercourses(): _water(water)
 	for lake in atlas.lakes(): _lake(lake)
+	_volcanic_fire()
 	for bridge in atlas.data.get("bridges", []): _bridge(bridge)
 	_castle_silhouette()
 
@@ -57,6 +60,7 @@ func setup_loading(context, progress: Callable) -> void:
 		_lake(lake); await get_tree().process_frame
 	for bridge in atlas.data.get("bridges", []):
 		_bridge(bridge); await get_tree().process_frame
+	_volcanic_fire()
 	progress.call("Raising distant landmarks")
 	await get_tree().process_frame
 	_castle_silhouette()
@@ -131,34 +135,50 @@ func _distant_terrain() -> void:
 		for i in range(water.points.size() - 1):
 			var a: Vector2 = water.points[i]; var b: Vector2 = water.points[i + 1]
 			channels.append(Vector4(a.x, a.y, b.x, b.y))
+
+		var previous: Array = water.get("previous_points", [])
+		for i in range(previous.size() - 1): channels.append(Vector4(previous[i].x, previous[i].y, previous[i + 1].x, previous[i + 1].y))
+	assert(channels.size() <= 48, "Distant river mask capacity exceeded")
 	material.set_shader_parameter("water_count", channels.size())
-	while channels.size() < 32: channels.append(Vector4.ZERO)
+	while channels.size() < 48: channels.append(Vector4.ZERO)
 	material.set_shader_parameter("waterways", channels)
 	var lake_bounds := PackedVector4Array()
 	for lake in atlas.lakes(): lake_bounds.append(Vector4(lake.pos.x, lake.pos.y, lake.extent.x, lake.extent.y))
+	assert(lake_bounds.size() <= 16, "Distant lake mask capacity exceeded")
 	material.set_shader_parameter("lake_count", lake_bounds.size())
-	while lake_bounds.size() < 8: lake_bounds.append(Vector4.ZERO)
+	while lake_bounds.size() < 16: lake_bounds.append(Vector4.ZERO)
 	material.set_shader_parameter("lake_bounds", lake_bounds)
 	distant = B.mesh(self, mesh, material); distant.name = "DistantAtlasTerrain"; distant.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 func _distant_banks() -> void:
-	var mesh = load("res://assets/world/backdrop/banks.res") as ArrayMesh
 	bank_material = ShaderMaterial.new(); bank_material.shader = preload("res://shaders/atlas_distant.gdshader")
 	preload("res://scripts/regional_ground.gd").configure(bank_material)
-	var banks = B.mesh(self, mesh, bank_material); banks.name = "DistantRiverBanksUnified"; banks.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var tiles: Array = load("res://assets/world/backdrop/banks-cells.res").get_meta("tiles")
+	for i in tiles.size():
+		var banks = B.mesh(self, tiles[i], bank_material)
+		banks.name = "DistantRiverBankCell_%d" % i
+		banks.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 func set_completed_chunks(chunks: Dictionary) -> void:
 
 
+	var ownership: Array = []
+	for key in chunks: ownership.append([key, chunks[key].get_meta("fixed_dressing_ready", false), int(chunks[key].get_meta("chunk_detail_level", 0))])
+	var signature := hash(ownership)
+	if signature == _coverage_signature: return
+	_coverage_signature = signature
 	var domain = preload("res://scripts/fixed_world.gd").chunk_extent()
-	var ground = Image.create(domain.size.x, domain.size.y, false, Image.FORMAT_R8); ground.fill(Color.BLACK)
-	var forest = Image.create(domain.size.x, domain.size.y, false, Image.FORMAT_R8); forest.fill(Color.BLACK)
+	if terrain_mask_data == null:
+		terrain_mask_data = Image.create(domain.size.x, domain.size.y, false, Image.FORMAT_R8)
+		_forest_mask_data = Image.create(domain.size.x, domain.size.y, false, Image.FORMAT_R8)
+	var ground = terrain_mask_data; ground.fill(Color.BLACK)
+	var forest = _forest_mask_data; forest.fill(Color.BLACK)
 	var origin = domain.position; var count = 0; var tree_count = 0
 	for key in chunks:
 		if not domain.has_point(key): continue
 		var cell: Vector2i = key - origin
 		ground.set_pixel(cell.x, cell.y, Color.WHITE); count += 1
-		if chunks[key].get_meta("fixed_dressing_ready", false) and int(chunks[key].get_meta("chunk_detail_level", 0)) < 2: forest.set_pixel(cell.x, cell.y, Color.WHITE); tree_count += 1
+		if chunks[key].get_meta("fixed_dressing_ready", false) and int(chunks[key].get_meta("chunk_detail_level", 0)) == 0: forest.set_pixel(cell.x, cell.y, Color.WHITE); tree_count += 1
 	terrain_mask_data = ground
 	if terrain_mask == null: terrain_mask = ImageTexture.create_from_image(ground); forest_mask = ImageTexture.create_from_image(forest)
 	else: terrain_mask.update(ground); forest_mask.update(forest)
@@ -228,6 +248,7 @@ func _lake(lake: Dictionary) -> void:
 ## Where a lake's shore runs over ground lower than the water (and no river carries it on),
 ## a stone embankment holds the water in, so it never hangs in the air.
 func _embankments(lake: Dictionary) -> void:
+	if lake.get("natural_shore", false): return
 	var W = preload("res://scripts/water_profile.gd")
 	var outline: PackedVector2Array = PackedVector2Array(lake.outline)
 	var height := float(lake.height)
@@ -260,6 +281,12 @@ func _embankments(lake: Dictionary) -> void:
 		# A buttress on the dry side of each stretch, stepping out at the foot.
 		B.box(wall, Vector3(dry * 1.0, -(top - bottom) * 0.25, 0), Vector3(0.9, (top - bottom) * 0.5, 1.4), stone)
 		B.box(wall, Vector3(dry * 0.85, 0.1, 0), Vector3(0.6, (top - bottom) * 0.5, 1.1), stone)
+
+
+		flatten_static(wall)
+		for geometry in wall.find_children("*", "GeometryInstance3D", true, false):
+			geometry.visibility_range_end = 280.0
+			geometry.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		built += 1
 	set_meta("lake_embankments", int(get_meta("lake_embankments", 0)) + built)
 
@@ -326,3 +353,27 @@ func _castle(p: Vector2) -> Node3D:
 func scatter_tree(parent: Node3D, key: Vector2i, i: int, _legacy_rng: RandomNumberGenerator = null) -> void:
 	for record in preload("res://scripts/fixed_world.gd").chunk(key).get("trees", []):
 		if int(record.slot) == i: preload("res://scripts/fixed_dressing.gd").tree(world, parent, key, record)
+
+
+func _volcanic_fire() -> void:
+	var records: Array = preload("res://scripts/fixed_world.gd").metadata().get("volcanic_fire", [])
+	if records.is_empty(): return
+	var holder = Node3D.new(); holder.name = "VolcanicFire"; add_child(holder)
+	var template = B.flame(holder, Vector3.ZERO, Vector3.ONE)
+	var shape: Mesh = template.mesh; template.free()
+	var material = ShaderMaterial.new(); material.shader = preload("res://shaders/volcanic_fire.gdshader")
+	var cells = {}
+	for record in records:
+		var p: Vector3 = record.point; var size: float = record.size
+		var cell = Vector2i(floori(p.x / 192), floori(p.z / 192))
+		if not cells.has(cell): cells[cell] = []
+		var origin = Vector3(cell.x * 192, 0, cell.y * 192)
+		var dimensions = Vector3(size * 0.65, size, size * 0.6)
+		cells[cell].append(Transform3D(Basis(Vector3.UP, record.yaw).scaled(dimensions), p - origin + Vector3.UP * (size * 0.5 - 0.07)))
+	for cell in cells:
+		var group = Node3D.new(); group.position = Vector3(cell.x * 192, 0, cell.y * 192); holder.add_child(group)
+		var frames: Array[Transform3D] = []; frames.assign(cells[cell])
+		B.instances(group, frames, shape, material)
+		var batch: MultiMeshInstance3D = group.get_child(0)
+		batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		batch.visibility_range_end = 150.0

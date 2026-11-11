@@ -50,12 +50,22 @@ vec2 waves(vec2 p, float t) {
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
+float lava_noise(vec2 point) {
+ vec2 cell=floor(point);vec2 f=fract(point);f=f*f*(3.0-2.0*f);
+ return mix(mix(hash(cell),hash(cell+vec2(1.0,0.0)),f.x),mix(hash(cell+vec2(0.0,1.0)),hash(cell+vec2(1.0)),f.x),f.y);
+}
+
 void fragment() {
 	if (lava) {
-		float churn = sin(flow_uv.y * 0.55 - world_time * 0.9 + sin(flow_uv.x * 19.0) * 0.4);
-		float crust = smoothstep(0.2, 0.9, sin(world.x * 0.9 + world_time * 0.2) * sin(world.z * 0.8 - world_time * 0.15));
-		vec3 glow = mix(liquid_color.rgb * 1.1, foam_color.rgb * 1.3, smoothstep(0.7, 1.0, churn)) * (1.0 - crust * 0.7);
-		ALBEDO = mix(liquid_color.rgb, vec3(0.16, 0.07, 0.05), crust * 0.6) * body_shade * 0.4 + glow;
+        vec2 molten_uv=still_lake ? world.xz*0.08+vec2(world_time*0.018,-world_time*0.012) : vec2(flow_uv.x*2.4,flow_uv.y*0.055-world_time*0.10);
+        float broad=lava_noise(molten_uv);
+        float folded=lava_noise(molten_uv*2.1+vec2(7.3,broad*1.8));
+        float heat=smoothstep(0.26,0.72,broad*0.75+folded*0.25);
+        float ribbons=(1.0-smoothstep(0.06,0.19,abs(folded-0.5)))*heat;
+        float cooled_rim=pow(bank_factor,5.0)*0.5;
+        vec3 body=mix(vec3(0.045,0.018,0.012),liquid_color.rgb*0.95,heat);
+        body=mix(body,foam_color.rgb*0.80,ribbons*0.55);
+        ALBEDO=mix(body,vec3(0.055,0.026,0.018),cooled_rim);
 		ALPHA = 1.0;
 	} else {
 		// Ripples: rivers carry them downstream (UV.y is distance along the river).
@@ -80,6 +90,7 @@ void fragment() {
 		vec3 deep = liquid_color.rgb * (cola ? 0.38 : 0.45);
 		vec3 shoal = cola ? liquid_color.rgb * 1.35 + vec3(0.06, 0.02, 0.0) : mix(liquid_color.rgb, vec3(0.55, 0.78, 0.66), 0.45);
 		vec3 body = mix(deep, shoal, shallow);
+		if (cola) body=mix(body,liquid_color.rgb*1.15+vec3(0.07,0.025,0.004),fall_factor*0.75);
 		// The sky reflected at grazing angles.
 		float facing = clamp(abs(dot(n_world, view_world)), 0.0, 1.0);
 		float fresnel = pow(1.0 - facing, 4.0);
@@ -89,8 +100,9 @@ void fragment() {
 		float broken = smoothstep(-0.3, 0.8, sin(p.x * 3.1 + p.y * 2.3 + world_time * 0.9) * sin(p.x * 1.7 - p.y * 3.3 - world_time * 0.6));
 		float crest = smoothstep(0.075, 0.11, length(slope)) * wave_strength * 2.0;
 		float cascade = still_lake ? 0.0 : fall_factor * body_shade;
-		float streak = sin(flow_uv.y * 2.8 - world_time * 5.2 + flow_uv.x * 21.0);
-		float foam = edge * (0.25 + broken * 0.4) + crest + cascade * (0.45 + smoothstep(-0.4, 0.8, streak) * 0.45);
+		float streak=sin(flow_uv.x*87.0+sin(flow_uv.x*23.0)*1.4+sin(flow_uv.y*0.09-world_time*2.8)*0.8);
+		float tumble=smoothstep(0.65,0.95,sin(flow_uv.y*0.35-world_time*8.0+flow_uv.x*12.0));
+		float foam=edge*(0.25+broken*0.4)+crest+cascade*(0.35+smoothstep(-0.3,0.8,streak)*0.4+tumble*0.16);
 		if (cola) {
 			// Fizz: tiny bubbles winking in and out.
 			vec2 cell = floor(p * 3.0);

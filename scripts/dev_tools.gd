@@ -122,6 +122,10 @@ func _travel_finished(success: bool, previous: Vector3, title: String) -> bool:
 func execute(action: String, payload: Variant = null, queued_travel: bool = false) -> bool:
 	if not available(): return false
 	match action:
+		"light_flight":
+			if game.mode != "dev": return _message("Seraph Flight is available in DEV only.", false)
+			game.player.enable_light_flight(not game.player.light_flight.enabled)
+			return _message("Seraph Flight " + ("ON. Double jump + hold to fly. Stop to hover; double-tap and hold A/Space to boost." if game.player.light_flight.enabled else "OFF."))
 		"travel":
 			if not payload is String: return false
 			for site in destinations():

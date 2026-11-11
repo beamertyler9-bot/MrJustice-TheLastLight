@@ -464,7 +464,10 @@ func _draw_play(controls: bool) -> void:
 			_draw_stick_base(self, joy_center)
 		draw_circle(joy_center + joy_value * STICK_TRAVEL, STICK_THUMB_RADIUS, Color(IVORY, 0.21))
 		draw_arc(joy_center + joy_value * STICK_TRAVEL, STICK_THUMB_RADIUS, 0, TAU, 40, Color(IVORY, 0.5), 1, true)
-		round_button(Vector2(1178, 589), 48, "jump", "beam" if game.player.beam_aim_toggled else "A", "A · FIRE" if game.player.beam_aim_toggled else "A · JUMP")
+		var flight_label := "A · BOOST" if game.player.light_flight.boosting() else "A · 2× BOOST" if game.player.light_flight.active else "A · JUMP"
+		if game.player.light_flight.active and not game.player.light_flight.boosting() and game.player.light_flight.boost_recovery > 0.0:
+			flight_label = "BOOST · %ds" % ceili(game.player.light_flight.boost_recovery)
+		round_button(Vector2(1178, 589), 48, "jump", "beam" if game.player.beam_aim_toggled else "A", "A · FIRE" if game.player.beam_aim_toggled else flight_label)
 		var pickup_hint := context_pickup_hint()
 		round_button(Vector2(1074, 631), 40, "attack", "B", "B · " + game.context_label())
 		var progress_value = game.get("pickup_progress")

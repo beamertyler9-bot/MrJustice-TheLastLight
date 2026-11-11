@@ -75,8 +75,8 @@ var magic_contact: float = -1.0
 var camera_trauma: float = 0.0
 var landing_offset: float = 0.0
 var camera_clock: float = 0.0
-# Camera feel: a smoothed pivot (lags vertically in the air), travel look-ahead,
-# collision distance that snaps in and eases out, organic shake and directional kicks.
+
+
 var _interaction_clock := 0.0
 const LOCK_RANGE := 30.0
 var cam_mode := -1
@@ -107,11 +107,11 @@ var climb_detach: float = 0.0
 var charge_vfx: Node3D
 var spell_charging := false
 var lantern_still := 0.0
-## After a charged hand spell is let go, the arm stays raised toward it a moment.
+
 const CAST_ARM_HOLD := 0.6
 var cast_arm_hold := 0.0
 var _cast_arm_point := Vector3.ZERO
-## Firing a beam: view frozen, facing locked to the beam, movement slowed.
+
 var beam_locked := false
 var _beam_lock_yaw := 0.0
 var _beam_lock_pitch := 0.0
@@ -131,6 +131,10 @@ var dodge_direction: Vector3 = Vector3.ZERO
 var lock_target: Node3D
 var lock_occlusion: float = 0.0
 var last_grounded_position: Vector3 = Vector3.ZERO
+var light_flight = preload("res://scripts/light_flight.gd").new()
+var light_wings: Node3D
+var _flight_safe_fall := false
+var _primary_jump_held := false
 
 func setup(data, terrain) -> void:
 	state = data
@@ -151,7 +155,7 @@ func _ready() -> void:
 	add_child(c)
 	visual = Hero.new()
 	add_child(visual)
-	# Kamehameha-style charge ball in the palm (see kame_charge.gd).
+
 	charge_vfx = preload("res://scripts/kame_charge.gd").new()
 	visual.hands[1].add_child(charge_vfx)
 	charge_vfx.position = Vector3(0, 0, 0.12)
@@ -177,6 +181,10 @@ func _ready() -> void:
 	update_camera(1.0)
 
 func clear_controls(cancel_supply: bool = true) -> void:
+	end_jump()
+	light_flight.suspend_input()
+	if is_instance_valid(light_wings): light_wings.cancel_boost()
+	if not light_flight.active: light_flight.cancel()
 	cancel_magic()
 	cancel_dodge()
 	clear_lock_on()
@@ -201,7 +209,7 @@ func clear_controls(cancel_supply: bool = true) -> void:
 
 func supply_speed_multiplier() -> float:
 	if visual != null and visual.supply_pour.active(): return 0.8
-	# Hauling a big rock slows you down a little.
+
 	if is_instance_valid(held_body) and held_body.mass >= 2.0: return 0.78
 	return 1.0
 
@@ -278,7 +286,7 @@ func _physics_process(dt: float) -> void:
 	var was_swimming := swimming
 	swimming = not dry_interior and swim_jump_time <= 0 and global_position.y < _water_height() - 0.25 and world.height_at(global_position.x, global_position.z) < _water_height() - 1.2
 	if swimming and not was_swimming and velocity.y < -1.5 and game != null:
-		# Hitting the water: a splash sized to the drop.
+
 		var entry := clampf(-velocity.y / 10.0, 0.3, 1.0)
 		var surface := Vector3(global_position.x, _water_height(), global_position.z)
 		game.foot_effect(surface, true, 0.5 + entry)
@@ -287,11 +295,17 @@ func _physics_process(dt: float) -> void:
 		camera_trauma = minf(1.0, camera_trauma + entry * 0.18)
 	if swimming and dodge_time > 0.0:
 		cancel_dodge()
-	if dodge_time <= 0.0 and not climbing and hooking <= 0 and not swimming and move.length() > 0.15 and not ability_aiming and cast_time <= 0:
+	var was_flying: bool = light_flight.active
+	var taking_flight: bool = light_flight.tick(dt, light_flight.enabled and _light_flight_allowed(), is_on_floor() and velocity.y <= 0.0)
+	if taking_flight: _start_light_flight()
+	if was_flying and not light_flight.active: _flight_safe_fall = true
+	if not light_flight.active and dodge_time <= 0.0 and not climbing and hooking <= 0 and not swimming and move.length() > 0.15 and not ability_aiming and cast_time <= 0:
 		if (is_on_floor() or velocity.y > -5.0) and try_mantle(move, 1.05 if is_on_floor() else 1.55):
 			return
 		try_auto_climb(move)
-	if dodge_time > 0.0:
+	if light_flight.active:
+		_step_light_flight(dt, stick)
+	elif dodge_time > 0.0:
 		var progress = 1.0 - dodge_time / DODGE_DURATION
 		var speed = lerpf(DODGE_SPEED, 2.0, smoothstep(0.45, 1.0, progress))
 		velocity.x = dodge_direction.x * speed
@@ -346,14 +360,14 @@ func _physics_process(dt: float) -> void:
 
 
 		if beam_locked:
-			# Pouring a beam: a slow, braced shuffle.
+
 			run = false; speed = WALK_SPEED * BEAM_MOVE_SCALE
 		floor_snap_length = 0.16 if run else 0.45
 		speed *= supply_speed_multiplier()
 		var acceleration = 23.0 if is_on_floor() else 8.0
 		if stick.length() < 0.05 and is_on_floor():
 			acceleration = 20.0
-		# Snapping round: reversing direction at speed digs in harder, with a puff of dust.
+
 		var flat_now := Vector2(velocity.x, velocity.z)
 		var flat_want: Vector2 = Vector2(move.x, move.z) * speed
 		if is_on_floor() and flat_now.length() > 1.6 and flat_want.length() > 0.5 and flat_now.normalized().dot(flat_want.normalized()) < -0.3:
@@ -375,7 +389,7 @@ func _physics_process(dt: float) -> void:
 		if not is_on_floor():
 			motion = "jump"
 	if beam_locked and not climbing and magic_runtime() != null:
-		# Braced behind the beam: he faces the way it fires.
+
 		var beam_dir: Vector3 = magic_runtime().beam_direction
 		visual.rotation.y = atan2(-beam_dir.x, -beam_dir.z)
 	elif is_instance_valid(lock_target) and not climbing and hooking <= 0 and not visual.grapple_active():
@@ -383,16 +397,21 @@ func _physics_process(dt: float) -> void:
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(-toward.x, -toward.z), 1.0 - exp(-dt * 18))
 	elif dodge_time > 0.0:
 		pass
+	elif light_flight.boosting():
+		var flight_view := _flight_view_angles()
+		var boost_heading: Vector3 = light_flight.boost_direction(stick, flight_view.x, flight_view.y)
+		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(-boost_heading.x, -boost_heading.z), 1.0 - exp(-dt * 14.0))
 	elif melee_contact >= 0.0 and strike_facing.length_squared() > 0.5:
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(-strike_facing.x, -strike_facing.z), 1.0 - exp(-dt * 22.0))
 	elif visual.is_throwing() or ability_aiming or (cast_time > 0 and cast_turns_to_aim) or visual.grapple_active():
 		visual.rotation.y = lerp_angle(visual.rotation.y, yaw, 1.0 - exp(-dt * 15))
 	elif move.length() > 0.08 and not climbing and hooking <= 0:
 		visual.rotation.y = lerp_angle(visual.rotation.y, atan2(-move.x, -move.z), 1.0 - exp(-dt * 13))
-	# Bank into turns when running, like leaning into a corner.
+
 	var turn_rate := angle_difference(bank_prev_yaw, visual.rotation.y) / maxf(dt, 0.0001)
 	bank_prev_yaw = visual.rotation.y
 	var bank_target := 0.0
+	if light_flight.active: bank_target = clampf(turn_rate * 0.018, -0.3, 0.3)
 	if is_on_floor() and flip_time <= 0.0 and not climbing and dodge_time <= 0.0 and not swimming:
 		bank_target = clampf(turn_rate * Vector2(velocity.x, velocity.z).length() * 0.011, -0.15, 0.15)
 	bank = lerpf(bank, bank_target, 1.0 - exp(-dt * 7.0))
@@ -414,16 +433,17 @@ func _physics_process(dt: float) -> void:
 			game.foot_effect(global_position, false, impact)
 	if jump_buffer > 0 and is_on_floor() and jump_lock <= 0:
 		execute_jump()
-	if is_on_floor() and last_vertical < -FALL_HURT_SPEED:
+	if is_on_floor() and last_vertical < -FALL_HURT_SPEED and not _flight_safe_fall:
 		take_damage(1)
+	if is_on_floor() and not light_flight.active: _flight_safe_fall = false
 	if global_position.y < -35 and (not world.has_method("interior_at") or world.interior_at(global_position).is_empty()):
 		respawn("A small stumble. A fresh start.")
 	if cast_time > 0 and lantern_still <= 0.0:
 		motion = "grimoire" if visual.has_method("is_grimoire_casting") and visual.is_grimoire_casting() else "beam" if hooking <= 0 else "hook"
 	visual.carry_pose = is_instance_valid(held_body)
-	state.player_position = global_position
+	state.player_position = position_for_save()
 	world.stream_at(global_position)
-	# The interaction prompt only needs ~10 updates a second; interact() always rescans.
+
 	_interaction_clock -= dt
 	if _interaction_clock <= 0.0 or (closest != null and not is_instance_valid(closest)):
 		_interaction_clock = 0.1
@@ -452,22 +472,22 @@ func _process(dt: float) -> void:
 	charge_vfx.visible = active and beam_charging and beam_charge > 0.12
 	if charge_vfx.visible:
 		charge_vfx.update_charge(dt, clampf(beam_charge / 1.3, 0.0, 1.0), beam_charge >= 1.29, bool(state.settings.get("low_flash", false)))
-		# A charged beam makes the whole view hum.
+
 		if beam_charge >= 1.29: camera_trauma = maxf(camera_trauma, 0.12)
 	if ability_aiming and (not active or climbing or mantle_time > 0 or hooking > 0 or is_instance_valid(held_body) or visual.is_throwing()):
 		end_ability_aim(false)
 	visual.aim_kind = "hook" if visual.grapple_active() else "beam" if beam_contact >= 0 else ability_id
-	# The spell-charge camera borrows the aim view, but not the hand-aim pose (the grimoire
-	# cast needs the arms free).
+
+
 	var spell_view: bool = spell_charging or magic_contact >= 0.0 or (visual.has_method("is_grimoire_casting") and visual.is_grimoire_casting())
-	# Charging a spell: arm raised toward the target, palm open, the charge ball in it.
-	# (Lantern spells charge in his head, so his arms stay down.)
-	# A hand beam keeps the arm raised toward its end for as long as it lasts.
+
+
+
 	var runtime_now = magic_runtime()
 	var beam_held: bool = runtime_now != null and float(runtime_now.get("beam_hold")) > 0.0
 	cast_arm_hold = maxf(0.0, cast_arm_hold - dt)
 	var arm_up: bool = (spell_charging and str(state.equipped_spell().get("origin", "hand")) != "lantern") or beam_held or cast_arm_hold > 0.0
-	# Lantern spells come out of his head: his hands stay exactly where they are.
+
 	lantern_still = maxf(0.0, lantern_still - dt)
 	visual.aim_weight = 1.0 if visual.grapple_active() or beam_contact >= 0 or arm_up else (0.0 if (spell_view or lantern_still > 0.0) and not ability_aiming else aim_blend)
 	if arm_up: visual.aim_kind = "beam"
@@ -490,6 +510,8 @@ func _process(dt: float) -> void:
 		visual.set_motion_context(velocity if active else Vector3.ZERO, is_on_floor(), get_floor_normal() if is_on_floor() else Vector3.UP)
 	forward_climb_context()
 	visual.animate(dt, motion if active else "idle", Vector2(velocity.x, velocity.z).length() if active else 0.0)
+	if is_instance_valid(light_wings):
+		light_wings.tick(dt, active and light_flight.active, light_flight.powered(), velocity, bool(state.settings.get("low_flash", false)), motion)
 	if beam_contact >= 0:
 		beam_contact -= dt
 		if beam_contact <= 1.0e-06:
@@ -544,17 +566,18 @@ func update_camera(dt: float) -> void:
 	camera_clock += dt
 	camera_trauma = maxf(0, camera_trauma - dt * 2.2)
 	landing_offset *= exp(-dt * 9)
-	# Charging a spell switches to the over-the-shoulder aim view (so beams from the lantern
-	# and thrown arcs are visible), and the view holds through the cast that follows.
+
+
 	var aiming_view = ability_aiming or spell_charging or ((cast_time > 0 or visual.grapple_active()) and aim_blend > 0.5)
 	aim_blend = lerpf(aim_blend, 1.0 if aiming_view and active else 0.0, 1.0 - exp(-maxf(dt, 0) * 11.0))
 	var desired_fov = lerpf(64.0 if motion == "run" and active else 60.0, 54.0, aim_blend)
+	if light_flight.active: desired_fov = 78.0 if light_flight.boosting() and not bool(state.settings.get("low_flash", false)) else 68.0
 	camera.fov = lerpf(camera.fov, desired_fov, 1.0 - exp(-dt * 5))
 	var bag = visual.bag_progress if visual != null else 0.0
 	var use_lock_view: bool = is_instance_valid(lock_target) and active and not aiming_view and bag < 0.02
 	var view_mode := 1 if use_lock_view else 0
 	if view_mode != cam_mode and cam_mode >= 0:
-		# Ease between the lock-on framing and the free/aim camera instead of cutting.
+
 		cam_blend_from = camera.global_transform
 		cam_blend = 1.0
 	cam_mode = view_mode
@@ -564,8 +587,8 @@ func update_camera(dt: float) -> void:
 		return
 	var step := maxf(dt, 0.0)
 	var flat_velocity := Vector3(velocity.x, 0, velocity.z)
-	# Gentle auto-follow: after the player stops steering the camera, swing it in behind a
-	# running hero. Never while aiming, carrying the bag view, or running toward the camera.
+
+
 	if active and not beam_locked and camera_idle > CAMERA_FOLLOW_DELAY and aim_blend < 0.1 and bag < 0.02 and flat_velocity.length() > 2.2 and not climbing:
 		var heading: float = atan2(-flat_velocity.x, -flat_velocity.z)
 		var turn: float = angle_difference(yaw, heading)
@@ -586,12 +609,13 @@ func update_camera(dt: float) -> void:
 	var target = cam_pivot + cam_lookahead
 	var aimed_distance = 3.1 + (camera_distance - DEFAULT_CAMERA_DISTANCE) * 0.7
 	var distance = lerpf(lerpf(camera_distance, aimed_distance, aim_blend), 3.8 * HERO_RATIO, bag)
+	if light_flight.active and active: distance += 2.1 if light_flight.boosting() else 1.4
 	var view_pitch = lerpf(pitch, 0.1, smoothstep(0, 1, bag))
 	var forward = Vector3(-sin(camera_yaw) * cos(view_pitch), -sin(view_pitch), -cos(camera_yaw) * cos(view_pitch))
 	var right = Vector3(cos(camera_yaw), 0, -sin(camera_yaw))
 	var shoulder = lerpf(lerpf(0.72, 1.4, aim_blend) * HERO_RATIO, 0.0, bag)
-	# Orbit responds instantly to input; only the collision distance is smoothed:
-	# snap in when something blocks the view, ease back out when it clears (no popping).
+
+
 	var offset: Vector3 = -forward * distance + right * shoulder
 	var full_length: float = offset.length()
 	var allowed: float = full_length
@@ -614,7 +638,7 @@ func update_camera(dt: float) -> void:
 	var roll: float = cam_noise.get_noise_2d(camera_clock * 16.0, 91.0) * trauma_sq * 0.04
 	if not shake_enabled: shake = Vector3.ZERO; roll = 0.0
 	var look_point = camera.global_position + forward * 10
-	# Aiming while locked on: keep the target under the reticle.
+
 	if is_instance_valid(lock_target) and aim_blend > 0.01 and not lock_suspended():
 		var enemy_focus: Vector3 = lock_target.global_position + Vector3.UP
 		var to_enemy: Vector3 = enemy_focus - camera.global_position
@@ -631,9 +655,9 @@ func _apply_camera_blend(dt: float) -> void:
 	var weight := smoothstep(0.0, 1.0, 1.0 - cam_blend)
 	camera.global_transform = cam_blend_from.interpolate_with(camera.global_transform, weight)
 
-## Push the camera briefly away along a direction (impacts, hits taken).
+
 func camera_kick(direction: Vector3, strength: float) -> void:
-	if direction.length_squared() < 1e-6: return
+	if direction.length_squared() < 1.0e-06: return
 	cam_kick = (cam_kick + direction.normalized() * strength).limit_length(0.35)
 
 func feel_hit_stop(duration: float) -> void:
@@ -726,8 +750,8 @@ func lock_target_alive(target: Node3D) -> bool:
 func lock_sight_clear(target: Node3D) -> bool:
 	return ray(global_position + Vector3.UP * (1.15 * HERO_RATIO), target.global_position + Vector3.UP, 1 | 8).is_empty()
 
-## Lock-on stays through hand aiming, casting, beams and dodges; it only pauses its
-## steering while the grappling hook is carrying the hero.
+
+
 func lock_controls_available() -> bool:
 	return active and visual != null
 
@@ -735,7 +759,7 @@ func lock_suspended() -> bool:
 	return visual == null or visual.grapple_active() or hooking > 0.0
 
 func beam_lock_point() -> Vector3:
-	# Every hand ability except the grappling hook (which needs a surface) aims at the lock.
+
 	if ability_id == "hook" or not is_instance_valid(lock_target):
 		return Vector3.INF
 	if not lock_target_alive(lock_target) or global_position.distance_to(lock_target.global_position) > LOCK_RANGE:
@@ -820,7 +844,7 @@ func update_lock_on(dt: float) -> void:
 			var turn = maxf(0.0, dt) * 4.2
 			yaw += clampf(angle_difference(yaw, target_yaw), -turn, turn)
 		elif dt > 0.0 and (ability_aiming or cast_time > 0.0 or dodge_time > 0.0):
-			# Smooth tracking while aiming, casting or rolling so the view never snaps.
+
 			yaw += angle_difference(yaw, target_yaw) * (1.0 - exp(-dt * 14.0))
 		else:
 			yaw = target_yaw
@@ -920,10 +944,86 @@ func jump() -> void:
 	else:
 		jump_buffer = 0.16
 
-## Second jump in the air: a fresh burst of height and a front flip.
+func begin_jump() -> void:
+	if not active: return
+	light_flight.set_jump(true)
+	if not light_flight.active: jump()
+
+func end_jump() -> void:
+	light_flight.set_jump(false)
+	_primary_jump_held = false
+
+func enable_light_flight(value: bool) -> void:
+	if light_flight.active: _flight_safe_fall = true
+	light_flight.set_enabled(value)
+	if not value and is_instance_valid(light_wings): light_wings.clear()
+
+func _light_flight_allowed() -> bool:
+	return active and state != null and state.health > 0 and not swimming and not climbing and mantle_time <= 0.0 and hooking <= 0.0 and dodge_time <= 0.0 and not is_instance_valid(held_body) and not throw_pending and not ability_aiming and not beam_charging and beam_contact < 0.0 and cast_time <= 0.0 and visual.attack_time <= 0.0 and not visual.is_throwing() and not visual.grapple_active() and visual.bag_progress < 0.01 and visual.bag_target < 0.01 and not visual.supply_pour.active() and world.interior_at(global_position).is_empty()
+
+func _start_light_flight() -> void:
+	cancel_magic(); cancel_melee(); cancel_dodge(); clear_lock_on()
+	flip_time = 0.0; visual.rotation.x = 0.0; visual.position = Vector3.ZERO
+	visual._event_left.jump = 0.0
+	flight_effects()
+	velocity.y = maxf(velocity.y, 4.5)
+	_flight_safe_fall = true
+	if game != null and game.audio != null: game.audio.magic_cue("light", "release", 1.0)
+	feel_rumble(18, 0.3)
+
+func flight_effects() -> void:
+	if not is_instance_valid(light_wings):
+		light_wings = preload("res://scripts/angel_wings.gd").new()
+		visual.torso.add_child(light_wings)
+		light_wings.setup(visual)
+
+func stop_light_flight() -> void:
+	if light_flight.active: _flight_safe_fall = true
+	light_flight.cancel()
+	if is_instance_valid(light_wings): light_wings.cancel_boost()
+
+func _step_light_flight(dt: float, stick: Vector2) -> void:
+	var view := _flight_view_angles()
+	var desired: Vector3 = light_flight.desired_velocity(stick, view.x, view.y)
+	if light_flight.consume_boost():
+		flight_effects()
+		light_wings.play_boost(light_flight.boost_direction(stick, view.x, view.y))
+		if game != null and game.audio != null: game.audio.magic_cue("light", "release", 1.2)
+		feel_rumble(28, 0.22)
+	var acceleration := 180.0 if light_flight.thrusting() else (75.0 if stick.length() < 0.12 else 30.0)
+	velocity = velocity.move_toward(desired, dt * acceleration)
+	if global_position.y + velocity.y * dt > light_flight.MAX_ALTITUDE: velocity.y = minf(0.0, velocity.y)
+	if world.atlas != null:
+		var bounds: Rect2 = preload("res://scripts/fixed_world.gd").bounds().grow(-2.0)
+		var next := global_position + velocity * dt
+		if next.x < bounds.position.x or next.x > bounds.end.x: velocity.x = 0.0
+		if next.z < bounds.position.y or next.z > bounds.end.y: velocity.z = 0.0
+
+		var key := Vector2i(floori(next.x / world.CHUNK), floori(next.z / world.CHUNK))
+		if not world.chunks.has(key):
+			var ground: float = world.surface_height_at(next.x, next.z)
+			if ground > global_position.y + 0.05: velocity.x = 0.0; velocity.z = 0.0
+			elif next.y < ground + 0.03: velocity.y = maxf(0.0, (ground + 0.03 - global_position.y) / maxf(dt, 0.001))
+	floor_snap_length = 0.0
+	motion = "seraph_boost" if light_flight.boosting() else (("seraph_fly" if light_flight.powered() else "seraph_glide") if stick.y < -0.12 else "seraph_hover")
+
+func _flight_view_angles() -> Vector2:
+	if is_instance_valid(camera) and camera.is_inside_tree():
+		var direction: Vector3 = -camera.global_basis.z
+		if direction.is_finite() and direction.length_squared() > 0.001:
+			direction = direction.normalized()
+			var heading := atan2(-direction.x, -direction.z) if Vector2(direction.x, direction.z).length_squared() > 1.0e-05 else yaw
+			return Vector2(heading, asin(clampf(-direction.y, -1.0, 1.0)))
+	return Vector2(yaw, pitch)
+
+func position_for_save() -> Vector3:
+	return last_grounded_position if light_flight.active or _flight_safe_fall else global_position
+
+
 func execute_double_jump() -> void:
 	if dodge_time > 0.0: return
 	air_jumps = 1
+	light_flight.note_double_jump()
 	jump_buffer = 0.0
 	velocity.y = 6.6 * (1.15 if state.upgrades.get("spring_boots", false) else 1.0)
 	var stick := movement_input()
@@ -931,7 +1031,7 @@ func execute_double_jump() -> void:
 		var boost := Vector3(stick.x, 0.0, stick.y).rotated(Vector3.UP, yaw) * 1.6
 		velocity.x += boost.x; velocity.z += boost.z
 	jump_lock = 0.13
-	flip_time = FLIP_DURATION
+	flip_time = 0.0 if light_flight.enabled else FLIP_DURATION
 	visual_action("jump")
 	cue("jump", 1.18)
 	feel_rumble(12, 0.25)
@@ -943,14 +1043,14 @@ func _tick_flip(dt: float) -> void:
 	flip_time = maxf(0.0, flip_time - dt)
 	var progress := 1.0 - flip_time / FLIP_DURATION
 	if is_on_floor() and progress > 0.3: flip_time = 0.0; progress = 1.0
-	# Ease in and out so the tuck reads, then land upright.
+
 	var angle := -TAU * smoothstep(0.0, 1.0, progress) if flip_time > 0.0 else 0.0
 	var pivot := Vector3.UP * (0.62 * HERO_RATIO)
 	visual.rotation.x = angle
 	visual.position = pivot - visual.basis * pivot if flip_time > 0.0 else Vector3.ZERO
 
-## Jump arcs: a light hang at the top, then a quicker fall than the rise, so jumps feel
-## weighty rather than floaty. (The fall-hurt speed rises to match, so the same drops hurt.)
+
+
 func _gravity_shape() -> float:
 	if dodge_time > 0.0 or hooking > 0.0 or climbing or swimming: return 1.0
 	if absf(velocity.y) < 1.4: return 0.78
@@ -1516,8 +1616,8 @@ func resolve_melee() -> void:
 		game.harvest_strike(global_position, facing)
 	var weapon = Crafting.weapon_metadata(state.equipment)
 	for enemy in combat_damage_targets():
-		var offset: Vector3 = enemy.global_position - global_position
-		if offset.length() < maxf(2.3, float(weapon.reach)) and absf(offset.y) < 1.6 and facing.dot(offset.normalized()) > 0.25:
+		var offset: Vector3 = preload("res://scripts/target_bounds.gd").closest(enemy, global_position + Vector3.UP * 0.65) - (global_position + Vector3.UP * 0.65)
+		if offset.length() < float(weapon.reach) and absf(offset.y) < 1.6 and facing.normalized().dot(offset.normalized()) > 0.25:
 			if not damage_path_clear(global_position + Vector3.UP * (1.05 * HERO_RATIO), damage_target_point(enemy), enemy):
 				continue
 			enemy.take_damage(int(weapon.damage) + (1 if combo_step == 2 else 0))
@@ -1589,7 +1689,7 @@ func resolve_beam() -> void:
 		return
 	var solution = ability_target(beam_target)
 	if game != null:
-		# Tap: a quick bolt. Charged: a full Kamehameha that holds for about a second.
+
 		game.beam(solution.origin, solution.point, Color("#95f3ee"), lerpf(0.06, 0.45, beam_power), lerpf(0.3, 1.05, beam_power))
 		if beam_power >= 0.42:
 			feel_hit_stop(0.05)
@@ -1638,6 +1738,7 @@ func finish_hook(immediate: bool = false) -> void:
 		hook_rope.queue_free()
 
 func begin_ability_aim(preserve_spell_concentration: bool = false) -> bool:
+	if light_flight.active: return false
 	if not active or dodge_time > 0.0 or climbing or mantle_time > 0 or hooking > 0 or is_instance_valid(held_body) or visual.is_throwing() or visual.grapple_active():
 		return false
 	if not state.has_ability(ability_id):
@@ -1671,9 +1772,13 @@ func begin_primary_action() -> void:
 			beam_charging = true
 			beam_charge = 0
 	else:
-		jump()
+		_primary_jump_held = true
+		begin_jump()
 
 func end_primary_action(canceled: bool = false) -> void:
+	if _primary_jump_held:
+		end_jump()
+		if canceled: light_flight.suspend_input()
 	if not beam_charging:
 		return
 	var charge = beam_charge / 1.3
@@ -1718,6 +1823,9 @@ func begin_bag(opening: bool) -> void:
 	cue("bag")
 
 func reset_motion() -> void:
+	stop_light_flight()
+	_flight_safe_fall = false
+	if is_instance_valid(light_wings): light_wings.clear()
 	climbing = false
 	climb_surface_normal = Vector3.ZERO
 	climb_surface = null
@@ -1748,6 +1856,7 @@ func take_damage(amount: int) -> void:
 		hit_cooldown = 0.28
 		cue("grip", 1.2)
 		return
+	stop_light_flight()
 	cancel_magic()
 	hit_cooldown = 1.35
 	var health_before: int = state.health
@@ -1772,10 +1881,11 @@ func grimoire_equipped() -> bool:
 	return state != null and state.equipment == "grimoire" and state.unlocked.get("grimoire", false) == true
 
 func magic_hands_busy() -> bool:
+	if light_flight.active: return true
 	return not active or state == null or state.health <= 0 or visual.supply_pour.active() or climbing or swimming or mantle_time > 0.0 or hooking > 0.0 or dodge_time > 0.0 or is_instance_valid(held_body) or throw_pending or visual.is_throwing() or visual.grapple_active() or visual.bag_target > 0.01 or visual.bag_progress > 0.01 or cast_time > 0.0 or beam_charging or beam_contact >= 0.0 or melee_contact >= 0.0
 
-## Hold-to-charge casting: chargeable spells (fireball, lantern beam, ...) build power while
-## the cast button is held and release on let-go; every other spell casts on press.
+
+
 func begin_spell_cast() -> void:
 	if spell_charging: return
 	var spell: Dictionary = state.equipped_spell() if state != null else {}
@@ -1798,7 +1908,7 @@ func begin_spell_cast() -> void:
 	var presentation = runtime.get("presentation")
 	spell_charge_vfx.use_element_core(presentation._material(presentation.CORE, spell) if presentation != null else null)
 	spell_charge_vfx.visible = true
-	# The element's magic circle opens in front of the hand and grows as the charge builds.
+
 	if is_instance_valid(spell_circle): spell_circle.queue_free()
 	if str(spell.get("motif", "none")) != "railgun":
 		spell_circle = preload("res://scripts/magic_circle.gd").at_hand(self, spell, global_position, -visual.global_basis.z, 0.85, 1.0)
@@ -1816,7 +1926,7 @@ func release_spell_cast(canceled: bool = false) -> void:
 		if runtime != null: runtime.suppress_hand_circle = had_circle
 		var cast := cast_spell(amount)
 		if runtime != null: runtime.suppress_hand_circle = false
-		# The charge circle stays open for as long as the spell (or beam) it fired is active.
+
 		if cast and is_instance_valid(circle) and runtime != null and runtime.has_method("cast_keeper") and runtime.long_cast(state.equipped_spell()):
 			circle.keep_alive(runtime.cast_keeper(state.equipped_spell()))
 			circle.follow(runtime.hand_tracker(state.equipped_spell(), 0.42))
@@ -1865,7 +1975,7 @@ func _tick_spell_charge(dt: float) -> void:
 	if not is_instance_valid(lock_target): visual.rotation.y = lerp_angle(visual.rotation.y, yaw, 1.0 - exp(-dt * 12.0))
 	_update_arc_preview(spell, anchor, amount)
 
-## Dotted arc showing where a charged throw will land.
+
 func _update_arc_preview(spell: Dictionary, origin: Vector3, amount: float) -> void:
 	if str(spell.get("trajectory", "")) not in ["lob", "ballistic"] or str(spell.get("form", "")) != "volley":
 		if arc_preview != null: arc_preview.visible = false
@@ -1925,10 +2035,10 @@ func cast_spell(charge: float = -1.0) -> bool:
 	if spell.is_empty(): return false
 	var charged := clampf(charge, 0.0, 1.0)
 	if float(spell.get("charge", 0.0)) > 0.0 and charged > 0.0:
-		# Charging makes the spell stronger and bigger (and, for throws, go further).
+
 		var raised := int(spell.power) + roundi(charged * 2.0)
 		spell.power = mini(5, raised)
-		# Already at full power: the extra charge becomes extra damage instead.
+
 		spell.damage_bonus = mini(8, int(spell.get("damage_bonus", 0)) + maxi(0, raised - 5))
 		spell.size = clampf(float(spell.size) * (1.0 + charged * 0.6), 0.1, 0.45)
 		spell.radius = clampf(float(spell.radius) * (1.0 + charged * 0.5), 1.0, 5.0)
@@ -1953,14 +2063,14 @@ func cast_spell(charge: float = -1.0) -> bool:
 	cancel_melee()
 	attack_cooldown = 0.0
 	if float(spell.get("charge", 0.0)) > 0.0:
-		# Charged spells leave straight from the raised hand (or lantern) the moment you let go.
+
 		if not runtime.release():
 			if not str(runtime.last_release_error).is_empty(): toast(str(runtime.last_release_error))
 			return false
 		cast_time = 0.32
 		cast_turns_to_aim = true
 		if str(spell.get("origin", "hand")) == "lantern":
-			# The lantern does the casting; the arms do not move.
+
 			lantern_still = 3.6
 		else:
 			visual_action("beam")
@@ -1969,7 +2079,7 @@ func cast_spell(charge: float = -1.0) -> bool:
 		camera_trauma = minf(0.4, camera_trauma + 0.12 + charged * 0.18)
 		feel_rumble(int(16 + charged * 40.0), 0.35 + charged * 0.4)
 		if str(spell.get("motif", "none")) == "railgun":
-			# The strongest spell in the game: the whole world kicks.
+
 			camera_trauma = maxf(camera_trauma, 0.55 + charged * 0.35)
 			feel_rumble(260, 1.0)
 			if game != null and game.get("feel") != null: game.feel.hit_stop(0.06)
@@ -1982,7 +2092,7 @@ func cast_spell(charge: float = -1.0) -> bool:
 		return false
 	magic_contact = visual.grimoire_release_time()
 	cast_time = 0.62
-	# Teleports keep the way he is facing; everything else turns to the aim.
+
 	cast_turns_to_aim = str(spell.form) != "step"
 	if cast_turns_to_aim:
 		if is_instance_valid(lock_target): face_lock_target()

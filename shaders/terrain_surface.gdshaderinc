@@ -1,4 +1,5 @@
 #include "res://shaders/regional_ground.gdshaderinc"
+#include "res://shaders/volcanic_surface.gdshaderinc"
 uniform sampler2D ground_detail : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D rock_detail : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform int clearing_count=0;
@@ -91,6 +92,12 @@ void fragment() {
 	}
 	vec3 pale_dirt=pow(vec3(0.76,0.65,0.47),vec3(2.2))*(0.75+grit*1.4);
 	ALBEDO=mix(ALBEDO,pale_dirt,soil);
+#ifndef BUILDING_PATH
+	if(regional_surfaces && abs(ground_region(p)-4.0)<0.25){
+		vec4 ash=volcanic_surface(p,distance(CAMERA_POSITION_WORLD,world_position));ALBEDO=mix(ash.rgb,pale_dirt,soil);
+		EMISSION=vec3(0.45,0.10,0.01)*ash.a*(1.0-soil);
+	}
+#endif
 	float small_detail=(1.0-max(slope,authored_rock))*(1.0-soil*0.7);
 	if(regional_surfaces){
 		vec2 relief=(planted_relief.xy*2.0-1.0)*small_detail*0.38;

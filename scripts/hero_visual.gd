@@ -36,6 +36,10 @@ var ordinary_digit_meshes: Array[MeshInstance3D] = []
 var tool_support_grip: MeshInstance3D
 var ordinary_support_digits: Array[MeshInstance3D] = []
 var _support_grip_owned := false
+var _flight_pose_weight := 0.0
+var _flight_pivot_offset := Vector3.ZERO
+var _flight_pitch := 0.0
+var _flight_fist := 0.0
 const TOOL_SUPPORT_OFFSET = Vector3(-0.06, -0.105, 0.08)
 const ROAST_SHAFT_METRES := 0.85
 const ROAST_GRIP_FROM_BUTT := 0.08
@@ -117,6 +121,9 @@ func _mining_recovery_blocked(motion: String) -> bool:
 	return motion in ["climb", "mantle", "swim", "beam", "hook"] or _hand_occupied() or dodge_progress >= 0.0 or not held_item_id.is_empty()
 
 func _advance_pose(dt: float, motion: String, speed: float) -> void:
+
+	rig.position -= _flight_pivot_offset
+	_flight_pivot_offset = Vector3.ZERO
 	_support_grip_owned = false
 	var working = attack_time > 0.0 and (weapon_id in TOOLS or weapon_id in ["iron_blade", "dawn_blade"])
 	if _mining_recovery_blocked(motion) or (attack_time > 0.0 and not working): _mining_release = 0.0
@@ -133,6 +140,14 @@ func _advance_pose(dt: float, motion: String, speed: float) -> void:
 	rest_pose = saved_rest
 	if pick_power_grip == null: return
 	_show_pick_power_grip(false)
+	var airborne_light := motion in ["seraph_hover", "seraph_fly", "seraph_glide", "seraph_boost"]
+	_flight_pose_weight = move_toward(_flight_pose_weight, 1.0 if airborne_light else 0.0, dt * (1.6 if airborne_light else 3.0))
+	if not airborne_light and _flight_pose_weight <= 0.001: _flight_pitch = 0.0; _flight_fist = 0.0
+	if airborne_light:
+		_show_tool_support_grip(false); roast_pivot.hide()
+		_pose_seraph_flight(dt, motion, speed)
+		_publish_feet()
+		return
 	if dodge_progress >= 0.0:
 		_show_tool_support_grip(false)
 		roast_pivot.hide()
@@ -183,7 +198,46 @@ func _advance_pose(dt: float, motion: String, speed: float) -> void:
 			_support_grip_owned = _support_grip_owned and _tool_equip_age >= 0.3
 		else: _tool_equip_age = 0.3
 	_show_tool_support_grip(_support_grip_owned)
+	if _flight_pose_weight > 0.001 and bag_progress < 0.01 and rest_pose.is_empty(): _pose_seraph_flight(dt, motion, speed)
 	_publish_feet()
+
+func _pose_seraph_flight(dt: float, motion: String, speed: float) -> void:
+	var weight := smoothstep(0.0, 1.0, _flight_pose_weight)
+	var gliding := motion == "seraph_glide"
+	var hovering := motion == "seraph_hover"
+	var boosting := motion == "seraph_boost"
+	_flight_fist = move_toward(_flight_fist, 1.0 if boosting else 0.0, dt * 7.0)
+	var fist := smoothstep(0.0, 1.0, _flight_fist)
+	var travel := clampf(speed / 22.0, 0.0, 1.0)
+	var target_pitch := PI * 0.5 if boosting else (0.0 if hovering else PI * 0.25)
+	_flight_pitch = move_toward(_flight_pitch, target_pitch, dt * 3.8)
+	if weight <= 0.001: _flight_pitch = 0.0
+	rig.rotation.x = lerp_angle(rig.rotation.x, -_flight_pitch, weight)
+	torso.rotation.x = lerp_angle(torso.rotation.x, 0.0, weight)
+	torso.rotation.y = lerp_angle(torso.rotation.y, 0.0, weight)
+
+	var pivot := Vector3(0, TORSO_PIVOT, 0)
+	_flight_pivot_offset = (pivot - rig.basis * pivot) * weight
+	_flight_pivot_offset.y += sin(time * (1.9 if hovering else 3.2)) * (0.085 if hovering else 0.018) * weight
+	if hovering: torso.rotation.z = lerp_angle(torso.rotation.z, sin(time * 1.4) * 0.025, weight)
+	rig.position += _flight_pivot_offset
+	head.rotation.x = lerp_angle(head.rotation.x, _flight_pitch - 0.025, weight)
+	for i in range(2):
+		var side := -1.0 if i == 0 else 1.0
+		var arm := Vector3(0.13 if boosting else -0.12, side * 0.06, side * (0.15 if boosting else (0.4 + sin(time * 1.9) * 0.025 if hovering else 0.42)))
+		arms[i].quaternion = arms[i].quaternion.slerp(Quaternion.from_euler(arm), weight)
+		forearms[i].quaternion = forearms[i].quaternion.slerp(Quaternion.from_euler(Vector3(0.12, 0, 0)), weight)
+
+		var inward := Vector3(-side, 0, 0)
+		var forearm_frame := (arms[i].basis * forearms[i].basis).orthonormalized()
+		var palm_up := forearm_frame.y.slide(inward).normalized()
+		_orient_palm(i, Basis(palm_up.cross(inward).normalized(), palm_up, inward), weight)
+		legs[i].quaternion = legs[i].quaternion.slerp(Quaternion.from_euler(Vector3((-0.09 if hovering else -0.035) + sin(time * 1.9 + i) * 0.016, 0, side * 0.045)), weight)
+		knees[i].quaternion = knees[i].quaternion.slerp(Quaternion.from_euler(Vector3(0.32 if hovering else (0.06 if boosting else 0.16), 0, 0)), weight)
+		feet[i].rotation.x = lerp_angle(feet[i].rotation.x, -0.16, weight)
+		hands[i].set_pose(dt, lerpf(0.18, 1.05, fist), lerpf(0.22, 1.5, fist), lerpf(0.22, 0.85, fist), lerpf(0.12, 0.0, fist), 140.0)
+	if _flight_pose_weight > 0.3:
+		_weapon_mount.hide(); _held_mount.hide(); _grimoire.hide()
 
 func _tool_carry_available(motion: String) -> bool:
 	return weapon_id in TOOLS and _weapon_mount.visible and _grounded and motion in ["idle", "walk", "run"] and not _mining_recovery_blocked(motion) and float(_event_left.hurt) <= 0.0

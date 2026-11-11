@@ -440,7 +440,7 @@ func stream_at(pos: Vector3, immediate: bool = false) -> void:
 
 
 
-	var select = immediate or ownership != _selection_state or pos.distance_squared_to(_selection_position) > 0.0625 or frame - _selection_frame >= maxi(1, ceili(Engine.physics_ticks_per_second * 0.1))
+	var select = immediate or ownership != _selection_state or pos.distance_squared_to(_selection_position) > 144.0 or frame - _selection_frame >= maxi(1, ceili(Engine.physics_ticks_per_second * 0.1))
 	if select:
 		_selection_position = pos; _selection_frame = frame; _selection_state = ownership
 		if is_instance_valid(scrappers): scrappers.stream_at(pos, false)
@@ -461,7 +461,9 @@ func stream_at(pos: Vector3, immediate: bool = false) -> void:
 			if atlas_scenery != null: atlas_scenery.set_completed_chunks(chunks)
 		return
 	_detail_position = pos
-	if select: _update_chunk_detail(pos)
+	if select:
+		_update_chunk_detail(pos)
+		_queue_near_dressing(pos)
 	if select and atlas_scenery != null: atlas_scenery.stream_at(pos)
 	var next = Vector2i(floori(pos.x / CHUNK), floori(pos.z / CHUNK))
 	if next == center and not chunks.is_empty():
@@ -495,6 +497,20 @@ func stream_at(pos: Vector3, immediate: bool = false) -> void:
 	if water != null:
 		water.position.x = pos.x
 		water.position.z = pos.z
+
+
+
+func detail_needed(key: Vector2i, point: Vector3) -> bool:
+	var middle := Vector2(key) * CHUNK + Vector2.ONE * 24.0
+	var dx := maxf(0.0, absf(point.x - middle.x) - 24.0)
+	var dz := maxf(0.0, absf(point.z - middle.y) - 24.0)
+	var dy := maxf(0.0, absf(point.y - height_at(middle.x, middle.y)) - 36.0)
+	return Vector3(dx, dy, dz).length_squared() <= 96.0 * 96.0
+
+func _queue_near_dressing(point: Vector3) -> void:
+	if atlas == null: return
+	for key in chunks:
+		if chunks[key].get_meta("terrain_only", false) and detail_needed(key, point) and not pending.has(key) and (stream_job.is_empty() or stream_job.key != key): pending.push_front(key)
 
 func _finish_scrapper_arrival(point: Vector3) -> void:
 	if not is_instance_valid(scrappers): return
@@ -564,6 +580,9 @@ func make_chunk(key: Vector2i) -> void:
 	while not _chunk_step(job): pass
 
 func _new_chunk_job(key: Vector2i) -> Dictionary:
+	if chunks.has(key) and chunks[key].get_meta("terrain_only", false):
+		chunks[key].set_meta("terrain_only", false)
+		return {"key": key, "root": chunks[key], "phase": "fixed_trees", "index": 0, "quality": int(state.settings.quality), "fixed": preload("res://scripts/fixed_world.gd").chunk(key)}
 	var root := Node3D.new()
 	root.name = "Chunk_%s_%s" % [key.x, key.y]
 	root.position = Vector3(key.x * CHUNK, 0, key.y * CHUNK)
@@ -575,7 +594,7 @@ func _new_chunk_job(key: Vector2i) -> Dictionary:
 
 func stream_step() -> void:
 	if stream_job.is_empty():
-		while not pending.is_empty() and chunks.has(pending.front()): pending.pop_front()
+		while not pending.is_empty() and chunks.has(pending.front()) and not chunks[pending.front()].get_meta("terrain_only", false): pending.pop_front()
 		if pending.is_empty(): return
 		stream_job = _new_chunk_job(pending.pop_front())
 	if _chunk_step(stream_job): stream_job.clear()
@@ -648,7 +667,12 @@ func _fixed_chunk_step(job: Dictionary) -> bool:
 			_sample_terrain_rows(job, mini(STEPS + 1, int(job.index) + 3))
 			if job.index > STEPS: job.phase = "ground"
 		"ground":
-			_finish_terrain(job); job.fixed = fixed.chunk(key); job.phase = "fixed_trees"; job.index = 0
+			_finish_terrain(job)
+			if not detail_needed(key, _detail_position):
+				root.set_meta("terrain_only", true)
+				_finish_chunk_detail(root)
+				return true
+			job.fixed = fixed.chunk(key); job.phase = "fixed_trees"; job.index = 0
 		"fixed_trees":
 			var rows: Array = job.fixed.get("trees", [])
 			if job.index < rows.size(): dressing.tree(self, root, key, rows[job.index])
@@ -682,6 +706,7 @@ func _fixed_chunk_step(job: Dictionary) -> bool:
 		"batch":
 			B.batch_static(root); load("res://scripts/chunk_instances.gd").build(root)
 			root.set_meta("fixed_dressing_ready", true)
+			root.set_meta("terrain_only", false)
 			_finish_chunk_detail(root)
 			if atlas_scenery != null: atlas_scenery.set_completed_chunks(chunks)
 			return true
@@ -1000,6 +1025,7 @@ func loose_point_clear(root: Node3D, point: Vector3) -> bool:
 	return true
 
 func pickup(parent: Node3D, pos: Vector3, id: String, kind: String) -> void:
+	if kind == "shard": return
 	if kind == "tonic": return
 	var n = Node3D.new()
 	n.position = pos + Vector3(0, 0.8, 0)

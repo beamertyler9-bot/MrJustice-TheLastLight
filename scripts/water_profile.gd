@@ -8,7 +8,9 @@ static func _load() -> void:
 	if not _data.is_empty(): return
 	_data = FileAccess.open(PATH, FileAccess.READ).get_var()
 	for river in _data.rivers: _seat_river(river)
-	for lake in _data.lakes: _seat_lake(lake)
+	for lake in _data.lakes:
+		_fit_summit_spring(lake)
+		_seat_lake(lake)
 	for river in _data.rivers:
 		for i in range(river.sections.size() - 1):
 			var a = river.sections[i]; var b = river.sections[i + 1]
@@ -16,11 +18,41 @@ static func _load() -> void:
 			_register(bounds, {"kind": river.kind, "a": a, "b": b})
 	for lake in _data.lakes:
 		_register(Rect2(lake.pos - lake.extent, lake.extent * 2), {"kind": lake.kind, "lake": lake})
-## Seats a river in its bed: where a bank is lower than the water, the surface comes down to
-## the bank (never below a swimmable depth over the bed, and smoothly along the river); where
-## a bank is still too low, that edge reaches outward to the ground. Without this the water's
-## edge hung in the air over low banks, showing its side like a floating slab.
+
+
+
+
+static func _fit_summit_spring(lake: Dictionary) -> void:
+	if lake.get("id", "") == "fizzpeak_summit_pool": return
+	if lake.kind != "cola" or float(lake.height) < 700.0: return
+	for river in _data.rivers:
+		if river.get("id", "") != "fizzpeak_cascade" or river.sections.size() < 2: continue
+		var first: Dictionary = river.sections[0]
+		var head: Vector2 = first.get("channel_center", (first.left + first.right) * 0.5)
+		if lake.pos.distance_to(head) > 24.0: continue
+		var along: Vector2 = (river.sections[1].channel_center - head).normalized()
+		var across: Vector2 = (first.right - first.left).normalized()
+		var radius: float = first.left.distance_to(first.right) * 0.5
+		var outline := PackedVector2Array()
+		for i in range(25):
+			var angle := PI * float(i) / 24.0
+			outline.append(head + across * cos(angle) * radius - along * sin(angle) * radius)
+		lake.id = "fizzpeak_spring"
+		lake.pos = head - along * radius * 0.35
+		lake.outline = outline
+		lake.extent = Vector2.ZERO
+		for point in outline: lake.extent = lake.extent.max((point - lake.pos).abs())
+		lake.height = first.height
+		lake.depth = 0.0
+		lake.terrain_fitted = true
+		lake.natural_shore = true
+		return
+
+
+
+
 static func _seat_river(river: Dictionary) -> void:
+	if river.get("terrain_fitted", false): return
 	var sections: Array = river.sections
 	var count := sections.size()
 	if count == 0: return
@@ -50,9 +82,10 @@ static func _seat_river(river: Dictionary) -> void:
 		if low < height - 0.02: s.height = maxf(low - 0.12, terrain_height((s.left + s.right) * 0.5) + 0.4)
 
 
-## Seats a lake: shore points that hang over lower ground move out along their ray until
-## they meet the ground (the hollow fills with water), or else in toward the middle.
+
+
 static func _seat_lake(lake: Dictionary) -> void:
+	if lake.get("terrain_fitted", false): return
 	var height := float(lake.height)
 	var centre: Vector2 = lake.pos
 	var outline: PackedVector2Array = PackedVector2Array(lake.outline)
@@ -97,7 +130,8 @@ static func _at(p: Vector2, h: float) -> Vector3: return Vector3(p.x, h, p.y)
 static func section_height(p: Vector2, a: Dictionary, b: Dictionary) -> float:
 	var al = _at(a.left, a.height); var ar = _at(a.right, a.height)
 	var bl = _at(b.left, b.height); var br = _at(b.right, b.height)
-	var ac = (al + ar) * 0.5; var bc = (bl + br) * 0.5
+	var ac = _at(a.channel_center, a.height) if a.has("channel_center") else (al + ar) * 0.5
+	var bc = _at(b.channel_center, b.height) if b.has("channel_center") else (bl + br) * 0.5
 	for triangle in [[al, bl, ac], [ac, bl, bc], [ac, bc, ar], [ar, bc, br]]:
 		var h = triangle_height(p, triangle[0], triangle[1], triangle[2])
 		if is_finite(h): return h
@@ -130,7 +164,7 @@ static func river_mesh(river: Dictionary) -> ArrayMesh:
 	var verts := PackedVector3Array(); var uv := PackedVector2Array(); var colors := PackedColorArray(); var ids := PackedInt32Array()
 	var sections: Array = river.sections
 	for row in sections:
-		for p in [row.left, (row.left + row.right) * 0.5, row.right]:
+		for p in [row.left, row.get("channel_center", (row.left + row.right) * 0.5), row.right]:
 			verts.append(_at(p, row.height)); uv.append(Vector2(float((verts.size() - 1) % 3) * 0.5, row.distance)); colors.append(Color(1, 1, 1, 1 if verts.size() % 3 != 2 else 0))
 	for i in range(sections.size() - 1):
 		var n = i * 3
@@ -140,7 +174,7 @@ static func river_mesh(river: Dictionary) -> ArrayMesh:
 	outline.append((sections.size() - 1) * 3 + 1)
 	for i in range(sections.size() - 1, -1, -1): outline.append(i * 3 + 2)
 	outline.append(1)
-	return _volume(verts, uv, colors, ids, outline, float(river.get("depth", 3.4)))
+	return _volume(verts, uv, colors, ids, outline, 0.0 if river.get("terrain_fitted", false) else float(river.get("depth", 3.4)))
 static func lake_mesh(lake: Dictionary) -> ArrayMesh:
 	var verts := PackedVector3Array([_at(lake.pos, lake.height)]); var uv := PackedVector2Array([Vector2(0.5, 0)]); var colors := PackedColorArray([Color(1, 1, 1, 0)]); var ids := PackedInt32Array(); var outline := PackedInt32Array()
 	for i in range(lake.outline.size()):
@@ -151,13 +185,15 @@ static func lake_mesh(lake: Dictionary) -> ArrayMesh:
 	return _volume(verts, uv, colors, ids, outline, float(lake.get("depth", 3.4)))
 static func _volume(verts: PackedVector3Array, uv: PackedVector2Array, colors: PackedColorArray, ids: PackedInt32Array, outline: PackedInt32Array, depth: float) -> ArrayMesh:
 	var count = verts.size(); var top_ids = ids.duplicate()
-	for i in range(count): verts.append(verts[i] - Vector3.UP * depth); uv.append(uv[i]); colors.append(Color(0.42, 0.42, 0.42, 0))
-	for i in range(0, top_ids.size(), 3): ids.append_array(PackedInt32Array([top_ids[i] + count, top_ids[i + 2] + count, top_ids[i + 1] + count]))
+	if depth > 0.0:
+		for i in range(count): verts.append(verts[i] - Vector3.UP * depth); uv.append(uv[i]); colors.append(Color(0.42, 0.42, 0.42, 0))
+		for i in range(0, top_ids.size(), 3): ids.append_array(PackedInt32Array([top_ids[i] + count, top_ids[i + 2] + count, top_ids[i + 1] + count]))
 	var area = 0.0
 	for i in range(outline.size()):
 		var a = verts[outline[i]]; var b = verts[outline[(i + 1) % outline.size()]]; area += a.x * b.z - b.x * a.z
 	if area < 0: outline.reverse()
 	for i in range(outline.size()):
+		if depth <= 0.0: break
 		var a = outline[i]; var b = outline[(i + 1) % outline.size()]
 		ids.append_array(PackedInt32Array([a, b, a + count, b, b + count, a + count]))
 	var normals := PackedVector3Array(); normals.resize(verts.size())

@@ -11,6 +11,7 @@ const ROCK = ["#7d8a79", "#9c8a9b", "#a5a58c", "#b39a76", "#7e726e", "#8d8497", 
 static var painted_meshes = {}
 static func color_for(region: int) -> Color: return Color(BASE[clampi(region - 9, 0, 6)])
 static func configure(material: ShaderMaterial) -> void:
+	material.set_shader_parameter("magma_pattern", load("res://assets/surfaces/magma_pattern.png"))
 	material.set_shader_parameter("regional_albedo", load("res://assets/surfaces/regions/albedo-layers.res"))
 	material.set_shader_parameter("regional_relief", load("res://assets/surfaces/regions/relief-layers.res"))
 	material.set_shader_parameter("regional_map", load("res://assets/surfaces/regions/biomes.png"))

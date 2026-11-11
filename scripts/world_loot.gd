@@ -1,6 +1,6 @@
 extends RefCounted
 
-const COMMON = ["wood", "stick", "stone", "herb", "planks", "coffee_bean", "iron"]
+const COMMON = ["string", "fishing_rod", "silver_trout", "reed_perch", "golden_carp", "moon_eel", "crystal_koi", "cola_carp", "fizzfin", "frost_char", "sunscale_bream", "wood", "stick", "stone", "herb", "planks", "coffee_bean", "iron"]
 const WEIGHTS = ["wood", "wood", "wood", "wood", "stick", "stick", "stick", "stone", "stone", "stone", "herb", "herb", "planks", "coffee_bean", "iron"]
 const LIMIT = 2048
 static func barrel_items(id: String, seed_value: int) -> Array:

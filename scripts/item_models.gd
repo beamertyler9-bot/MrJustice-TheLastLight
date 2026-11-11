@@ -2,9 +2,9 @@ extends RefCounted
 
 
 const Surfaces = preload("res://scripts/surfaces.gd")
-const KINDS = ["herb", "stone", "iron", "tonic", "mana_potion", "coffee", "wood", "stick", "planks", "crystal", "shard", "coffee_bean", "marshmallow", "roasted_marshmallow", "camp_kit", "relic", "ancient_core", "chocolate_bar", "graham_cracker", "smore"]
+const KINDS = ["lake_fish", "herb", "stone", "iron", "tonic", "mana_potion", "coffee", "wood", "stick", "planks", "crystal", "shard", "coffee_bean", "marshmallow", "roasted_marshmallow", "camp_kit", "relic", "ancient_core", "chocolate_bar", "graham_cracker", "smore"]
 static func supports(kind: String) -> bool:
-	return kind in KINDS or preload("res://scripts/quest_items.gd").is_quest(kind)
+	return kind in ["string", "fishing_rod"] or kind in preload("res://scripts/fishing_catalog.gd").IDS or kind in KINDS or preload("res://scripts/quest_items.gd").is_quest(kind)
 
 
 
@@ -24,6 +24,24 @@ static func grip_anchor(kind: String) -> Vector3:
 	return Vector3.ZERO
 
 static func build(parent: Node3D, kind: String) -> Node3D:
+	if kind == "fishing_rod" or kind == "string":
+		var prop = Node3D.new(); parent.add_child(prop)
+		var b = load("res://scripts/build.gd")
+		if kind == "fishing_rod":
+			b.cyl(prop, Vector3(0, 0.7, 0), 0.025, 1.4, b.mat("#9f733f"))
+			b.cyl(prop, Vector3(0, 0.13, 0.06), 0.085, 0.1, b.mat("#506c77")).rotation.x = PI / 2
+			b.cyl(prop, Vector3.ZERO, 0.045, 0.28, b.mat("#44352c"))
+		else:
+			for i in 6: b.cyl(prop, Vector3(0, i * 0.025, 0), 0.11, 0.02, b.mat("#d9c69f"))
+		return prop
+
+	if kind in preload("res://scripts/fishing_catalog.gd").IDS:
+		var fish = Node3D.new(); parent.add_child(fish)
+		var b = load("res://scripts/build.gd")
+		b.ball(fish, Vector3(0, 0.12, 0), Vector3(0.65, 0.1, 0.1) if kind == "moon_eel" else Vector3(0.36, 0.26, 0.17) if kind in ["golden_carp", "cola_carp", "crystal_koi"] else Vector3(0.46, 0.18, 0.13), b.mat("#" + preload("res://scripts/fishing_catalog.gd").COLORS[preload("res://scripts/fishing_catalog.gd").IDS.find(kind)]))
+		b.facet(fish, Vector3(-0.22, 0.12, 0), Vector3(0.17, 0.22, 0.05), b.mat("#627c78"))
+		b.ball(fish, Vector3(0.14, 0.15, 0.064), Vector3.ONE * 0.025, b.mat("#263b3e"))
+		return fish
 	if preload("res://scripts/quest_items.gd").is_quest(kind): return preload("res://scripts/quest_item_models.gd").build(parent, kind)
 	assert(supports(kind), "Unknown canonical item " + kind)
 	if kind == "shard": return preload("res://scripts/light_essence.gd").build(parent)

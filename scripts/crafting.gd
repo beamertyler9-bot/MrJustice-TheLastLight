@@ -3,6 +3,18 @@ extends RefCounted
 
 const QuestItems = preload("res://scripts/quest_items.gd")
 const ITEMS: Dictionary = {
+	"string": {"name": "String", "description": "Braided cord for fishing tackle.", "buy": 3, "sell": 1, "glyph": "◎"},
+	"fishing_rod": {"name": "Fishing rod", "description": "Craft from three timber planks and two string. Use at a fishing dock.", "buy": 0, "sell": 8, "glyph": "/"},
+	"silver_trout": {"name": "Silver trout", "description": "A silver trout. Sell your catch to a merchant.", "buy": 0, "sell": 8, "glyph": "♓"},
+	"reed_perch": {"name": "Reed perch", "description": "A reed perch. Sell your catch to a merchant.", "buy": 0, "sell": 10, "glyph": "♓"},
+	"golden_carp": {"name": "Golden carp", "description": "A golden carp. Sell your catch to a merchant.", "buy": 0, "sell": 12, "glyph": "♓"},
+	"moon_eel": {"name": "Moon eel", "description": "A moon eel. Sell your catch to a merchant.", "buy": 0, "sell": 14, "glyph": "♓"},
+	"crystal_koi": {"name": "Crystal koi", "description": "A crystal koi. Sell your catch to a merchant.", "buy": 0, "sell": 16, "glyph": "♓"},
+	"cola_carp": {"name": "Cola carp", "description": "A cola carp. Sell your catch to a merchant.", "buy": 0, "sell": 18, "glyph": "♓"},
+	"fizzfin": {"name": "Fizzfin", "description": "A fizzfin. Sell your catch to a merchant.", "buy": 0, "sell": 20, "glyph": "♓"},
+	"frost_char": {"name": "Frost char", "description": "A frost char. Sell your catch to a merchant.", "buy": 0, "sell": 22, "glyph": "♓"},
+	"sunscale_bream": {"name": "Sunscale bream", "description": "A sunscale bream. Sell your catch to a merchant.", "buy": 0, "sell": 24, "glyph": "♓"},
+	"lake_fish": {"name": "Lake bass", "description": "A fresh catch from a lakeside outpost. Wandering traders buy it for six Light Essence.", "buy": 0, "sell": 6, "glyph": "♓"},
 	"quest_seed_satchel": {"name": "Juniper’s seed satchel", "description": "A stitched green seed pouch, tied with Juniper’s leaf clasp. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "satchel", "color": "#719951"},
 	"quest_lost_spindle": {"name": "Lethiel’s silver spindle", "description": "A narrow silver spindle with her mother’s blue ribbon. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "spindle", "color": "#7dbbdd"},
 	"quest_market_manifest": {"name": "Mara’s market ledger", "description": "A red leather ledger with numbered brass corners. Return only to its owner.", "buy": 0, "sell": 0, "glyph": "♫", "quest": true, "shape": "book", "color": "#b9524d"},
@@ -56,6 +68,7 @@ const ITEMS: Dictionary = {
 	"warden_plate": {"name": "Warden plate", "description": "Core-forged armor. Adds two maximum health, alongside your other fitted gear.", "buy": 0, "sell": 0, "glyph": "▣"}
 }
 const RECIPES: Dictionary = {
+	"fishing_rod": {"name": "Fishing rod", "category": "Tools", "needs": {"planks": 3, "string": 2}, "output": "fishing_rod", "amount": 1, "upgrade": false, "description": "Fit a flexible timber rod with a cord line and reel.", "station": "field", "size": 2},
 	"smore": {"name": "Camp s'more", "category": "Supplies", "needs": {"marshmallow": 1, "chocolate_bar": 1, "graham_cracker": 1}, "output": "smore", "amount": 1, "upgrade": false, "description": "Toast a marshmallow with chocolate and a graham cracker beside a lit campfire. Restores three health.", "station": "camp", "size": 2},
 	"planks": {"name": "Timber planks", "category": "Materials", "needs": {"wood": 1}, "output": "planks", "amount": 4, "upgrade": false, "description": "Saw one timber into four boards.", "station": "field", "size": 2},
 	"stick": {"name": "Sticks", "category": "Materials", "needs": {"planks": 2}, "output": "stick", "amount": 4, "upgrade": false, "description": "Stack two boards to cut four handles.", "station": "field", "size": 2},
@@ -76,8 +89,8 @@ const RECIPES: Dictionary = {
 	"warden_plate": {"name": "Warden plate", "category": "Gear", "needs": {"ancient_core": 3, "iron": 8, "crystal": 4}, "output": "warden_plate", "amount": 1, "upgrade": true, "description": "Forge the deep guardians' cores into legendary armor. +2 maximum health.", "station": "bench", "size": 3}
 }
 const SHOPS: Dictionary = {
-	"general": ["tonic", "mana_potion", "wood", "stone", "stick", "herb", "coffee_bean", "marshmallow", "chocolate_bar", "graham_cracker", "camp_kit"],
-	"smith": ["iron", "crystal", "stone", "wood"]
+	"general": ["string", "tonic", "mana_potion", "wood", "stone", "stick", "herb", "coffee_bean", "marshmallow", "chocolate_bar", "graham_cracker", "camp_kit"],
+	"smith": ["string", "iron", "crystal", "stone", "wood"]
 }
 const WEAPONS: Dictionary = {
 	"grimoire": {"name": "Grimoire", "damage": 0, "reach": 18.0, "speed": 1.0, "tool": "", "magic": true},
@@ -119,6 +132,7 @@ static func upgrade_metadata(id: String) -> Dictionary:
 
 
 const PATTERNS: Dictionary = {
+	"fishing_rod": {"rows": ["PP", "PS"], "cells": {"P": {"item": "planks", "amount": 1}, "S": {"item": "string", "amount": 2}}},
 	"smore": {"rows": ["MC", "G."], "cells": {"M": {"item": "marshmallow", "amount": 1}, "C": {"item": "chocolate_bar", "amount": 1}, "G": {"item": "graham_cracker", "amount": 1}}},
 	"planks": {"rows": ["W"], "cells": {"W": {"item": "wood", "amount": 1}}},
 	"stick": {"rows": ["P", "P"], "cells": {"P": {"item": "planks", "amount": 1}}},
@@ -140,7 +154,7 @@ const PATTERNS: Dictionary = {
 }
 
 static func max_stack(id: String) -> int:
-	if QuestItems.is_quest(id): return 1
+	if id == "fishing_rod" or QuestItems.is_quest(id): return 1
 	if (WEAPONS.has(id) and id != "fists") or UPGRADES.has(id):
 		return 1
 	return 64 if ITEMS.has(id) else 0

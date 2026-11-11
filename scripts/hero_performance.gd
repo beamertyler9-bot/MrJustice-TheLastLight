@@ -7,7 +7,7 @@ var palm_weight = 0.0
 var look = Vector3.ZERO
 var last_equipment = ""
 func priority(h, motion: String = "") -> bool:
-	return motion in ["climb", "mantle", "swim", "beam", "hook"] or h.attack_time > 0 or h.dodge_progress >= 0 or h.carry_pose or not h.held_item_id.is_empty() or h.is_throwing() or h.grapple.active() or h.aim_weight > 0.01 or h.charge_weight > 0.01 or h.bag_progress > 0.01 or h.bag_target > 0.01 or not h.rest_pose.is_empty() or h.supply_pour.active() or h.is_grimoire_casting() or h._grimoire.visible or maxf(h._weights.beam, h._weights.hook) > 0.01 or maxf(h._weights.climb, maxf(h._weights.mantle, h._weights.swim)) > 0.01
+	return motion in ["climb", "mantle", "swim", "beam", "hook", "seraph_hover", "seraph_fly", "seraph_glide", "seraph_boost"] or h.attack_time > 0 or h.dodge_progress >= 0 or h.carry_pose or not h.held_item_id.is_empty() or h.is_throwing() or h.grapple.active() or h.aim_weight > 0.01 or h.charge_weight > 0.01 or h.bag_progress > 0.01 or h.bag_target > 0.01 or not h.rest_pose.is_empty() or h.supply_pour.active() or h.is_grimoire_casting() or h._grimoire.visible or maxf(h._weights.beam, h._weights.hook) > 0.01 or maxf(h._weights.climb, maxf(h._weights.mantle, h._weights.swim)) > 0.01
 func restore(h, motion: String) -> void:
 	var handoff = h.weapon_id != last_equipment and palm_weight > 0.001; last_equipment = h.weapon_id
 	if not priority(h, motion) and not handoff:

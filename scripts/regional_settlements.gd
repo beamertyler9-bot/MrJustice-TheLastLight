@@ -141,7 +141,8 @@ func stream_at(point: Vector3, immediate: bool = false) -> void:
 	for site in world.atlas.sites():
 		if Vector2(point.x, point.z).distance_to(site.pos) > 220 or not outdoors: continue
 		for district in plan(world.atlas, site).districts:
-			var distance = (site.pos + district.p).distance_to(Vector2(point.x, point.z))
+			var ground_point: Vector2 = site.pos + district.p
+			var distance = Vector3(ground_point.x, world.height_at(ground_point.x, ground_point.y), ground_point.y).distance_to(point)
 			if distance < (128 if live.has(_key(site, district)) else 106): choices.append({"site": site, "district": district, "distance": distance})
 	choices.sort_custom(func (a, b): return a.distance < b.distance)
 	for choice in choices.slice(0, 3):

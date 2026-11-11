@@ -56,6 +56,8 @@ static func build(chunk: Node3D):
 	for bucket in buckets.values():
 		if bucket.size() < 2: continue
 		var source = bucket[0].source; var batch = MultiMeshInstance3D.new(); batch.name = "SharedStationaryArt"
+		var owner = bucket[0].owner
+		if (owner.is_in_group("harvestable") and owner.get_meta("kind", "") == "tree") or owner.get_meta("regional_food", false): batch.set_meta("forest_canopy", true)
 
 
 

@@ -5,6 +5,12 @@ uniform float cloud_cover = 0.35;
 uniform vec3 sun_direction = vec3(-0.55, 0.65, -0.52);
 uniform vec4 day_top : source_color = vec4(0.13, 0.32, 0.52, 1.0);
 uniform vec4 day_horizon : source_color = vec4(0.54, 0.68, 0.76, 1.0);
+uniform vec4 night_top : source_color = vec4(0.025,0.045,0.12,1.0);
+uniform vec4 night_horizon : source_color = vec4(0.10,0.15,0.26,1.0);
+uniform vec4 cloud_tint : source_color = vec4(1.0);
+uniform float cloud_scale = 1.0;
+uniform float cloud_drift = 1.0;
+uniform float aurora_amount = 0.0;
 // Cloud layering is adapted from the supplied SourceCode sky shader.
 uniform sampler2D cloud_tex_01 : filter_linear, repeat_enable;
 uniform sampler2D cloud_tex_02 : filter_linear, repeat_enable;
@@ -29,9 +35,9 @@ void sky() {
 	vec3 dir = normalize(EYEDIR);
 	float height = max(dir.y, 0.0);
 	float dusk = (1.0 - smoothstep(0.0, 0.50, abs(sun_direction.y))) * daylight;
-	vec3 top = mix(vec3(0.025, 0.045, 0.12), day_top.rgb, daylight);
+	vec3 top = mix(night_top.rgb, day_top.rgb, daylight);
 	top = mix(top, vec3(0.30, 0.18, 0.38), dusk * 0.42);
-	vec3 horizon = mix(vec3(0.10, 0.15, 0.26), day_horizon.rgb, daylight);
+	vec3 horizon = mix(night_horizon.rgb, day_horizon.rgb, daylight);
 	horizon = mix(horizon, vec3(0.91, 0.46, 0.30), dusk * 0.80);
 	vec3 color = mix(horizon, top, pow(height, 0.48));
 	if (AT_CUBEMAP_PASS && dir.y < 0.0) {
@@ -51,7 +57,7 @@ void sky() {
 		float star = (1.0 - smoothstep(0.015, 0.08, length(fract(stars_uv) - 0.5))) * step(0.985, star_cell);
 		color += vec3(0.82, 0.86, 0.69) * star * (1.0 - daylight) * smoothstep(0.03, 0.25, height);
 		vec2 plane = dir.xz / max(0.14, height + 0.13);
-		float n = clouds(plane * vec2(2.6, 3.6) + vec2(world_time * 0.004, world_time * 0.001));
+		float n = clouds(plane * vec2(2.6, 3.6) * cloud_scale + vec2(world_time * 0.004, world_time * 0.001) * cloud_drift);
 		float threshold = mix(0.69, 0.44, cloud_cover);
 		float visibility = smoothstep(0.015, 0.09, height);
 		float outline = smoothstep(threshold - 0.025, threshold - 0.012, n) * visibility;
@@ -60,9 +66,15 @@ void sky() {
 		vec3 cloud_shadow = mix(vec3(0.12, 0.19, 0.32), vec3(0.48, 0.65, 0.69), daylight);
 		vec3 cloud_light = mix(vec3(0.25, 0.34, 0.46), vec3(0.96, 0.91, 0.74), daylight);
 		cloud_light = mix(cloud_light, vec3(0.98, 0.64, 0.46), dusk * 0.70);
+		cloud_light *= mix(vec3(1.0), cloud_tint.rgb, 0.62);
+		cloud_shadow *= mix(vec3(1.0), cloud_tint.rgb, 0.28);
 		vec3 cloud_ink = mix(vec3(0.055, 0.09, 0.17), vec3(0.25, 0.42, 0.51), daylight);
 		color = mix(color, cloud_shadow, outline * 0.24);
 		color = mix(color, mix(cloud_shadow, cloud_light, lit), fill);
+		if (aurora_amount > 0.01 && daylight < 0.8) {
+			float ribbon = exp(-abs(dir.y-0.38-sin(dir.x*7.0+dir.z*3.0+world_time*0.012)*0.12)*19.0);
+			color += mix(vec3(0.12,0.52,0.38),vec3(0.32,0.20,0.58),dir.y)*ribbon*aurora_amount*(1.0-daylight)*(1.0-fill);
+		}
 	}
 	COLOR = color;
 }

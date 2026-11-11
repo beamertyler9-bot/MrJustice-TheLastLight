@@ -1,6 +1,8 @@
 extends Node3D
 
 const State = preload("res://scripts/state.gd")
+const PriorTerrainPatch = preload("res://scripts/prior_terrain_patch.gd")
+const PriorLandscapeGround = preload("res://scripts/prior_landscape_ground.gd")
 const PriorFixedGround = preload("res://scripts/prior_fixed_ground.gd")
 const CompactGeography = preload("res://scripts/compact_geography.gd")
 const Spellbook = preload("res://scripts/spellbook.gd")
@@ -37,6 +39,8 @@ var audio
 var environment: WorldEnvironment
 var sunlight: DirectionalLight3D
 var sky_material: ShaderMaterial
+var roadlife
+var regional_atmosphere = preload("res://scripts/regional_atmosphere.gd").new()
 var wildlife: Node3D
 var comic_word: String = ""
 var comic_time: float = 0.0
@@ -223,6 +227,7 @@ func _clear_world() -> void:
 		world.queue_free()
 	world = null
 	scrappers = null
+	roadlife = null
 
 func _create_world() -> void:
 	if not state.expanded_world:
@@ -323,6 +328,8 @@ func _create_ecology() -> void:
 		world.add_child(ecology)
 
 func _bind_world_services() -> void:
+	if state.expanded_world:
+		roadlife = preload("res://scripts/roadlife.gd").new(); world.add_child(roadlife); roadlife.setup(self)
 	placement_preview = Placement.new()
 	add_child(placement_preview)
 	if journey_save != null: journey_save.restore_echo()
@@ -334,6 +341,10 @@ func _bind_world_services() -> void:
 	_refresh_world_loot()
 
 func _world_drop(record: Dictionary) -> Node3D:
+	if record.item == "shard":
+		state.harvest(str(record.id), "shard", int(record.amount))
+		state.world_loot.erase(record)
+		return null
 	var id = str(record.id)
 	if _loot_nodes.has(id) and is_instance_valid(_loot_nodes[id]): return _loot_nodes[id]
 	var node = Node3D.new(); node.name = "Dropped" + str(record.item).capitalize(); world.add_child(node)
@@ -433,12 +444,9 @@ func spawn_light_essence(at: Vector3, amount: int, source_id: String = "", exclu
 	_loot_serial += 1
 	var key = source_id if not source_id.is_empty() else "%s:%s:%s" % [at, Time.get_ticks_usec(), _loot_serial]
 	var id = _essence_drop_id(key)
-	var landed = _loot_landing(at, excluded)
-	var record = {"id": id, "item": "shard", "amount": mini(amount, State.MAX_ITEMS), "position": [landed.x, landed.y, landed.z]}
-	if not state.add_world_drop(record): return _loot_nodes.get(id)
-	var node = _world_drop(record)
-	if world_ready: _queue_loot_save()
-	return node
+	if state.harvest(id, "shard", mini(amount, State.MAX_ITEMS)):
+		if world_ready: _queue_loot_save()
+	return null
 
 func _queue_loot_save() -> void:
 
@@ -597,17 +605,22 @@ func _saved_ground_point(point: Vector3, footprint: float, planted: bool = false
 
 
 	var prior_point = Vector2(point.x, point.z)
-	if _saved_coordinates_compacted: prior_point = CompactGeography.source(prior_point)
+	if _saved_coordinates_compacted and not (_prior_atlas_ground is PriorLandscapeGround or _prior_atlas_ground is PriorTerrainPatch): prior_point = CompactGeography.source(prior_point)
 	var former_ground: float = _prior_atlas_ground.height_at(prior_point) if _prior_atlas_ground != null else world.legacy_height_at(point.x, point.z)
 	var support_margin = 0.35 if _prior_atlas_ground is PriorFixedGround and not planted else 1.2
 	var lost_support := (planted or _prior_atlas_ground != null) and ground < former_ground - 0.5 and absf(point.y - former_ground) < support_margin
-	if point.y >= ground - 0.1 and not lost_support:
+	var wet_relocation := false
+	if planted and _prior_atlas_ground != null and state.expanded_world and state.terrain_revision < 35 and world.atlas != null:
+		var liquid: Dictionary = world.atlas.liquid_at(Vector2(point.x, point.z))
+		wet_relocation = not liquid.is_empty() and (point.y < float(liquid.height) + 0.5 or lost_support)
+	if point.y >= ground - 0.1 and not lost_support and not wet_relocation:
 		return point
 	var origin = Vector2(point.x, point.z)
 	for ring in range(17):
 		var samples = 1 if ring == 0 else 16
 		for i in range(samples):
-			var candidate = origin + Vector2.from_angle(float(i) * TAU / samples) * float(ring) * 2.0
+			var radius: float = float([0, 2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512][ring]) if wet_relocation else float(ring) * 2.0
+			var candidate = origin + Vector2.from_angle(float(i) * TAU / samples) * radius
 			if Locations.reserved(candidate, footprint): continue
 			if world.atlas != null and not world.atlas.liquid_at(candidate).is_empty(): continue
 			var low := INF; var high := -INF
@@ -617,20 +630,47 @@ func _saved_ground_point(point: Vector3, footprint: float, planted: bool = false
 			if low > world.water_level + 0.5 and high - low < 0.3:
 				return Vector3(candidate.x, high + 0.035, candidate.y)
 
-	return world.get_spawn()
+	var fallback: Vector3 = world.get_spawn()
+	if planted:
+
+		fallback.y = world.surface_height_at(fallback.x, fallback.z, not uncached) + 0.035
+	return fallback
 
 func migrate_saved_positions() -> void:
 	if CompactGeography.migrate(state, _prior_interior_seed): _saved_coordinates_compacted = true
 	if state.expanded_world and state.world_id == "mr-justice-world-01" and state.terrain_revision < 32 and _prior_atlas_ground == null: _prior_atlas_ground = PriorFixedGround.new()
+	elif state.expanded_world and state.world_id == "mr-justice-world-01" and state.terrain_revision < 33 and _prior_atlas_ground == null: _prior_atlas_ground = PriorLandscapeGround.new()
+	elif state.expanded_world and state.world_id == "mr-justice-world-01" and state.terrain_revision < 35 and _prior_atlas_ground == null: _prior_atlas_ground = PriorTerrainPatch.new(state.terrain_revision)
+	if state.expanded_world and state.world_id == "mr-justice-world-01" and state.terrain_revision < 35:
+		PriorLandscapeGround.rebase_clearings(state)
+		world.camp_ground.setup(state); world.camp_ground.completed.clear()
+		world.surface_grids.clear(); world.fine_surface_grids.clear()
+		_migrate_landscape_loot()
 	_migrate_castle_belongings()
 	state.player_position = _building_entry_point(_castle_entry_point(_saved_ground_point(state.player_position, 0.4)))
 	state.checkpoint = _building_entry_point(_castle_entry_point(_saved_ground_point(state.checkpoint, 0.55, true)))
 	if state.camp_placed: state.camp_position = _saved_ground_point(state.camp_position, 2.6, true)
 	if state.workbench_placed: state.workbench_position = _saved_ground_point(state.workbench_position, 0.95, true)
 	if state.death_echo_active: state.death_echo_position = _building_entry_point(_castle_entry_point(_saved_ground_point(state.death_echo_position, 0.4, true)))
-	state.terrain_revision = 32
-	if _prior_atlas_ground is PriorFixedGround: _prior_atlas_ground = null
+	state.terrain_revision = 35
+	if _prior_atlas_ground is PriorFixedGround or _prior_atlas_ground is PriorLandscapeGround or _prior_atlas_ground is PriorTerrainPatch: _prior_atlas_ground = null
 	CompactGeography.release_source()
+
+func _migrate_landscape_loot() -> void:
+	for record in state.world_loot:
+		var raw: Array = record.position
+		var point := Vector3(raw[0], raw[1], raw[2])
+		if not world.interior_at(point).is_empty(): continue
+		var prior_point := Vector2(point.x, point.z)
+		if _saved_coordinates_compacted and not (_prior_atlas_ground is PriorLandscapeGround or _prior_atlas_ground is PriorTerrainPatch): prior_point = CompactGeography.source(prior_point)
+		var old_height: float = _prior_atlas_ground.height_at(prior_point)
+		var ground: float = world.surface_height_at(point.x, point.z)
+		var liquid: Dictionary = world.atlas.liquid_at(Vector2(point.x, point.z)) if world.atlas != null else {}
+		var submerged: bool = not liquid.is_empty() and point.y < float(liquid.height) + 0.5
+		if absf(point.y - old_height) < 3.0 or point.y < ground + 0.05 or submerged:
+			if absf(point.y - ground) > 0.75: point.y = ground + 0.25
+			point = _saved_ground_point(point, 0.3, true)
+		record.position = [point.x, point.y, point.z]
 
 func _migrate_castle_belongings() -> void:
 	if not state.expanded_world or world.atlas == null: return
@@ -1020,6 +1060,7 @@ func _weather() -> void:
 	sky_material.set_shader_parameter("daylight", daylight)
 	sky_material.set_shader_parameter("cloud_cover", lerpf(0.35, 0.85, rain_amount))
 	sky_material.set_shader_parameter("sun_direction", direction)
+	regional_atmosphere.apply(sky_material, biome, get_process_delta_time())
 	var light_direction = direction if daylight > 0.15 else Vector3(-direction.x, maxf(0.18, -direction.y), -direction.z).normalized()
 	sunlight.look_at(-light_direction, Vector3.UP)
 	sunlight.light_color = Color("#a9d1ee").lerp(Color("#ffe2ac"), daylight)
@@ -1171,12 +1212,14 @@ func apply_settings() -> void:
 
 func _save_current_state() -> bool:
 	if state == null: return false
+	if is_instance_valid(player) and (player.light_flight.active or player._flight_safe_fall): state.player_position = player.position_for_save()
 	_sync_stone_drops()
 	return state.save_game() if world_ready else state.save_title_settings()
 
 func interact_with(node: Node3D) -> void:
 	if mode != "play" or not usable_node(node):
 		return
+	if is_instance_valid(roadlife) and roadlife.interact(node): return
 	if is_instance_valid(scrappers) and scrappers.interact(node): return
 	if expeditions != null and expeditions.interact(node): return
 	if quests != null and quests.interact(node): return
@@ -1255,7 +1298,7 @@ func interact_with(node: Node3D) -> void:
 
 
 func usable_node(node: Node3D, reach: float = 2.9) -> bool:
-	if not is_instance_valid(node) or node.is_queued_for_deletion() or player.global_position.distance_to(node.global_position) > reach:
+	if not is_instance_valid(node) or node.is_queued_for_deletion() or player.global_position.distance_to(preload("res://scripts/target_bounds.gd").closest(node, player.global_position)) > reach:
 		return false
 	if node.get_meta("ring_only", false):
 		var offset = player.global_position - node.global_position
@@ -1468,7 +1511,7 @@ func choose_resource(action: String) -> void:
 func harvest_strike(origin: Vector3, facing: Vector3) -> void:
 	for tree in get_tree().get_nodes_in_group("harvestable"):
 		if not has_harvest_tool(tree): continue
-		var delta = tree.global_position - origin
+		var delta = preload("res://scripts/target_bounds.gd").closest(tree, origin + Vector3.UP * 0.65) - (origin + Vector3.UP * 0.65)
 		if delta.length() < 2.6 and absf(delta.y) < 1.3 and facing.dot(delta.normalized()) > 0.2 and usable_node(tree):
 			var left = int(tree.get_meta("chop_left", 3)) - (2 if state.equipment == "stone_axe" else 1)
 			tree.set_meta("chop_left", maxi(1, left))
@@ -1481,7 +1524,7 @@ func harvest_strike(origin: Vector3, facing: Vector3) -> void:
 			return
 	for rock in get_tree().get_nodes_in_group("mineable"):
 		if not has_harvest_tool(rock): continue
-		var delta = rock.global_position - origin
+		var delta = preload("res://scripts/target_bounds.gd").closest(rock, origin + Vector3.UP * 0.65) - (origin + Vector3.UP * 0.65)
 		if delta.length() < 2.6 and absf(delta.y) < 1.4 and facing.dot(delta.normalized()) > 0.2 and usable_node(rock):
 			var point = rock.global_position + Vector3.UP * 0.45
 			if rock.hit(1):

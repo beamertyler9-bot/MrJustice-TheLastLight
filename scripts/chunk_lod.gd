@@ -9,6 +9,8 @@ var level: int = -1
 var _records: Array = []
 var _ground: WeakRef
 var _terrain: Array = []
+var _terrain_bounds := AABB()
+var _has_terrain_bounds := false
 
 static func attach(chunk: Node3D):
 	var existing = chunk.get_node_or_null("ChunkLOD")
@@ -20,16 +22,21 @@ static func attach(chunk: Node3D):
 func _capture(chunk: Node3D) -> void:
 	for node in chunk.find_children("*", "GeometryInstance3D", true, false):
 		if node is MeshInstance3D and node.name == "TerrainSurface":
-			_ground = weakref(node); _terrain = [node.mesh, null, null]; continue
+			_ground = weakref(node); _terrain = [node.mesh, null, null]
+			_terrain_bounds = node.transform * node.mesh.get_aabb()
+			_has_terrain_bounds = true
+			continue
 		if not node.visible: continue
 		var ancestor = node.get_parent(); var moving = false
+		var forest: bool = node.get_meta("forest_canopy", false)
 		while ancestor != chunk:
 
 
 			if ancestor is RigidBody3D: moving = true; break
+			if (ancestor.is_in_group("harvestable") and ancestor.get_meta("kind", "") == "tree") or ancestor.get_meta("regional_food", false): forest = true
 			ancestor = ancestor.get_parent()
 		if moving: continue
-		var record = {"node": weakref(node), "layers": node.layers, "bias": node.lod_bias, "shadow": node.cast_shadow, "small": node.is_in_group("world_detail"), "active": true}
+		var record = {"node": weakref(node), "layers": node.layers, "bias": node.lod_bias, "shadow": node.cast_shadow, "small": node.is_in_group("world_detail") or node.is_in_group("imported_detail"), "forest": forest, "active": true}
 		node.tree_exiting.connect(_restore.bind(record), CONNECT_ONE_SHOT)
 		_records.append(record)
 
@@ -37,6 +44,11 @@ func update_viewer(position: Vector3) -> bool:
 	var chunk: Node3D = get_parent()
 	var point = chunk.to_local(position)
 	var distance = Vector2(maxf(0.0, maxf(-point.x, point.x - SIZE)), maxf(0.0, maxf(-point.z, point.z - SIZE))).length()
+
+
+	if _has_terrain_bounds:
+		var vertical := maxf(0.0, maxf(_terrain_bounds.position.y - point.y, point.y - _terrain_bounds.end.y - 24.0))
+		distance = Vector2(distance, vertical).length()
 	var next = 0 if distance <= NEAR else 1 if distance <= FAR else 2
 	if level == 0: next = 2 if distance > FAR + MARGIN else 1 if distance > NEAR + MARGIN else 0
 	elif level == 1: next = 0 if distance < NEAR - MARGIN else 2 if distance > FAR + MARGIN else 1
@@ -51,7 +63,7 @@ func update_viewer(position: Vector3) -> bool:
 		var node = record.node.get_ref()
 		if not is_instance_valid(node): continue
 		if not chunk.is_ancestor_of(node): _restore(record); continue
-		node.layers = 0 if level == 2 or (level == 1 and record.small) else record.layers
+		node.layers = 0 if level == 2 or (level == 1 and (record.small or record.forest)) else record.layers
 		node.lod_bias = record.bias * ([1.0, 0.45, 0.15][level])
 		node.cast_shadow = record.shadow if level == 0 else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return true

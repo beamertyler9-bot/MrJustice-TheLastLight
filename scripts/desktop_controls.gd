@@ -46,7 +46,8 @@ func _input(event: InputEvent) -> void:
 			if event.pressed: game.navigate_back()
 			handled = true
 		elif code == KEY_SPACE and game.mode == "play":
-			if event.pressed: game.player.jump()
+			if event.pressed: game.player.begin_jump()
+			else: game.player.end_jump()
 			handled = true
 		elif code == KEY_E and game.mode == "play":
 			if event.pressed: game.begin_context_action(true)

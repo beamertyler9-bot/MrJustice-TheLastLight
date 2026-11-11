@@ -7,11 +7,11 @@ const SpellCollection = preload("res://scripts/spell_collection.gd")
 const MAX_ITEMS: int = 9999
 const RETIRED_HAMMER_REFUND: Dictionary = {"stone": 7, "wood": 3, "stick": 2}
 const MANA_POTION_RESTORE: float = 50.0
-const INVENTORY_IDS: Array = ["shard", "tonic", "mana_potion", "relic", "wood", "planks", "crafting_table", "stone", "stick", "iron", "crystal", "herb", "coffee_bean", "marshmallow", "camp_kit", "coffee", "roasted_marshmallow", "ancient_core", "chocolate_bar", "graham_cracker", "smore", "quest_seed_satchel", "quest_lost_spindle", "quest_market_manifest", "quest_forgotten_pattern", "quest_rowans_locket", "quest_tuning_fork", "quest_pantry_beans", "quest_forge_fuel", "quest_garden_wall", "quest_camp_supper", "quest_willow_remedy", "quest_hesters_alloy", "quest_warm_cups", "quest_core_for_bramm", "quest_provisions_for_the_pass", "quest_scrapper_voice_coil", "quest_scrapper_quarry_chime", "quest_scrapper_fen_whistle", "quest_scrapper_ash_musicbox"]
+const INVENTORY_IDS: Array = ["string", "fishing_rod", "silver_trout", "reed_perch", "golden_carp", "moon_eel", "crystal_koi", "cola_carp", "fizzfin", "frost_char", "sunscale_bream", "lake_fish", "shard", "tonic", "mana_potion", "relic", "wood", "planks", "crafting_table", "stone", "stick", "iron", "crystal", "herb", "coffee_bean", "marshmallow", "camp_kit", "coffee", "roasted_marshmallow", "ancient_core", "chocolate_bar", "graham_cracker", "smore", "quest_seed_satchel", "quest_lost_spindle", "quest_market_manifest", "quest_forgotten_pattern", "quest_rowans_locket", "quest_tuning_fork", "quest_pantry_beans", "quest_forge_fuel", "quest_garden_wall", "quest_camp_supper", "quest_willow_remedy", "quest_hesters_alloy", "quest_warm_cups", "quest_core_for_bramm", "quest_provisions_for_the_pass", "quest_scrapper_voice_coil", "quest_scrapper_quarry_chime", "quest_scrapper_fen_whistle", "quest_scrapper_ash_musicbox"]
 
 var seed_value: int = 64127
 var world_id: String = ""
-var terrain_revision: int = 32
+var terrain_revision: int = 35
 var geography_revision: int = 1
 
 
@@ -333,6 +333,7 @@ func equip_weapon(id: String) -> bool:
 func _inventory_totals(counts: Dictionary, weapons: Dictionary, gear: Dictionary) -> Dictionary:
 	var result: Dictionary = {}
 	for id in INVENTORY_IDS:
+		if id == "shard": continue
 		result[id] = maxi(0, int(counts.get(id, 0)))
 	for id in Crafting.WEAPONS:
 		if id != "fists" and weapons.get(id, false) == true:
@@ -404,8 +405,7 @@ func _select_equipment() -> void:
 func register_defeat(point: Vector3) -> int:
 	if not _valid_vector([point.x, point.y, point.z]):
 		return 0
-	var lost: int = int(items.get("shard", 0))
-	items.shard = 0
+	var lost: int = 0
 	death_echo_active = lost > 0
 	death_echo_position = point
 	death_echo_shards = lost
@@ -661,6 +661,10 @@ func load_game(path: String = "user://journey.json") -> bool:
 	workbench_position = Vector3(float(bench[0]), float(bench[1]), float(bench[2]))
 	death_echo_active = data.get("death_echo_active", false)
 	death_echo_shards = int(echo_amount)
+	if death_echo_shards > 0:
+		items.shard = mini(MAX_ITEMS, int(items.shard) + death_echo_shards)
+		death_echo_shards = 0
+		death_echo_active = false
 	var echo: Array = data.get("death_echo_position", [0, 4, 0])
 	death_echo_position = Vector3(float(echo[0]), float(echo[1]), float(echo[2]))
 	spellbook = magic.spellbook

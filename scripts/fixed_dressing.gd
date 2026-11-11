@@ -50,6 +50,7 @@ static func cover(world, root: Node3D, index: int, tile: int, quality: int, layo
 	var record: Dictionary = Map.cover_record(Vector2i(roundi(root.position.x / 48), roundi(root.position.z / 48)), index, tile)
 	var biome = world.biome_at(root.position.x + 24, root.position.z + 24)
 	for row in record.blades.slice(0, [4, 7, 8][quality]):
+		if biome == 13: continue
 		var p = Vector2(row[0], row[1])
 		if not world.decoration_allowed(root, p, 0.85): continue
 		var y = world.surface_height_at(root.position.x + p.x, root.position.z + p.y)
@@ -57,7 +58,7 @@ static func cover(world, root: Node3D, index: int, tile: int, quality: int, layo
 		layout["meadow" if index % 3 == 0 else "grass"].append(frame)
 	for decor_index in range(mini(3, record.decor.size())):
 		var row = record.decor[decor_index]
-		var p = Vector2(row[0], row[1]); var family = int(record.family)
+		var p = Vector2(row[0], row[1]); var family = 3 if biome == 13 else int(record.family)
 		if not world.decoration_allowed(root, p, 1.25 if family == 1 else 0.65): continue
 		var y = world.surface_height_at(root.position.x + p.x, root.position.z + p.y)
 		var frame = Transform3D(Basis(Vector3.UP, row[2]).scaled(Vector3.ONE * float(row[3])), Vector3(p.x, y + 0.02, p.y))
