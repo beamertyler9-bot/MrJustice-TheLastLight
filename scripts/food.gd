@@ -20,6 +20,11 @@ const FOODS := {
 	"graham_cracker": {"heal": 1, "boosts": {"grit": 90.0}},
 	"roasted_marshmallow": {"heal": 2, "boosts": {"warmth": 24.0}},
 	"smore": {"heal": 3, "boosts": {"warmth": 40.0, "cocoa": 60.0, "grit": 120.0}},
+	"hot_cocoa": {"heal": 1, "boosts": {"cocoa": 90.0}},
+	"fish_stew": {"heal": 4, "boosts": {"warmth": 30.0}},
+	"cactus_water": {"heal": 2, "boosts": {"grit": 90.0}},
+	"sugar_drop": {"heal": 1, "boosts": {"cocoa": 30.0}},
+	"mossbloom_tonic": {"heal": 4, "boosts": {"warmth": 20.0}},
 }
 const WARMTH_TICK := 8.0
 const COCOA_SPEED := 1.15

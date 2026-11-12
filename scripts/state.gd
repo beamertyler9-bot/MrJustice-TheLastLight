@@ -7,7 +7,7 @@ const SpellCollection = preload("res://scripts/spell_collection.gd")
 const MAX_ITEMS: int = 9999
 const RETIRED_HAMMER_REFUND: Dictionary = {"stone": 7, "wood": 3, "stick": 2}
 const MANA_POTION_RESTORE: float = 50.0
-const INVENTORY_IDS: Array = ["string", "fishing_rod", "silver_trout", "reed_perch", "golden_carp", "moon_eel", "crystal_koi", "cola_carp", "fizzfin", "frost_char", "sunscale_bream", "lake_fish", "shard", "tonic", "mana_potion", "relic", "wood", "planks", "crafting_table", "stone", "stick", "iron", "crystal", "herb", "coffee_bean", "marshmallow", "camp_kit", "coffee", "roasted_marshmallow", "ancient_core", "chocolate_bar", "graham_cracker", "smore", "quest_seed_satchel", "quest_lost_spindle", "quest_market_manifest", "quest_forgotten_pattern", "quest_rowans_locket", "quest_tuning_fork", "quest_pantry_beans", "quest_forge_fuel", "quest_garden_wall", "quest_camp_supper", "quest_willow_remedy", "quest_hesters_alloy", "quest_warm_cups", "quest_core_for_bramm", "quest_provisions_for_the_pass", "quest_scrapper_voice_coil", "quest_scrapper_quarry_chime", "quest_scrapper_fen_whistle", "quest_scrapper_ash_musicbox"]
+const INVENTORY_IDS: Array = ["mossbloom", "oak_resin", "cocoa_pod", "sugar_crystal", "wheat_sheaf", "wind_feather", "sunstone", "cactus_fruit", "obsidian", "ember_ore", "ghost_lily", "grave_silver", "prism_shard", "glow_moss", "hot_cocoa", "fish_stew", "cactus_water", "sugar_drop", "mossbloom_tonic", "string", "fishing_rod", "silver_trout", "reed_perch", "golden_carp", "moon_eel", "crystal_koi", "cola_carp", "fizzfin", "frost_char", "sunscale_bream", "lake_fish", "shard", "tonic", "mana_potion", "relic", "wood", "planks", "crafting_table", "stone", "stick", "iron", "crystal", "herb", "coffee_bean", "marshmallow", "camp_kit", "coffee", "roasted_marshmallow", "ancient_core", "chocolate_bar", "graham_cracker", "smore", "quest_seed_satchel", "quest_lost_spindle", "quest_market_manifest", "quest_forgotten_pattern", "quest_rowans_locket", "quest_tuning_fork", "quest_pantry_beans", "quest_forge_fuel", "quest_garden_wall", "quest_camp_supper", "quest_willow_remedy", "quest_hesters_alloy", "quest_warm_cups", "quest_core_for_bramm", "quest_provisions_for_the_pass", "quest_scrapper_voice_coil", "quest_scrapper_quarry_chime", "quest_scrapper_fen_whistle", "quest_scrapper_ash_musicbox"]
 
 var seed_value: int = 64127
 var world_id: String = ""
@@ -198,6 +198,11 @@ func refresh_stats() -> void:
 	max_stamina = 100.0 + float(keepsakes.stamina)
 	speed_bonus = 1.0 + float(keepsakes.speed)
 	max_mana = Spellbook.MAX_MANA + float(keepsakes.mana)
+	# Armor and trinkets can also add mana and run speed.
+	for id in Crafting.UPGRADES:
+		if upgrades.get(id, false) == true:
+			max_mana += float(Crafting.UPGRADES[id].get("mana", 0.0))
+			speed_bonus += float(Crafting.UPGRADES[id].get("speed", 0.0))
 	mana = clampf(mana, 0.0, max_mana)
 	health = clampi(health, 0, max_health)
 	stamina = clampf(stamina, 0.0, max_stamina)

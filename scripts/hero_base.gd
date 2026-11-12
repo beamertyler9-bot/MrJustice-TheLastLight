@@ -556,6 +556,8 @@ func _tool_head_mesh(id: String) -> ArrayMesh:
 func set_weapon(id: String) -> void:
 	if id != weapon_id:
 		cancel_grimoire_cast()
+	# Newer weapons and tools reuse the closest existing model in the hand.
+	id = {"obsidian_blade": "iron_blade", "sunsteel_sword": "dawn_blade", "prism_saber": "dawn_blade", "iron_axe": "stone_axe", "iron_pickaxe": "stone_pickaxe"}.get(id, id)
 	weapon_id = id if id in ["iron_blade", "dawn_blade", "grimoire"] or id in TOOLS else "fists"
 	for key in _weapons:
 		_weapons[key].visible = key == weapon_id

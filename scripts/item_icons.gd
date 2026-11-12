@@ -15,7 +15,7 @@ static func texture(id: String) -> AtlasTexture:
 	if _textures.has(id): return _textures[id]
 	var path = "res://assets/items/refined/" + id + ".png"
 	if ResourceLoader.exists(path):
-		var icon = AtlasTexture.new(); icon.atlas = load(path); icon.region = Rect2(0, 0, 256, 256); icon.filter_clip = true; _textures[id] = icon; return icon
+		var icon = AtlasTexture.new(); icon.atlas = load(path); icon.region = preload("res://scripts/item_icon_bounds.gd").BOUNDS.get(id, Rect2(0, 0, 256, 144)); icon.filter_clip = true; _textures[id] = icon; return icon
 	if id in QUEST_IDS:
 		var keepsake = AtlasTexture.new(); keepsake.atlas = QUEST_ATLAS; keepsake.region = Rect2(QUEST_IDS.find(id) * 128, 0, 128, 128); keepsake.filter_clip = true; _textures[id] = keepsake; return keepsake
 	if id == "shard":

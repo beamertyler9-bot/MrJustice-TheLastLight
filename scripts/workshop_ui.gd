@@ -259,6 +259,10 @@ func draw_details(pos: Vector2, width: float) -> void:
 	y = maxf(pos.y + 109, y + 8)
 	var description := str(Catalog.ITEMS.get(item, {}).get("description", "Two dependable hands, always ready."))
 	y = f.paragraph(Vector2(pos.x, y), description, width, 15, FAINT)
+	var Info = preload("res://scripts/item_info.gd")
+	var from: String = Info.from_text(item); var uses: String = Info.uses_text(item)
+	if from != "": y = f.paragraph(Vector2(pos.x, y + 4), "From: " + from, width, 13, CYAN)
+	if uses != "": y = f.paragraph(Vector2(pos.x, y + 2), "Used for: " + uses, width, 13, CYAN)
 	var count := int(game.state.items.get(item, 0))
 	var available: int = game.available_count(item) if game.has_method("available_count") else count
 	if count > 0:

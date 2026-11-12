@@ -1,5 +1,46 @@
 # Changelog
 
+## 0.73.0 — More items and equipment (2026-11-11)
+
+- **Every region has two resources of its own**, growing in patches beside its roads
+  (14 patches each, 196 in all). Walk up and press interact to gather 1–2; a gathered
+  patch grows back after about 10 minutes of play. They are also sold by the merchants
+  who deal in them, cheapest in their home region.
+  - **Mosswake Valley:** mossbloom, oak resin.
+  - **S'morewood:** cocoa pods, sugar crystals.
+  - **Windbell Plains:** wheat sheaves, wind feathers.
+  - **Sunspire Dunes:** sunstone, cactus fruit.
+  - **Ashfall Caldera:** obsidian, ember ore.
+  - **Hollowmourn:** ghost lilies, grave silver.
+  - **Prismere:** prism shards, glow moss.
+- **Weapons and tools in clear tiers** (makeshift → stone → iron → regional):
+  - **Iron axe:** more wood from every tree. **Iron pickaxe:** breaks rock in fewer
+    swings. Both hit harder than the stone ones.
+  - **Obsidian blade** (Ashfall), **Sunsteel sword** (Sunspire) and **Prism saber**
+    (Prismere, the strongest forged blade), each with more reach.
+- **Seven new pieces of gear** to fit alongside your others:
+  - **Iron buckler** +1 heart, **Ember mail** +2 hearts.
+  - **Grave cloak** +1 heart and +15 mana, **Prism ring** +1 heart and +15 mana.
+  - **Sunstone amulet** +25 mana.
+  - **Wind charm** +8% run speed, **Lantern charm** +5% speed and +10 mana.
+- **Five new things to eat**, cooked at a camp:
+  - **Hot cocoa** (cocoa pod + sugar crystal): 90 s of Cocoa Rush.
+  - **Fish stew** (fish + herb + wheat): +4 hearts and Campfire Warmth.
+  - **Cactus water** (2 cactus fruit): +2 hearts and Graham Grit.
+  - **Sugar drops** (2 sugar crystals): +1 heart and a short Cocoa Rush.
+  - **Mossbloom tonic** (mossbloom + herb + glow moss): +4 hearts and warmth.
+- **Every item says where it comes from and what it's for.** The satchel shows a
+  "From" line (gathered where, caught where, crafted where, which merchants sell it) and
+  a "Used for" line (what it makes, what eating it does, whether it's gear, and which
+  merchants buy it). Every item now has at least one use.
+- **New icons** for all 31 new items, and item pictures now fill their slots instead of
+  sitting small in the middle (fish, food and keepsakes too).
+- **Merchants** stock the new goods: the blacksmith sells the new weapons and armor and
+  buys ores; the alchemist deals in herbs and flowers; the grocer in cocoa, sugar and
+  wheat; the curio dealer in charms, amulets, rings, sunstone and prism shards.
+- **Performance:** resource patches are small, cast no shadows and are only drawn within
+  70 m. Regrowth is checked every 2 seconds, not every frame.
+
 ## 0.72.0 — Specialist merchants (2026-11-11)
 
 - **Merchants specialise now** instead of all selling the same things. Each town has a

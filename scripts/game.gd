@@ -103,6 +103,7 @@ var expeditions
 var quests
 var food
 var story
+var gathering
 var ecology
 var magic
 var wizard_tower
@@ -217,6 +218,7 @@ func _clear_world() -> void:
 	expeditions = null
 	quests = null
 	story = null
+	gathering = null
 	ecology = null
 	if effects != null:
 		effects.clear_effects()
@@ -329,6 +331,8 @@ func _create_quests() -> void:
 	if state.expanded_world:
 		story = load("res://scripts/story.gd").new()
 		story.setup(self)
+		gathering = load("res://scripts/regional_gathering.gd").new()
+		gathering.setup(self)
 
 func _create_ecology() -> void:
 	if ResourceLoader.exists("res://scripts/ecology.gd"):
@@ -1014,6 +1018,7 @@ func _process(dt: float) -> void:
 		if expeditions != null: expeditions.tick(dt)
 		if quests != null: quests.tick(dt)
 		if story != null: story.tick(dt)
+		if gathering != null: gathering.tick(dt)
 		if food != null: food.tick(dt)
 		if deep_adventure != null: deep_adventure.tick(dt)
 		comic_time = maxf(0.0, comic_time - dt)
@@ -1235,6 +1240,7 @@ func interact_with(node: Node3D) -> void:
 	if expeditions != null and expeditions.interact(node): return
 	if quests != null and quests.interact(node): return
 	if story != null and story.interact(node): return
+	if gathering != null and gathering.interact(node): return
 	if is_instance_valid(deep_adventure) and deep_adventure.interact(node): return
 	var kind = str(node.get_meta("kind", ""))
 	var id = str(node.get_meta("id", ""))
