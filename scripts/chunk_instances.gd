@@ -119,10 +119,15 @@ func _process(dt: float) -> void:
 
 
 
-	var released = []
+	# Only build the release list when something actually needs releasing (no per-frame
+	# allocation in the common case).
+	var released = null
 	for item in rigid_owners:
-		if not is_instance_valid(item.owner) or not item.owner.freeze: released.append(item.id)
-	for id in released: _release(id)
+		if not is_instance_valid(item.owner) or not item.owner.freeze:
+			if released == null: released = []
+			released.append(item.id)
+	if released != null:
+		for id in released: _release(id)
 	integrity_clock += dt
 	if integrity_clock >= 0.5: integrity_clock = 0.0; refresh()
 func _exit_tree() -> void:

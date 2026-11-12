@@ -8,7 +8,8 @@ var showing = true
 func setup(owner: Node3D, w: float, d: float): house = owner; width = w; depth = d; process_priority = 1000
 func capture_geometry():
 	geometry = []
-	for node in find_children("*", "GeometryInstance3D", true, false):
+	# Room lights go dark with the room: an unseen interior shouldn't light the street.
+	for node in find_children("*", "GeometryInstance3D", true, false) + find_children("*", "Light3D", true, false):
 		var record = [node, node.visible]; geometry.append(record)
 		node.tree_exiting.connect(_release.bind(record), CONNECT_ONE_SHOT)
 func _release(record: Array):

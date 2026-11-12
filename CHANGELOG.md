@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.69.0 — Lighter on the phone (2026-11-11)
+
+These changes came from measuring what a town actually draws:
+- **Room lights:** a room's lights now switch off when the room can't be seen. They used
+  to stay lit (and keep lighting the street) while you were outside. Shops also had two
+  lights where one was enough. In a busy town view, 34 active lights became 11.
+- **Fewer shadows:** small things (pebbles, sticks, cups, little props, fingers) no longer
+  cast shadows. Each was an extra draw in the shadow pass for a shadow too small to see.
+  Small shadow casters in view went from 156 to 24, and all shadow casters in view from
+  215 to 162.
+- **Draws:** 672 draws in that view became 640.
+- **Less memory churn:** a per-frame list in streamed ground chunks is now only made when
+  something needs it, instead of on every frame for every chunk.
+
 ## 0.68.0 — Occlusion culling (2026-11-11)
 
 - **Occlusion culling is on:** anything completely hidden behind something solid is no

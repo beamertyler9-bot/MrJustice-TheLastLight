@@ -136,6 +136,7 @@ func _exit_tree() -> void:
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	get_tree().node_added.connect(_on_node_added)
 	Engine.max_fps = 60
 	get_tree().quit_on_go_back = false
 	state = State.new()
@@ -2384,3 +2385,19 @@ func cycle_ability() -> void:
 		audio.cue("ui")
 	else:
 		toast("The grappling hand sleeps in the eastern crystal grove.")
+
+
+## Small things (pebbles, sticks, cups, fingers, little props) don't cast shadows: each
+## shadow caster is another draw in the shadow pass, and their shadows are too small to
+## see. Checked once, the frame after a mesh joins the world.
+const SMALL_SHADOW := 0.5
+func _on_node_added(node: Node) -> void:
+	if node is MeshInstance3D: _trim_shadow.call_deferred(node)
+
+func _trim_shadow(node) -> void:
+	if not is_instance_valid(node) or not node.is_inside_tree(): return
+	if node.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF or node.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY: return
+	if node.mesh == null: return
+	var size: Vector3 = node.mesh.get_aabb().size * node.global_transform.basis.get_scale().abs()
+	if maxf(size.x, maxf(size.y, size.z)) < SMALL_SHADOW:
+		node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

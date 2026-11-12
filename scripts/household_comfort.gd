@@ -77,7 +77,6 @@ static func shop(room: Node3D, width: float, depth: float, identity: String) -> 
 	for side in [-1, 1]:
 		_painting(room, Vector3(side * (width * 0.5 - 0.07), 2.35, -depth * 0.12), atan2(-float(side), 0.0), rng)
 		O.fit(room, "interior_mdvl_interiors_pottedplant_01", Vector3(side * (width * 0.5 - 0.5), 0.0, depth * 0.5 - 0.55), Vector3(0.5, 0.9, 0.5), rng.randf() * TAU)
-	var lamp := OmniLight3D.new(); lamp.name = "ShopLight"; lamp.position = Vector3(0, 2.4, 0)
-	lamp.light_color = Color("#ffd8a4"); lamp.light_energy = 0.7; lamp.omni_range = 6.0; lamp.shadow_enabled = false
-	lamp.distance_fade_enabled = true; lamp.distance_fade_begin = 22.0; lamp.distance_fade_length = 6.0
-	room.add_child(lamp)
+	# (Shops already have their own warm light; a second one only doubled the cost.)
+	for child in room.get_children():
+		if child is OmniLight3D: child.light_energy = maxf(child.light_energy, 0.7); child.light_color = Color("#ffd8a4")
