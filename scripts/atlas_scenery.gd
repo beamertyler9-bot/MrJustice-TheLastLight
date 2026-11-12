@@ -30,6 +30,7 @@ func setup(context) -> void:
 	for water in atlas.watercourses(): _water(water)
 	for lake in atlas.lakes(): _lake(lake)
 	_volcanic_fire()
+	preload("res://scripts/fizzpeak_falls.gd").build(self)
 	for bridge in atlas.data.get("bridges", []): _bridge(bridge)
 	_castle_silhouette()
 
@@ -61,6 +62,7 @@ func setup_loading(context, progress: Callable) -> void:
 	for bridge in atlas.data.get("bridges", []):
 		_bridge(bridge); await get_tree().process_frame
 	_volcanic_fire()
+	preload("res://scripts/fizzpeak_falls.gd").build(self)
 	progress.call("Raising distant landmarks")
 	await get_tree().process_frame
 	_castle_silhouette()

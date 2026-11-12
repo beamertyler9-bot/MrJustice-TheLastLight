@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.75.0 — Fizzpeak's cola falls (2026-11-11)
+
+- **Real waterfalls on Fizzpeak.** The cola river used to run down the mountain as a
+  flat ribbon stuck to the rock. Its three steepest drops (about 100 m, 70 m and 55 m)
+  are now waterfalls:
+  - A curtain of falling cola pours over the lip and arcs clear of the cliff, with
+    streaks pouring down it, foam at the top and bottom, and ragged see-through edges.
+  - Where it lands, foam rings spread across the water and spray drifts up.
+  - The curtains can be seen from far across S'morewood (up to 1.4 km), so Fizzpeak
+    reads as a landmark.
+- **The river gathers into the big cola lake at the foot.** Where the river runs into
+  the foothill lake it churns and foams, and six fizz springs bubble up across the
+  lake, with bubbles rising and popping over spreading foam rings.
+- **Performance:** each waterfall is one mesh. The spray, foam and bubbles are simple
+  see-through quads animated entirely on the GPU (no scripts run per frame). They're
+  only drawn within 320 m, and none of it casts shadows.
+
 ## 0.74.0 — Menus, UI and HUD (2026-11-11)
 
 - **A cleaner HUD.** While exploring you now see only your health, the current goal and
