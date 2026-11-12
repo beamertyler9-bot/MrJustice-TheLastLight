@@ -55,6 +55,7 @@ static func _wall_line(parent: Node3D, a: Vector2, b: Vector2, y: float, opening
 		var from := float(span[0]); var to := float(span[1]); var bottom := float(span[2]); var top := float(span[3])
 		if to - from < 0.01 or top - bottom < 0.01: continue
 		var mid := a + dir * (from + to) * 0.5
+		preload("res://scripts/occluders.gd").wall_span(parent, a + dir * from, a + dir * to, y + bottom, top - bottom)
 		var piece := B.box(parent, Vector3(mid.x, y + (bottom + top) * 0.5, mid.y), Vector3(WALL, top - bottom, to - from), material, true)
 		piece.rotation.y = yaw
 		var collider := parent.get_child(parent.get_child_count() - 1)

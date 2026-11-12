@@ -743,7 +743,10 @@ func _finish_terrain(job: Dictionary) -> void:
 		for x in range(STEPS):
 			var i = z * (STEPS + 1) + x
 			idx.append_array(PackedInt32Array([i, i + 1, i + STEPS + 1, i + 1, i + STEPS + 2, i + STEPS + 1]))
-	if camp_ground.near_point(Vector2(key.x * CHUNK + 24, key.y * CHUNK + 24), 35):
+	var camp_chunk: bool = camp_ground.near_point(Vector2(key.x * CHUNK + 24, key.y * CHUNK + 24), 35)
+	# Occlusion: a coarse sheet just under the ground (not where camps reshape it).
+	if not camp_chunk: preload("res://scripts/occluders.gd").terrain(root, verts, STEPS)
+	if camp_chunk:
 		var adaptive = _camp_mesh_arrays(key)
 		verts = adaptive.vertices; norms = adaptive.normals; cols = adaptive.colors; idx = adaptive.indices
 	var arrays = []

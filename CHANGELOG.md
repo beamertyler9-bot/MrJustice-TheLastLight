@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.68.0 — Occlusion culling (2026-11-11)
+
+- **Occlusion culling is on:** anything completely hidden behind something solid is no
+  longer drawn (or shadowed). Hidden shapes, kept just inside the real surfaces so
+  nothing visible is ever cut, mark what blocks the view:
+  - **Hills and ridges:** a coarse sheet under every ground chunk, so the trees, houses
+    and creatures behind a hill are skipped.
+  - **Houses:** their walls (doorway left open). A street of houses hides what's behind
+    it, and from inside a house the outside world isn't drawn at all.
+  - **Blackthorn Keep:** every solid stretch of wall, so the rooms you can't see from
+    where you stand are skipped.
+- **The result:** about 5–20% fewer objects drawn in towns and hilly country in testing,
+  and far more inside the keep, with no visible difference on screen.
+- **Built on 0.67.1:** fishing and the better fish are carried over.
+
 ## 0.62.1 — Smoother running (2026-11-05)
 
 - **Butterflies and fireflies removed.**

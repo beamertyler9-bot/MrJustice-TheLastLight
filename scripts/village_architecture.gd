@@ -20,6 +20,8 @@ static func build(parent: Node3D, width: float, depth: float, region: int, ident
 		B.box(art, Vector3(side * (width * 0.25 + 0.5), h * 0.5, depth * 0.5), Vector3(width * 0.5 - 1, h, 0.24), plaster, detail)
 		B.box(art, Vector3(side * (width * 0.25 + 0.5), 0.32, depth * 0.5 + 0.025), Vector3(width * 0.5 - 1, 0.64, 0.28), stone)
 	B.box(art, Vector3(0, 2.77, depth * 0.5), Vector3(2, 0.76, 0.24), plaster, detail)
+	# Occlusion: the solid walls hide what's behind the house (and the outside, from within).
+	preload("res://scripts/occluders.gd").house(parent, width, depth, h)
 	B.box(art, Vector3(0, 0.004, 0), Vector3(width, 0.06, depth), B.world_surface("timber", "#a99170")).name = "WalkableFloor"
 	for x in [-width * 0.5, width * 0.5]:
 		for z in [-depth * 0.5, depth * 0.5]: B.beveled_box(art, Vector3(x, h * 0.5, z), Vector3(0.19, h + 0.06, 0.22), timber)
