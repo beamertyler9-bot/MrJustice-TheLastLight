@@ -74,7 +74,7 @@ const LORE := {
 			{"kind": "stone", "title": "Carved Stone of the Masons", "text": "HERE THE LANTERN MASONS SWORE: EVERY LIGHT WE MAKE SHALL BE CARRIED, NOT KEPT. A LIGHT KEPT IS A LIGHT LOST."},
 			{"kind": "note", "title": "Note Pinned to a Post", "text": "To whoever finds this: the last lantern the masons made walked out of the hall the night the bell broke. Its head still burned. If you see it, tell it we're sorry. - Odile, apprentice"}]},
 	10: {"region": "S'morewood", "trouble": "The Ovens That Never Cool",
-		"keepsake": {"id": "charm_smorewood", "name": "Fizzpeak Sugarglass", "text": "+25 stamina", "stamina": 25.0},
+		"keepsake": {"id": "charm_smorewood", "name": "Fizzpeak Sugarglass", "text": "+8% run speed", "speed": 0.08},
 		"pieces": [
 			{"kind": "journal", "title": "Baker's Ledger", "text": "Since the chime came to the Confectionery, the ovens won't cool. Flour by the cartload goes in; nobody remembers who the cakes are for. The cola springs bubble faster every week."},
 			{"kind": "stone", "title": "Graham-stone Marker", "text": "GRAHAM GLEN, FOUNDED ON THE FIRST SWEET HARVEST. SHARE THE FIRE, SHARE THE MALLOW. NO ONE EATS ALONE."},
@@ -92,7 +92,7 @@ const LORE := {
 			{"kind": "stone", "title": "Sun-worn Obelisk", "text": "WATER IS LIFE. SHADE IS MERCY. LIGHT IS THE PATH. GIVE ALL THREE TO THE TRAVELLER."},
 			{"kind": "note", "title": "Caravan Master's Warning", "text": "Don't follow the glass dog into the pyramid. Three of my drivers did. The sand gave back their boots, and it was laughing."}]},
 	13: {"region": "Ashfall Caldera", "trouble": "The Blue Fire",
-		"keepsake": {"id": "charm_ashfall", "name": "Ember-heart Bead", "text": "+25 stamina", "stamina": 25.0},
+		"keepsake": {"id": "charm_ashfall", "name": "Ember-heart Bead", "text": "+1 heart", "health": 1},
 		"pieces": [
 			{"kind": "journal", "title": "Foundry Logbook", "text": "The night the bell broke, the Furnace Cathedral's fire turned blue, and nobody here has been able to light a red flame since. The smiths are working with cold iron."},
 			{"kind": "stone", "title": "Basalt Prayer-stone", "text": "FIRE THAT WARMS, FIRE THAT FORGES, FIRE THAT GUIDES. WE KEEP ALL THREE. WE FEAR ONLY THE FIRE THAT IS COLD."},
@@ -261,13 +261,14 @@ func _check_region(region: int) -> void:
 
 ## Stat bonuses from keepsakes (applied by state.refresh_stats).
 static func keepsake_bonus(taken: Dictionary) -> Dictionary:
-	var bonus := {"health": 0, "stamina": 0.0, "mana": 0.0}
+	var bonus := {"health": 0, "stamina": 0.0, "mana": 0.0, "speed": 0.0}
 	for region in LORE:
 		var keepsake: Dictionary = LORE[region].keepsake
 		if not taken.get(keepsake.id, false): continue
 		bonus.health += int(keepsake.get("health", 0))
 		bonus.stamina += float(keepsake.get("stamina", 0.0))
 		bonus.mana += float(keepsake.get("mana", 0.0))
+		bonus.speed += float(keepsake.get("speed", 0.0))
 	return bonus
 
 

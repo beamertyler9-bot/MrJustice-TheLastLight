@@ -20,6 +20,7 @@ var stamina: float = 100.0
 var max_stamina: float = 100.0
 var health: int = 5
 var max_health: int = 5
+var speed_bonus: float = 1.0
 var items: Dictionary = _new_inventory()
 var taken: Dictionary = {}
 var world_loot: Array = []
@@ -195,6 +196,7 @@ func refresh_stats() -> void:
 	var keepsakes: Dictionary = load("res://scripts/story.gd").keepsake_bonus(taken)
 	max_health += int(keepsakes.health)
 	max_stamina = 100.0 + float(keepsakes.stamina)
+	speed_bonus = 1.0 + float(keepsakes.speed)
 	max_mana = Spellbook.MAX_MANA + float(keepsakes.mana)
 	mana = clampf(mana, 0.0, max_mana)
 	health = clampi(health, 0, max_health)
@@ -211,10 +213,16 @@ func use_supply(id: String) -> bool:
 			return false
 		mana = minf(max_mana, mana + MANA_POTION_RESTORE)
 	else:
-		if id not in ["coffee", "tonic", "roasted_marshmallow", "smore"] or health >= max_health:
-			return false
-		var healing: int = 1 if id == "coffee" else (3 if id in ["tonic", "smore"] else 2)
-		health = mini(max_health, health + healing)
+		var Food = load("res://scripts/food.gd")
+		if Food.is_food(id):
+			# Treats with a boost can be eaten even at full health.
+			if health >= max_health and Food.FOODS[id].boosts.is_empty(): return false
+			health = mini(max_health, health + int(Food.FOODS[id].heal))
+		else:
+			if id not in ["coffee", "tonic"] or health >= max_health:
+				return false
+			var healing: int = 1 if id == "coffee" else 3
+			health = mini(max_health, health + healing)
 	items[id] = int(items[id]) - 1
 	_reconcile_slots()
 	return true

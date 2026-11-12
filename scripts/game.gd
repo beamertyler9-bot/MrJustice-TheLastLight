@@ -101,6 +101,7 @@ var placement_preview: Node3D
 var deep_adventure
 var expeditions
 var quests
+var food
 var story
 var ecology
 var magic
@@ -137,6 +138,7 @@ func _exit_tree() -> void:
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	food = load("res://scripts/food.gd").new(); food.setup(self)
 	get_tree().node_added.connect(_on_node_added)
 	Engine.max_fps = 60
 	get_tree().quit_on_go_back = false
@@ -1012,6 +1014,7 @@ func _process(dt: float) -> void:
 		if expeditions != null: expeditions.tick(dt)
 		if quests != null: quests.tick(dt)
 		if story != null: story.tick(dt)
+		if food != null: food.tick(dt)
 		if deep_adventure != null: deep_adventure.tick(dt)
 		comic_time = maxf(0.0, comic_time - dt)
 		state.journey_time += dt
@@ -1710,7 +1713,7 @@ func activate_hotbar(index: int) -> void:
 	var slots: Array = state.inventory_slots()
 	if index < 0 or index >= 9 or index >= slots.size(): return
 	var item: String = str(slots[index].get("item", ""))
-	var quick_use: bool = mode == "play" and item in ["tonic", "mana_potion", "coffee", "roasted_marshmallow", "smore"]
+	var quick_use: bool = mode == "play" and (item in ["tonic", "mana_potion", "coffee"] or food.is_food(item))
 	if quick_use and not _quick_supply_hands_free():
 		toast("Free your hands before using a supply.")
 		return
@@ -1721,7 +1724,7 @@ func activate_hotbar(index: int) -> void:
 		player.cancel_beam()
 		player.melee_contact = -1
 		player.queued_strike = false
-		var needs_supply: bool = state.mana < state.max_mana if item == "mana_potion" else state.health < state.max_health
+		var needs_supply: bool = state.mana < state.max_mana if item == "mana_potion" else (state.health < state.max_health or food.is_food(item))
 		if quick_use and needs_supply:
 			use_supply(item)
 		else:
@@ -2014,6 +2017,7 @@ func _commit_supply(id: String) -> bool:
 	if mode == "play":
 		burst(player.global_position + Vector3.UP * 0.65, Color("#65b8ff") if id == "mana_potion" else Color("#a6e2a4"), 10)
 		if id == "mana_potion": toast("%s · restored %s mana" % [Crafting.item_name(id), String.num(state.mana - previous_mana, 1)])
+		elif food != null and food.is_food(id): food.eaten(id, state.health - previous_health)
 		else: toast("%s · restored %d health" % [Crafting.item_name(id), state.health - previous_health])
 	return true
 

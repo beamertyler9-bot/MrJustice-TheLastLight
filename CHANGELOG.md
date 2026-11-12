@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.71.0 — Camp treats (2026-11-11)
+
+- **Marshmallows, chocolate bars and graham crackers can be eaten**, each with its own
+  boost:
+  - **Chocolate bar:** +1 heart and **Cocoa Rush**, +15% run speed for 45 s.
+  - **Graham cracker:** +1 heart and **Graham Grit**: the next hit within 90 s does 1
+    less damage.
+  - **Marshmallow:** +1 heart and a little **Campfire Warmth** (a heart back every 8 s).
+  - **Roasted marshmallow:** +2 hearts and 24 s of Campfire Warmth.
+- **S'mores are the best:** toast all three at a lit campfire for +3 hearts and all
+  three boosts at once (40 s of warmth, 60 s of Cocoa Rush, and Graham Grit).
+- **Eating:**
+  - **Full health:** treats with a boost can be eaten even when your hearts are full.
+  - **The effect:** the treat lifts up into the lantern, the flame swallows it with a
+    flare and sparks, and a line says what it did.
+  - **Boosts on screen:** active boosts show as small chips under the compass with
+    their time left, and blink when nearly over.
+  - **How to eat:** tap the treat on the hotbar, or use "Eat one" in the satchel.
+  - **Descriptions:** every treat's description now says what it does.
+- **Keepsake fix:** the S'morewood and Ashfall Caldera keepsakes gave stamina, which
+  nothing uses. They now give +8% run speed and +1 heart.
+
 ## 0.70.0 — The Last Light: story, goals and lore (2026-11-11)
 
 - **A main story in nine chapters.** The Dawnbell of Bellcrown once rang every morning

@@ -269,8 +269,8 @@ func draw_details(pos: Vector2, width: float) -> void:
 		f.action(rect, "Equipped" if game.state.equipment == item else "Equip", "equip:" + item, game.state.equipment == item)
 	elif game.state.upgrades.has(item):
 		f.action(rect, "Fitted", "", false, false)
-	elif item in ["coffee", "roasted_marshmallow", "tonic", "mana_potion", "smore"]:
-		f.action(rect, "Use one", "supply:" + item, true, available > 0)
+	elif item in ["coffee", "tonic", "mana_potion"] or load("res://scripts/food.gd").is_food(item):
+		f.action(rect, "Eat one" if load("res://scripts/food.gd").is_food(item) else "Use one", "supply:" + item, true, available > 0)
 	elif item == "camp_kit":
 		f.action(rect, "Ready camp · place with B", "place_camp", true, count > 0)
 	elif item == "crafting_table":

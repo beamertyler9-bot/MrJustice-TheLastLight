@@ -447,6 +447,26 @@ func modal_header(rect: Rect2, eyebrow: String, title: String, close_tag: String
 		txt(rect.position + Vector2(30, 47), title, 34, Art.PAPER, true)
 		button(Rect2(rect.end.x - 150, rect.position.y + 28, 120, 52), "×  Close", close_tag)
 
+## Active food boosts: small chips under the compass with their time left.
+func _draw_boosts() -> void:
+	var food = game.get("food")
+	if food == null: return
+	var boosts: Array = food.hud_list()
+	if boosts.is_empty(): return
+	var widths: Array = []; var total := 0.0
+	for boost in boosts:
+		var w: float = body_font.get_string_size("%s %ds" % [boost.name, boost.seconds], HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x + 26.0
+		widths.append(w); total += w + 6.0
+	var x := 640.0 - total * 0.5
+	for i in range(boosts.size()):
+		var boost: Dictionary = boosts[i]
+		var rect := Rect2(x, 84, widths[i], 22)
+		var fading: bool = int(boost.seconds) <= 5 and int(clock * 4.0) % 2 == 0
+		panel(rect, Color(Art.NIGHT, 0.72), Color(boost.color, 0.5 if fading else 0.9), 10)
+		draw_circle(rect.position + Vector2(11, 11), 4, boost.color)
+		txt(rect.position + Vector2(20, 4), "%s %ds" % [boost.name, boost.seconds], 12, Color(Art.PAPER, 0.6 if fading else 1.0))
+		x += widths[i] + 6.0
+
 func _draw_lore_card() -> void:
 	var story = game.get("story")
 	if story == null or story.reading.is_empty(): return
@@ -464,6 +484,7 @@ func _draw_play(controls: bool) -> void:
 	draw_polygon(PackedVector2Array([Vector2.ZERO, Vector2(1280, 0), Vector2(1280, 118), Vector2(0, 118)]), PackedColorArray([Color(0.015, 0.04, 0.055, 0.55), Color(0.015, 0.04, 0.055, 0.55), Color(0.015, 0.04, 0.055, 0), Color(0.015, 0.04, 0.055, 0)]))
 	_draw_lantern_health()
 	_draw_compass()
+	_draw_boosts()
 	var boss = boss_status()
 	if not boss.is_empty():
 		_draw_boss_health(boss)

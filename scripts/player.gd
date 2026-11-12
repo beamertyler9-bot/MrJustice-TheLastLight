@@ -355,6 +355,8 @@ func _physics_process(dt: float) -> void:
 		var wants_run = (control_move.length() > 0.72 or sprinting or Input.is_physical_key_pressed(KEY_SHIFT)) and stick.length() > 0.2
 		var run = wants_run and is_on_floor() and not is_instance_valid(held_body) and not visual.is_throwing() and not ability_aiming
 		var speed = lerpf(WALK_SPEED, RUN_SPEED, smoothstep(0.55, 1.0, stick.length())) if run else WALK_SPEED
+		# Keepsakes and Cocoa Rush make you quicker.
+		if game != null: speed *= float(game.state.speed_bonus) * (game.food.speed_multiplier() if game.food != null else 1.0)
 		if is_instance_valid(held_body):
 			speed = CARRY_SPEED
 
@@ -1852,6 +1854,7 @@ func take_damage(amount: int) -> void:
 	var runtime = magic_runtime()
 	if runtime != null:
 		amount = runtime.absorb_damage(amount)
+	if game != null and game.food != null: amount = game.food.soften(amount)
 	if amount <= 0:
 		hit_cooldown = 0.28
 		cue("grip", 1.2)
