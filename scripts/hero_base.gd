@@ -556,7 +556,32 @@ func _tool_head_mesh(id: String) -> ArrayMesh:
 ## Newer weapons and tools reuse the closest existing model in the hand.
 const MODEL_ALIASES := {"obsidian_blade": "iron_blade", "sunsteel_sword": "dawn_blade", "prism_saber": "dawn_blade", "iron_axe": "stone_axe", "iron_pickaxe": "stone_pickaxe"}
 
+## ...each with its own colour laid over the shared model, so they read as new weapons.
+const MODEL_TINTS := {"obsidian_blade": [Color("#2e2340"), 0.1], "sunsteel_sword": [Color("#ffb21f"), 0.5], "prism_saber": [Color("#b48cff"), 0.8], "iron_axe": [Color("#d5dde6"), 0.0], "iron_pickaxe": [Color("#d5dde6"), 0.0]}
+static var _tint_materials: Dictionary = {}
+var _weapon_skin := ""
+
+func _skin_weapon(raw: String) -> void:
+	var overlay: Material = null
+	if MODEL_TINTS.has(raw):
+		if not _tint_materials.has(raw):
+			var tint := StandardMaterial3D.new()
+			tint.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			tint.albedo_color = Color(MODEL_TINTS[raw][0], 0.82 if raw == "sunsteel_sword" else 0.62)
+			tint.roughness = 0.35; tint.metallic = 0.4
+			if float(MODEL_TINTS[raw][1]) > 0.0:
+				tint.emission_enabled = true; tint.emission = MODEL_TINTS[raw][0]; tint.emission_energy_multiplier = float(MODEL_TINTS[raw][1])
+			_tint_materials[raw] = tint
+		overlay = _tint_materials[raw]
+	var shown: String = MODEL_ALIASES.get(raw, raw)
+	for key in _weapons:
+		for mesh in _weapons[key].find_children("*", "GeometryInstance3D", true, false):
+			mesh.material_overlay = overlay if key == shown else null
+
 func set_weapon(id: String) -> void:
+	if id != _weapon_skin:
+		_weapon_skin = id
+		_skin_weapon(id)
 	id = MODEL_ALIASES.get(id, id)
 	if id != weapon_id:
 		cancel_grimoire_cast()
@@ -711,6 +736,28 @@ func _create_held_prop(n: Node3D, id: String) -> void:
 			B.facet(n, Vector3.ZERO, Vector3(0.2, 0.3, 0.2), B.mat("#9ee0d2", 0.3, 0.35))
 			for y in [-0.09, 0.09]: B.ring(n, Vector3(0, y, 0), 0.105, 0.015, gold)
 			for x in [-0.07, 0.07]: B.box(n, Vector3(x, 0, 0.09), Vector3(0.012, 0.1, 0.015), gold)
+	if n.get_child_count() == 0:
+		_regional_held_prop(n, id)
+
+## The 0.73 resources and foods: the same little models as their icons, sized for a hand.
+func _regional_held_prop(n: Node3D, id: String) -> void:
+	var model := Node3D.new(); model.name = "Model"
+	n.add_child(model)
+	preload("res://scripts/regional_gathering.gd").art(model, id)
+	if model.get_child_count() == 0:
+		model.queue_free(); return
+	var inverse := model.global_transform.affine_inverse()
+	var box := AABB(); var first := true
+	for mesh in model.find_children("*", "VisualInstance3D", true, false):
+		var part: AABB = (inverse * mesh.global_transform) * mesh.get_aabb()
+		if first: box = part; first = false
+		else: box = box.merge(part)
+	var longest := maxf(box.size.x, maxf(box.size.y, box.size.z))
+	if longest > 0.001: model.scale = Vector3.ONE * (0.32 / longest)
+	model.position = -Vector3(box.get_center().x, 0, box.get_center().z) * model.scale.x
+	for mesh in model.find_children("*", "GeometryInstance3D", true, false):
+		mesh.visibility_range_end = 0.0
+		mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 func _hand_occupied() -> bool:
 	return supply_pour.active() or carry_pose or is_throwing() or is_grimoire_casting() or bag_progress > 0.01 or bag_target > 0.01 or grapple.active() or aim_weight > 0.01 or charge_weight > 0.01 or maxf(_weights.beam, _weights.hook) > 0.05 or maxf(_weights.climb, maxf(_weights.mantle, _weights.swim)) > 0.05 or _last_motion in ["climb", "mantle", "swim"] or not rest_pose.is_empty()

@@ -104,6 +104,13 @@ var _gain_amount := 0
 var _gain_time := 0.0
 var _prompt_id := 0
 var _prompt_age := 9.0
+# Contextual HUD (0.74): things that only appear when they matter.
+var _wallet_time := 0.0          # light essence shows for a few seconds after it changes
+var _threat_time := 0.0          # combat buttons stay up a little after the danger passes
+var _threat_check := 0.0
+var _hotbar_seen := ""
+var _hotbar_label_time := 0.0
+var _play_time := 0.0            # desktop key hints show for the first minute of play
 func _process(dt: float) -> void:
 	if game == null or game.state == null: return
 	if dev_menu != null: dev_menu.tick(dt)
@@ -492,7 +499,6 @@ func _draw_play(controls: bool) -> void:
 		round_button(Vector2(1104, 45), 24, "grimoire", "grimoire")
 		round_button(Vector2(1170, 45), 24, "bag", "bag")
 		round_button(Vector2(1236, 45), 24, "pause", "pause")
-		button(Rect2(1188, 102, 68, 44), "DEV", "dev:open")
 		_draw_tracked_request()
 		var stick_bounds := Rect2(Vector2.ONE * -(STICK_RADIUS + 3), Vector2.ONE * (STICK_RADIUS + 3) * 2)
 		if not _cached_vector(joy_center, stick_bounds, "stick-base", _draw_stick_base):
@@ -509,14 +515,16 @@ func _draw_play(controls: bool) -> void:
 		var pickup_progress := clampf(float(progress_value), 0, 1) if progress_value != null else 0.0
 		if pickup_progress > 0:
 			draw_arc(Vector2(1074, 631), 47, -PI / 2, -PI / 2 + TAU * pickup_progress, 56, CYAN, 5, true)
-		round_button(Vector2(1178, 473), 38, "ability", game.player.ability_id, ("AIM ON" if game.player.beam_aim_toggled else "TAP TO AIM") if game.player.ability_id == "beam" else ("RELEASE" if game.player.ability_aiming else "HOLD TO AIM"), game.state.has_ability(game.player.ability_id))
-		if game.state.has_ability("hook"):
-			round_button(Vector2(1231, 409), 21, "cycle", ">", "SWITCH")
-		if game.player.ability_cooldown > 0:
+		var show_ability: bool = in_combat() or game.player.ability_id == "hook" or game.player.ability_aiming or game.player.beam_aim_toggled
+		if show_ability:
+			round_button(Vector2(1178, 473), 38, "ability", game.player.ability_id, ("AIM ON" if game.player.beam_aim_toggled else "TAP TO AIM") if game.player.ability_id == "beam" else ("RELEASE" if game.player.ability_aiming else "HOLD TO AIM"), game.state.has_ability(game.player.ability_id))
+			if game.state.has_ability("hook"):
+				round_button(Vector2(1231, 409), 21, "cycle", ">", "SWITCH")
+		if show_ability and game.player.ability_cooldown > 0:
 			draw_arc(Vector2(1178, 473), 40, -PI / 2, -PI / 2 + TAU * minf(1, game.player.ability_cooldown / 1.6), 40, GOLD, 3, true)
 		var aim_color = Color("#b4f6ec") if game.player.ability_aiming else IVORY
 		var reticle_active: bool = game.player.ability_aiming or game.player.spell_charging
-		if not _cached_vector(Vector2(640, 332), Rect2(-18, -18, 36, 36), "reticle:%s" % reticle_active, _draw_reticle.bind(reticle_active)):
+		if (reticle_active or in_combat() or game.player.grimoire_equipped()) and not _cached_vector(Vector2(640, 332), Rect2(-18, -18, 36, 36), "reticle:%s" % reticle_active, _draw_reticle.bind(reticle_active)):
 			_draw_reticle(self, reticle_active, Vector2(640, 332))
 		if game.player.spell_charging and not game.player.ability_aiming:
 			panel(Rect2(514, 357, 252, 28), Color(INK, 0.75), Color(CYAN, 0.25), 4)
@@ -593,12 +601,19 @@ func _draw_compass() -> void:
 		var diff = wrapf(atan2(-offset.x, -offset.y) - game.player.yaw, -PI, PI)
 		var x = center.x + clampf(-diff * 90, -148, 148)
 		draw_colored_polygon(PackedVector2Array([Vector2(x, 30), Vector2(x - 5, 41), Vector2(x + 5, 41)]), GOLD)
-		centered(Vector2(640, 60), "%s  /  %d m" % [str(target.get("name", "Lost lantern")), int(offset.length())], 13, Color(IVORY, 0.8))
+		_goal_line("%s  ·  %d m" % [str(target.get("name", "Lost lantern")), int(offset.length())], IVORY)
 	else:
 		var story = game.get("story")
 		var line := "Explore freely. Find mines, settlements and new roads."
 		if story != null: line = str(story.card().get("objective", line))
-		centered(Vector2(640, 60), line, 13, GOLD)
+		_goal_line(line, GOLD)
+
+## The current goal, on a small dark pill under the compass so it reads over any sky.
+func _goal_line(text: String, color: Color) -> void:
+	var width: float = minf(560.0, body_font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x + 34.0)
+	panel(Rect2(640 - width * 0.5, 54, width, 26), Color(Art.NIGHT, 0.62), Color(Art.BRASS, 0.32), 13)
+	draw_circle(Vector2(640 - width * 0.5 + 13, 67), 3.0, color)
+	centered(Vector2(646, 58), text, 14, color)
 
 func tracked_destination() -> Dictionary:
 	var selected: Dictionary = {}
@@ -997,6 +1012,11 @@ func _draw_magic_controls() -> void:
 	if spell.is_empty(): return
 	var tint := Color(str(spell.color))
 	var alpha: float = hud_context.magic_alpha
+	if contextual() and not game.player.grimoire_equipped() and not magic_is_relevant():
+		# Book away: no mana bar or spell slots. On a phone, offer the book only in a fight.
+		if not desktop_mode() and in_combat():
+			round_button(Vector2(1076, 482), 35, "equip_grimoire", "grimoire", "EQUIP BOOK")
+		return
 	panel(Rect2(138, 111, 222, 8), Color(Art.NIGHT, 0.8 * alpha), Color(Art.SILVER, 0.45 * alpha), 3)
 	draw_rect(Rect2(140, 113, 218 * clampf(game.state.mana / maxf(1.0, game.state.max_mana), 0, 1), 4), Color(Color("#77b5a0"), alpha))
 	txt(Vector2(138, 122), "MANA  %d / %d" % [int(game.state.mana), int(game.state.max_mana)], 10, Color(Art.SILVER, alpha))
@@ -1079,6 +1099,7 @@ func _draw_levitation_distance() -> void:
 func _draw_combat_controls() -> void:
 	var target = game.player.get("lock_target")
 	var locked := is_instance_valid(target)
+	if not locked and not in_combat() and float(game.player.get("dodge_time")) <= 0.0: return
 	round_button(Vector2(978, 555), 34, "dodge", "evade", "DODGE")
 	round_button(Vector2(1000, 455), 30, "lock", "lock", "RELEASE" if locked else "LOCK ON")
 	var dodge_value = game.player.get("dodge_time")
@@ -1259,6 +1280,7 @@ func _draw_lantern_health() -> void:
 		draw_arc(status.medallion.get_center(), 44 + pulse * 5, 0, TAU, 64, Color(Art.RED, pulse), 2.0, true)
 	for pip in pips:
 		Art.draw_fitted(self, Art.texture("head" if pip.filled else "head_empty"), pip.rect)
+	if not wallet_visible(): return
 	var shards := "%03d" % int(game.state.items.get("shard", 0))
 	var bump := sin(clampf(_shard_bump, 0.0, 1.0) * PI) if ui_motion_enabled() else 0.0
 	_local(Vector2(140, 98), 1.0 + bump * 0.32)
@@ -1282,12 +1304,14 @@ func _draw_desktop_play() -> void:
 	_draw_magic_controls()
 	_draw_lock_target()
 	fieldbook.workshop.draw_hotbar()
-	_draw_reticle(self, game.player.ability_aiming or game.player.spell_charging, Vector2(640, 332))
-	txt(Vector2(968, 32), "TAB  SATCHEL   ·   ESC  MENU", 13, IVORY)
-	panel(Rect2(24, 620, 310, 80), Color(INK, 0.8), Color(IVORY, 0.18), 4)
-	txt(Vector2(38, 630), "WASD  MOVE   ·   SPACE  JUMP", 12, IVORY)
-	txt(Vector2(38, 652), "E  INTERACT   ·   TAB  SATCHEL   ·   ESC  MENU", 11, IVORY)
-	txt(Vector2(38, 676), "LEFT ATTACK / CAST  ·  HOLD RIGHT AIM", 11, MUTED)
+	if game.player.ability_aiming or game.player.spell_charging or in_combat() or game.player.grimoire_equipped(): _draw_reticle(self, game.player.ability_aiming or game.player.spell_charging, Vector2(640, 332))
+	if not contextual() or _play_time < 60.0:
+		var fade := clampf((60.0 - _play_time) / 2.0, 0.0, 1.0) if contextual() else 1.0
+		txt(Vector2(968, 32), "TAB  SATCHEL   ·   ESC  MENU", 13, Color(IVORY, fade))
+		panel(Rect2(24, 620, 310, 80), Color(INK, 0.8 * fade), Color(IVORY, 0.18 * fade), 4)
+		txt(Vector2(38, 630), "WASD  MOVE   ·   SPACE  JUMP", 12, Color(IVORY, fade))
+		txt(Vector2(38, 652), "E  INTERACT   ·   TAB  SATCHEL   ·   ESC  MENU", 11, Color(IVORY, fade))
+		txt(Vector2(38, 676), "LEFT ATTACK / CAST  ·  HOLD RIGHT AIM", 11, Color(MUTED, fade))
 	if game.player.ability_aiming:
 		var hint = "LEFT-CLICK TO CAST" if game.player.grimoire_equipped() else "LEFT-CLICK TO FIRE · HOLD TO CHARGE" if game.player.ability_id == "beam" else "LEFT-CLICK TO LAUNCH"
 		centered(Vector2(640, 365), hint, 12, CYAN)
@@ -1296,6 +1320,27 @@ func _draw_desktop_play() -> void:
 		panel(Rect2(426, 510, 428, 42), Color(INK, 0.9), Color(IVORY, 0.3), 2)
 		centered(Vector2(640, 519), "E  ·  " + str(nearest.get_meta("label", "Interact")), 17)
 
+
+## Is anything worth fighting close by? (Checked four times a second, not every frame.)
+func _danger_near() -> bool:
+	if game.player == null: return false
+	var player = game.player
+	if is_instance_valid(player.get("lock_target")) or player.ability_aiming or player.spell_charging or player.beam_charging: return true
+	if float(damage_feedback.snapshot().edge_alpha) > 0.0 or not boss_status().is_empty(): return true
+	var here: Vector3 = player.global_position
+	for enemy in get_tree().get_nodes_in_group("enemy"):
+		if enemy is Node3D and enemy.is_inside_tree() and enemy.global_position.distance_squared_to(here) < 784.0: return true
+	return false
+
+## With the contextual HUD on, combat buttons, the crosshair and the like only show when needed.
+func contextual() -> bool:
+	return bool(game.state.settings.get("contextual_hud", true))
+
+func in_combat() -> bool:
+	return not contextual() or _threat_time > 0.0
+
+func wallet_visible() -> bool:
+	return not contextual() or game.mode != "play" or _wallet_time > 0.0 or _gain_time > 0.0
 
 func _tick_feedback(dt: float) -> void:
 	if game.toast_text != _toast_seen or game.toast_time > _toast_last + 0.05:
@@ -1307,7 +1352,18 @@ func _tick_feedback(dt: float) -> void:
 	if shards > _shard_shown:
 		_gain_amount = (_gain_amount if _gain_time > 0.0 else 0) + shards - _shard_shown
 		_gain_time = 1.3; _shard_bump = 1.0
+	if shards != _shard_shown and _shard_shown >= 0: _wallet_time = 4.0
 	_shard_shown = shards
+	_wallet_time = maxf(0.0, _wallet_time - dt)
+	if game.mode == "play": _play_time += dt
+	var hotbar := "%s|%s" % [game.state.get("selected_hotbar"), game.state.selected_item() if game.mode == "play" else ""]
+	if hotbar != str(_hotbar_seen): _hotbar_seen = hotbar; _hotbar_label_time = 2.5
+	_hotbar_label_time = maxf(0.0, _hotbar_label_time - dt)
+	_threat_check -= dt
+	if _threat_check <= 0.0:
+		_threat_check = 0.25
+		if _danger_near(): _threat_time = 6.0
+	_threat_time = maxf(0.0, _threat_time - dt)
 	_shard_bump = maxf(0.0, _shard_bump - dt * 3.0)
 	_gain_time = maxf(0.0, _gain_time - dt)
 	var near = game.player.closest if game.player != null else null

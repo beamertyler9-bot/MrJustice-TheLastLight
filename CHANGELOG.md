@@ -1,5 +1,49 @@
 # Changelog
 
+## 0.74.0 — Menus, UI and HUD (2026-11-11)
+
+- **A cleaner HUD.** While exploring you now see only your health, the current goal and
+  the hotbar (plus the stick and A/B buttons on a phone). Everything else waits until
+  it's needed:
+  - **Combat buttons** (dodge, lock-on, aim, equip book) and the **crosshair** appear
+    when an enemy is within about 28 m, when you're hurt, aiming or locked on, or during
+    a boss fight. They stay up for 6 seconds after the danger passes.
+  - **Mana bar and spell slots** only show with your grimoire out (or while a spell is
+    active).
+  - **Light Essence** shows for a few seconds when it changes, and on every menu screen.
+  - The **item name above the hotbar** shows for 2.5 s after you switch.
+  - The **DEV button** is gone from the HUD; Developer tools are still in the pause menu.
+  - On desktop, the key hints fade out after your first minute (they're still under
+    How to play).
+  - The current goal sits on a small dark pill under the compass so it's readable over
+    any sky.
+  - Turning off **Contextual HUD** in Settings shows everything all the time, as before.
+- **Satchel, workshop and shop share one design.** Every screen has the same parts in
+  the same places: category tabs along the top, your Light Essence beside Close, the
+  main list or grid on the left, an **item card** on the right, and the main action
+  under the card.
+  - **The item card:** a big picture, the name, what kind of thing it is, how many you
+    have, its description, where it comes from and what it's used for. Tap any item
+    on any screen to see its card.
+  - **Satchel:** full-width, with bigger squares (74 px instead of 56). Category tabs:
+    All, Materials, Food, Tools, Gear, Fish, Other and Equipped. Picking a category
+    fades everything else without moving your stacks. New **Sort by kind** button. The
+    hand-crafting grid moved to the Craft screen, where it already was too.
+  - **Workshop:** recipe rows have a bigger picture and say "Ready to make" or "Needs
+    materials". The recipe card shows each ingredient's picture with have / need.
+  - **Shop:** category tabs to filter the goods, bigger rows with pictures, and the item
+    card with a big Buy (or Sell) button. The card says when something is cheap or dear
+    here. The Buy / Sell switch, pages and "Back to the conversation" sit along the
+    bottom.
+  - All buttons and squares are at least 48 px tall, so they're easy to tap on a phone.
+- **New items and tools now show in your hand** (fix for 0.73). Holding a 0.73 resource
+  or food (mossbloom, sunstone, wheat, fish stew and the rest) used to show an empty
+  hand; now you hold a small version of it. The new weapons each have their own colour
+  instead of looking exactly like the old ones: steel iron axe and pickaxe, dark
+  obsidian blade, gold sunsteel sword, glowing violet prism saber.
+- **Performance:** the danger check runs four times a second, not every frame. Hidden
+  HUD parts aren't drawn at all. The weapon colour is one extra layer on the blade only.
+
 ## 0.73.1 — Smooth with a weapon in hand (2026-11-11)
 
 - **Fixed the lag while holding a weapon or tool.** With a sword, axe or pickaxe out,

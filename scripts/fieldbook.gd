@@ -26,6 +26,12 @@ var journal_tab := "story"
 var inventory_tab := "supplies"
 var selected_item := ""
 var trade_buy := true
+var inventory_filter := "all"
+var shop_filter := "all"
+
+## The kinds of things you carry, used as tabs on the satchel and shop screens.
+const GROUPS := [["all", "All"], ["materials", "Materials"], ["food", "Food"], ["tools", "Tools"], ["gear", "Gear"], ["fish", "Fish"], ["other", "Other"]]
+const GROUP_NAMES := {"materials": "Material", "food": "Food & drink", "tools": "Weapon or tool", "gear": "Gear", "fish": "Fish", "other": "Keepsake & camp"}
 var h
 var game
 
@@ -102,6 +108,68 @@ func section_nav(active: String, compact := false) -> void:
 	for i in range(3):
 		action(Rect2(start + Vector2(i * (each + gap), 0), Vector2(each, 48)), tabs[i][1], tabs[i][0], active == tabs[i][0])
 
+static func item_group(id: String) -> String:
+	if id in preload("res://scripts/fishing_catalog.gd").IDS: return "fish"
+	if id in ["coffee", "tonic", "mana_potion"] or preload("res://scripts/food.gd").is_food(id): return "food"
+	if Catalog.WEAPONS.has(id) or id == "fishing_rod": return "tools"
+	if Catalog.UPGRADES.has(id): return "gear"
+	if id.begins_with("quest_") or id in ["relic", "ancient_core", "camp_kit", "crafting_table", "shard"]: return "other"
+	return "materials"
+
+## Sort key for tidying the satchel: by kind, then name.
+static func sort_key(id: String) -> String:
+	var order := ["tools", "gear", "food", "materials", "fish", "other"]
+	return "%d|%s" % [order.find(item_group(id)), Catalog.item_name(id)]
+
+## A row of tabs that share the width evenly (used on every item screen).
+func chips(rect: Rect2, options: Array, active: String, prefix: String) -> void:
+	var gap := 7.0
+	var each := (rect.size.x - gap * (options.size() - 1)) / options.size()
+	for i in range(options.size()):
+		action(Rect2(rect.position + Vector2(i * (each + gap), 0), Vector2(each, rect.size.y)), str(options[i][1]), prefix + ":" + str(options[i][0]), active == str(options[i][0]))
+
+## Your Light Essence, beside the Close button on every item screen.
+func wallet() -> void:
+	var amount := int(game.state.items.get("shard", 0))
+	schematic(Vector2(872, 91), "shard", 0.42, PAPER)
+	label(Vector2(898, 72), str(amount), 26, CYAN, true)
+	label(Vector2(898 + Art.font(true).get_string_size(str(amount), HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x + 10, 84), "LIGHT ESSENCE", 11, FAINT)
+
+## The one item card used by the satchel, craft and shop screens: a big picture, what it
+## is, where it comes from and what it's for.
+func item_card(rect: Rect2, id: String, note := "") -> void:
+	h.panel(rect, Color("#efe4cb"), Color(Art.BRASS, 0.55), 4)
+	if id.is_empty():
+		paragraph(rect.position + Vector2(20, 22), "Tap an item to see what it is, where it comes from and what it's for.", rect.size.x - 40, 17, FAINT)
+		return
+	var box := Rect2(rect.position + Vector2(14, 14), Vector2(104, 104))
+	h.panel(box, Color("#294349"), Color(Art.SILVER, 0.45), 3)
+	schematic(box.get_center(), id, 1.06, PAPER)
+	var x := box.end.x + 14.0
+	var width := rect.end.x - x - 12.0
+	var y: float = paragraph(Vector2(x, rect.position.y + 14), Catalog.item_name(id), width, 21, PAPER)
+	label(Vector2(x, y + 4), str(GROUP_NAMES.get(item_group(id), "Item")).to_upper(), 11, RED)
+	var count := int(game.state.items.get(id, 0))
+	var held := "Equipped" if game.state.equipment == id else ("Fitted" if game.state.upgrades.has(id) else ("Owned" if game.state.unlocked.has(id) else ("%d in your satchel" % count if count > 0 else "")))
+	if held != "": label(Vector2(x, y + 24), held, 13, CYAN)
+	var Info = preload("res://scripts/item_info.gd")
+	y = maxf(box.end.y + 12, y + 50)
+	var text_width := rect.size.x - 28
+	var description := str(Catalog.ITEMS.get(id, {}).get("description", "Two dependable hands, always ready."))
+	y = paragraph(Vector2(rect.position.x + 14, y), description, text_width, 14, FAINT)
+	for part in [["FROM", Info.from_text(id)], ["USED FOR", Info.uses_text(id)]]:
+		if str(part[1]) == "" or y > rect.end.y - 40: continue
+		label(Vector2(rect.position.x + 14, y + 6), part[0], 11, RED)
+		y = paragraph(Vector2(rect.position.x + 14, y + 22), str(part[1]) + ".", text_width, 13, PAPER)
+	if note != "": label(Vector2(rect.position.x + 14, rect.end.y - 26), note, 13, CYAN)
+
+## The Satchel / Craft / Journal tabs, in a given rectangle.
+func section_tabs(rect: Rect2, active: String) -> void:
+	var tabs := [["bag", "Satchel"], ["craft", "Craft"], ["journal", "Journal"]]
+	var each := (rect.size.x - 14.0) / 3.0
+	for i in range(3):
+		action(Rect2(rect.position + Vector2(i * (each + 7.0), 0), Vector2(each, rect.size.y)), tabs[i][1], tabs[i][0], active == tabs[i][0])
+
 func draw(mode: String) -> void:
 	var previous := begin_surface(mode not in ["camp", "rest", "sleep"])
 	match mode:
@@ -155,35 +223,49 @@ func draw_trade() -> void:
 	var Merchants = load("res://scripts/merchants.gd")
 	var region := int(game.region)
 	sheet(Merchants.title(game.shop_id).to_upper(), Merchants.blurb(game.shop_id).to_upper())
-	label(Vector2(80, 187), "YOUR LIGHT ESSENCE", 13, FAINT)
-	label(Vector2(77, 207), "%03d" % int(game.state.items.get("shard", 0)), 52, CYAN, true)
-	action(Rect2(80, 294, 145, 52), "Buy", "trade_side:buy", trade_buy)
-	action(Rect2(237, 294, 145, 52), "Sell", "trade_side:sell", not trade_buy)
-	schematic(Vector2(228, 433), "shard", 1.45, GOLD)
-	paragraph(Vector2(80, 517), Merchants.region_note(region) if Merchants.region_note(region) != "" else "One item. One fair price.", 302, 14, FAINT)
-
-	action(Rect2(80, 610, 302, 48), "‹  Conversation", "dialogue")
+	wallet()
+	chips(Rect2(80, 160, 1120, 48), GROUPS, shop_filter, "shop_filter")
 	var ids: Array = Merchants.stock(game.shop_id) if trade_buy else game.state.items.keys()
 	if not trade_buy:
 		ids = ids.filter(func (id): return int(game.state.items.get(id, 0)) > 0 and Merchants.sell_price(id, game.shop_id, region) > 0)
+		ids.sort_custom(func (a, b): return sort_key(a) < sort_key(b))
+	if shop_filter != "all": ids = ids.filter(func (id): return item_group(id) == shop_filter)
 	trade_page = clampi(trade_page, 0, maxi(0, (ids.size() - 1) / 6))
-	label(Vector2(494, 177), "GOODS", 13, FAINT)
-	label(Vector2(899, 177), "OWNED", 13, FAINT)
-	label(Vector2(1051, 177), "LIGHT ESSENCE", 13, FAINT)
+	var shown: Array = ids.slice(trade_page * 6, trade_page * 6 + 6)
+	if not shown.has(selected_item): selected_item = str(shown[0]) if not shown.is_empty() else ""
 	for i in range(trade_page * 6, mini(ids.size(), trade_page * 6 + 6)):
 		var id := str(ids[i])
-		var y := 212 + i % 6 * 61
+		var row := Rect2(80, 226 + (i % 6) * 62, 740, 56)
 		var price: int = Merchants.buy_price(id, game.shop_id, region) if trade_buy else Merchants.sell_price(id, game.shop_id, region)
 		var owned: bool = trade_buy and game.state.owns(id)
-		schematic(Vector2(459, y + 23), id, 0.36, PAPER)
-		fitted_label(Vector2(494, y + 11), Catalog.item_name(id), 402, 20)
-		label(Vector2(922, y + 12), "✓" if owned else str(int(game.state.items.get(id, 0))), 18, CYAN)
-		var enabled: bool = price > 0 and not owned and (int(game.state.items.get("shard", 0)) >= price if trade_buy else int(game.state.items.get(id, 0)) > 0)
-		action(Rect2(1022, y, 178, 50), "Owned" if owned else ("Buy · " if trade_buy else "Sell · ") + str(price), ("buy:" if trade_buy else "sell:") + id, false, enabled)
-		h.draw_line(Vector2(438, y + 57), Vector2(1200, y + 57), Color(Art.BRASS, 0.25), 1)
+		var picked := id == selected_item
+		h.panel(row, Color("#38554f") if picked else Color("#efe4cb"), Art.BRASS.lightened(0.2) if picked else Color(Art.BRASS, 0.35), 3)
+		var box := Rect2(row.position + Vector2(5, 3), Vector2(50, 50))
+		h.panel(box, Color("#294349"), Color(Art.SILVER, 0.4), 2)
+		schematic(box.get_center(), id, 0.52, PAPER)
+		h.txt(row.position + Vector2(70, 9), fit_text(Catalog.item_name(id), 330, 19), 19, Art.PAPER if picked else Art.INK)
+		var count := int(game.state.items.get(id, 0))
+		h.txt(row.position + Vector2(70, 33), "Owned" if owned else ("%d in satchel" % count if count > 0 else str(GROUP_NAMES.get(item_group(id), ""))), 11, Art.PAPER if picked else Art.MUTED)
+		h.buttons.append({"rect": Rect2(row.position + h.drawing_offset, Vector2(550, row.size.y)), "tag": "item:" + id, "mode": game.mode})
+		var enabled: bool = price > 0 and not owned and (int(game.state.items.get("shard", 0)) >= price if trade_buy else count > 0)
+		action(Rect2(row.position + Vector2(560, 3), Vector2(176, 50)), "Owned" if owned else ("Buy · " if trade_buy else "Sell · ") + str(price), ("buy:" if trade_buy else "sell:") + id, false, enabled)
 	if ids.is_empty():
-		label(Vector2(494, 309), "Nothing to trade yet." if trade_buy else "Nothing this merchant buys.", 24, FAINT)
-	pager(Rect2(438, 610, 762, 48), trade_page, ids.size(), 6, "trade")
+		label(Vector2(110, 300), ("Nothing of this kind for sale here." if shop_filter != "all" else "Nothing to trade yet.") if trade_buy else "Nothing in your satchel that this merchant buys.", 20, FAINT)
+	var note := ""
+	if selected_item != "":
+		var info: Dictionary = Merchants.REGIONS.get(region, {})
+		if selected_item in info.get("cheap", []): note = "Made here, so it's cheap here."
+		elif selected_item in info.get("dear", []): note = "Scarce here, so it's dear here."
+	item_card(Rect2(844, 222, 356, 318), selected_item, note)
+	if selected_item != "":
+		var price: int = Merchants.buy_price(selected_item, game.shop_id, region) if trade_buy else Merchants.sell_price(selected_item, game.shop_id, region)
+		var owned: bool = trade_buy and game.state.owns(selected_item)
+		var ok: bool = price > 0 and not owned and (int(game.state.items.get("shard", 0)) >= price if trade_buy else int(game.state.items.get(selected_item, 0)) > 0)
+		action(Rect2(844, 548, 356, 52), "Owned" if owned else ("Buy for %d" if trade_buy else "Sell for %d") % price, ("buy:" if trade_buy else "sell:") + selected_item, true, ok)
+	action(Rect2(80, 614, 140, 48), "Buy", "trade_side:buy", trade_buy)
+	action(Rect2(228, 614, 140, 48), "Sell", "trade_side:sell", not trade_buy)
+	pager(Rect2(392, 614, 428, 48), trade_page, ids.size(), 6, "trade")
+	action(Rect2(844, 614, 356, 48), "‹  Back to the conversation", "dialogue")
 
 func dialogue_layout(request := false) -> Dictionary:
 	return {
@@ -581,7 +663,9 @@ func handle(tag: String) -> bool:
 			"journal_view": journal_tab = args[1]; journal_page = 0
 			"item": selected_item = args[1]
 			"inventory": inventory_tab = args[1]; inventory_page = 0; selected_item = ""
-			"trade_side": trade_buy = args[1] == "buy"; trade_page = 0
+			"trade_side": trade_buy = args[1] == "buy"; trade_page = 0; selected_item = ""
+			"satchel_filter": inventory_filter = args[1]; inventory_page = 0; inventory_tab = "gear" if args[1] == "equipped" else "supplies"
+			"shop_filter": shop_filter = args[1]; trade_page = 0; selected_item = ""
 			"page":
 				var step := int(args[2])
 				match args[1]:
@@ -593,4 +677,9 @@ func handle(tag: String) -> bool:
 		return true
 	if tag == "dialogue_next": game.advance_dialogue(); return true
 	if tag == "place_camp": game.place_camp(); return true
+	if tag == "sort_satchel":
+		game.state.sort_satchel(func (id): return sort_key(id))
+		workshop.selected_slot = -1
+		game.state.save_game()
+		return true
 	return false

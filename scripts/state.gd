@@ -424,6 +424,18 @@ func award_unique(id: String) -> bool:
 	refresh_stats()
 	return true
 
+## Tidy the satchel (not the quick slots): stacks ordered by rank(item) -> sort key.
+func sort_satchel(rank: Callable) -> void:
+	_reconcile_slots()
+	var start: int = Stacks.HOTBAR_SLOTS
+	var filled: Array = []
+	for i in range(start, _slots.size()):
+		if not _slots[i].is_empty(): filled.append(_slots[i])
+	filled.sort_custom(func (a, b): return str(rank.call(str(a.get("item", "")))) < str(rank.call(str(b.get("item", "")))))
+	for i in range(start, _slots.size()):
+		_slots[i] = filled[i - start] if i - start < filled.size() else {}
+	_select_equipment()
+
 func move_stack(from: int, to: int, split: bool = false) -> bool:
 	_reconcile_slots()
 	if not Stacks.move(_slots, from, to, split):

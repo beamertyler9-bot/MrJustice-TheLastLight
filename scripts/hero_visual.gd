@@ -87,8 +87,8 @@ func end_camp_pose() -> void:
 	_show_pick_power_grip(false); reset_cape_motion()
 
 func set_weapon(id: String) -> void:
-	id = MODEL_ALIASES.get(id, id)
-	if id != weapon_id and id in TOOLS and arms.size() == 2:
+	var model: String = MODEL_ALIASES.get(id, id)
+	if model != weapon_id and model in TOOLS and arms.size() == 2:
 		_tool_equip_age = 0.0; _tool_equip_starts.clear()
 		for joint in arms + forearms + wrists: _tool_equip_starts.append(joint.quaternion)
 	super.set_weapon(id)

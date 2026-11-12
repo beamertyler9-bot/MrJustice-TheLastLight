@@ -145,7 +145,7 @@ func display_slots() -> Array:
 func register(rect: Rect2, tag: String, cell: Dictionary = {}) -> void:
 	h.buttons.append({"rect": Rect2(rect.position + h.drawing_offset, rect.size), "tag": tag, "mode": game.mode, "item": str(cell.get("item", "")), "amount": int(cell.get("amount", 0))})
 
-func square(rect: Rect2, cell: Dictionary, tag: String, selected := false, number := 0, ghost := false, enabled := true) -> void:
+func square(rect: Rect2, cell: Dictionary, tag: String, selected := false, number := 0, ghost := false, enabled := true, dim := false) -> void:
 	var fill := Color("#294349") if not selected else Color("#38554f")
 	var edge := Color(Art.SILVER, 0.38) if not selected else Art.BRASS.lightened(0.25)
 	if ghost:
@@ -158,8 +158,8 @@ func square(rect: Rect2, cell: Dictionary, tag: String, selected := false, numbe
 	if selected:
 		h.draw_rect(Rect2(rect.position + Vector2(3, 3), Vector2(rect.size.x - 6, 3)), RED)
 	if not cell.is_empty():
-		var color := Color(PAPER, 0.3) if ghost else PAPER
-		var scale_value: float = (rect.size.x - 17.0) / 88.0
+		var color := Color(PAPER, 0.3) if ghost or dim else PAPER
+		var scale_value: float = (rect.size.x - 10.0) / 88.0
 		f.schematic(rect.get_center() - Vector2(0, 3), str(cell.get("item", "")), scale_value, color)
 		var amount := int(cell.get("amount", 0))
 		if amount > 1:
@@ -167,16 +167,17 @@ func square(rect: Rect2, cell: Dictionary, tag: String, selected := false, numbe
 			var width: float = h.body_font.get_string_size(text_value, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x
 			var pos := rect.end - Vector2(width + 6, 22)
 			h.txt(pos + Vector2(1, 1), text_value, 16, INK)
-			h.txt(pos, text_value, 16, Color(PAPER, 0.4) if ghost else PAPER)
+			h.txt(pos, text_value, 16, Color(PAPER, 0.4) if ghost or dim else PAPER)
 	if number > 0:
 		h.txt(rect.position + Vector2(5, 3), str(number), 10, Color(PAPER, 0.55))
 	if enabled and not tag.is_empty():
 		register(rect, tag, cell)
 
-func inventory_square(origin: Vector2, side: float, index: int, slots: Array, quick := false) -> void:
+func inventory_square(origin: Vector2, side: float, index: int, slots: Array, quick := false, filter := "all") -> void:
 	var cell: Dictionary = slots[index] if index < slots.size() else {}
 	var selected: bool = index == int(game.state.get("selected_hotbar")) if quick else index == selected_slot
-	square(Rect2(origin, Vector2.ONE * side), cell, ("hotbar:" if quick else "slot:") + str(index), selected, index + 1 if index < 9 else 0)
+	var dim: bool = filter != "all" and not cell.is_empty() and f.item_group(str(cell.get("item", ""))) != filter
+	square(Rect2(origin, Vector2.ONE * side), cell, ("hotbar:" if quick else "slot:") + str(index), selected, index + 1 if index < 9 else 0, false, true, dim)
 
 func draw_hotbar() -> void:
 	var slots := display_slots()
@@ -188,8 +189,9 @@ func draw_hotbar() -> void:
 		inventory_square(origin + Vector2(i * 62, 0), 56, i, slots, true)
 	var selected: int = clampi(int(game.state.get("selected_hotbar")), 0, 8)
 	var item := str(slots[selected].get("item", "")) if selected < slots.size() else ""
-	if not item.is_empty() and game.toast_time <= 0:
-		h.centered(Vector2(640, 623), Catalog.item_name(item), 15, PAPER)
+	var label_time: float = float(h.get("_hotbar_label_time")) if h.get("_hotbar_label_time") != null else 1.0
+	if not item.is_empty() and game.toast_time <= 0 and (label_time > 0.0 or not h.contextual()):
+		h.centered(Vector2(640, 623), Catalog.item_name(item), 15, Color(PAPER, clampf(label_time / 0.4, 0.0, 1.0) if h.contextual() else 1.0))
 
 func nav(origin: Vector2, width: float, mode: String) -> void:
 	var names := [["bag", "Satchel"], ["craft", "Recipe book"], ["journal", "Journal"]]
@@ -199,16 +201,13 @@ func nav(origin: Vector2, width: float, mode: String) -> void:
 
 func draw_inventory() -> void:
 	var previous: bool = f.begin_surface(true)
-	Art.draw_frame(h, Rect2(340, 16, 910, 686))
-	h.centered(Vector2(795, 38), "THE SATCHEL", 27, Art.PAPER, true)
-	f.label(Vector2(384, 112), "PACK LIGHT / MAKE YOUR OWN WAY", 12, RED)
-	f.action(Rect2(1104, 62, 110, 52), "×  Close", "play")
-	nav(Vector2(384, 136), 552, "bag")
-	f.action(Rect2(964, 136, 250, 48), "Contents" if f.inventory_tab == "gear" else "Equipment", "inventory:supplies" if f.inventory_tab == "gear" else "inventory:gear", f.inventory_tab == "gear")
-	draw_grid(Vector2(394, 204), 56, true)
+	f.sheet("THE SATCHEL", "TAP AN ITEM TO SEE IT  ·  TAP ANOTHER SQUARE TO MOVE IT THERE")
+	f.wallet()
+	var filters: Array = f.GROUPS.duplicate()
+	filters.append(["equipped", "Equipped"])
+	f.chips(Rect2(80, 160, 1120, 48), filters, f.inventory_filter, "satchel_filter")
 	var slots := display_slots()
-	f.label(Vector2(384, 384), "SATCHEL  /  27 SLOTS", 12, FAINT)
-	if f.inventory_tab == "gear":
+	if f.inventory_filter == "equipped":
 		draw_gear(slots)
 	else:
 		var pages := maxi(1, ceili(maxi(0, slots.size() - 9) / 27.0))
@@ -216,14 +215,16 @@ func draw_inventory() -> void:
 		for row in range(3):
 			for col in range(9):
 				var index: int = 9 + int(f.inventory_page) * 27 + row * 9 + col
-				inventory_square(Vector2(384 + col * 62, 410 + row * 62), 56, index, slots)
-		f.label(Vector2(384, 592), "QUICK SLOTS", 10, FAINT)
+				inventory_square(Vector2(80 + col * 81, 226 + row * 79), 74, index, slots, false, f.inventory_filter)
+		f.label(Vector2(80, 466), "QUICK SLOTS  ·  YOUR HOTBAR", 11, FAINT)
 		for i in range(9):
-			inventory_square(Vector2(384 + i * 62, 610), 56, i, slots)
+			inventory_square(Vector2(80 + i * 81, 486), 74, i, slots, false, f.inventory_filter)
 		if pages > 1:
-			f.pager(Rect2(964, 538, 250, 48), int(f.inventory_page), slots.size() - 9, 27, "inventory")
-	draw_details(Vector2(964, 210), 250)
-	f.action(Rect2(964, 610, 250, 52), "Split half · ON" if split_mode else "Split half · OFF", "split", split_mode)
+			f.pager(Rect2(560, 456, 260, 26), int(f.inventory_page), slots.size() - 9, 27, "inventory")
+	draw_details(Rect2(844, 222, 356, 318))
+	f.action(Rect2(80, 614, 170, 48), "Sort by kind", "sort_satchel")
+	f.action(Rect2(258, 614, 190, 48), "Split half · ON" if split_mode else "Split half · OFF", "split", split_mode)
+	f.section_tabs(Rect2(560, 614, 640, 48), "bag")
 	f.end_surface(previous)
 
 func draw_gear(_slots: Array) -> void:
@@ -235,9 +236,8 @@ func draw_gear(_slots: Array) -> void:
 		ids.append(id)
 	for i in range(ids.size()):
 		var item := str(ids[i])
-		square(Rect2(384 + (i % 9) * 62, 410 + (i / 9) * 62, 56, 56), {"item": item, "amount": 1}, "item:" + item, f.selected_item == item)
-	f.label(Vector2(384, 556), "Fitted gear stays with you. Tools can be moved in Contents.", 14, FAINT)
-	f.action(Rect2(384, 610, 552, 52), "Back to all stacks", "inventory:supplies")
+		square(Rect2(80 + (i % 9) * 81, 226 + (i / 9) * 79, 74, 74), {"item": item, "amount": 1}, "item:" + item, f.selected_item == item)
+	f.paragraph(Vector2(80, 486), "Weapons and tools you own, and gear you've fitted. Fitted gear always counts; pick a weapon here to hold it.", 720, 15, FAINT)
 
 func choose_default_item() -> void:
 	if not str(f.selected_item).is_empty():
@@ -247,44 +247,27 @@ func choose_default_item() -> void:
 			f.selected_item = str(cell.item)
 			return
 
-func draw_details(pos: Vector2, width: float) -> void:
+func draw_details(rect: Rect2) -> void:
 	choose_default_item()
 	var item := str(f.selected_item)
-	f.label(pos, "SELECTED ITEM", 11, FAINT)
-	if item.is_empty():
-		f.paragraph(pos + Vector2(0, 31), "Tap a stack. Tap an empty square to move it, or drag it there.", width, 17, PAPER)
-		return
-	f.schematic(pos + Vector2(35, 66), item, 0.63, PAPER)
-	var y: float = f.paragraph(pos + Vector2(78, 36), Catalog.item_name(item), width - 78, 21, PAPER)
-	y = maxf(pos.y + 109, y + 8)
-	var description := str(Catalog.ITEMS.get(item, {}).get("description", "Two dependable hands, always ready."))
-	y = f.paragraph(Vector2(pos.x, y), description, width, 15, FAINT)
-	var Info = preload("res://scripts/item_info.gd")
-	var from: String = Info.from_text(item); var uses: String = Info.uses_text(item)
-	if from != "": y = f.paragraph(Vector2(pos.x, y + 4), "From: " + from, width, 13, CYAN)
-	if uses != "": y = f.paragraph(Vector2(pos.x, y + 2), "Used for: " + uses, width, 13, CYAN)
+	f.item_card(rect, item)
+	if item.is_empty(): return
 	var count := int(game.state.items.get(item, 0))
 	var available: int = game.available_count(item) if game.has_method("available_count") else count
-	if count > 0:
-		f.fitted_label(Vector2(pos.x, y + 7), "%d available · %d in grid" % [available, count - available] if available < count else "%d in pack" % count, width, 14, CYAN)
-	y = maxf(pos.y + 213, y + 41)
-	var rect := Rect2(pos.x, y, width, 52)
+	var button := Rect2(rect.position.x, rect.end.y + 8, rect.size.x, 52)
+	var Food = load("res://scripts/food.gd")
 	if Catalog.WEAPONS.has(item):
-		f.action(rect, "Equipped" if game.state.equipment == item else "Equip", "equip:" + item, game.state.equipment == item)
+		f.action(button, "Holding it" if game.state.equipment == item else "Hold it", "equip:" + item, game.state.equipment == item)
 	elif game.state.upgrades.has(item):
-		f.action(rect, "Fitted", "", false, false)
-	elif item in ["coffee", "tonic", "mana_potion"] or load("res://scripts/food.gd").is_food(item):
-		f.action(rect, "Eat one" if load("res://scripts/food.gd").is_food(item) else "Use one", "supply:" + item, true, available > 0)
+		f.action(button, "Fitted · always on", "", false, false)
+	elif item in ["coffee", "tonic", "mana_potion"] or Food.is_food(item):
+		f.action(button, "Eat one" if Food.is_food(item) else "Use one", "supply:" + item, true, available > 0)
 	elif item == "camp_kit":
-		f.action(rect, "Ready camp · place with B", "place_camp", true, count > 0)
+		f.action(button, "Ready camp · place with B", "place_camp", true, count > 0)
 	elif item == "crafting_table":
-		f.action(rect, "Ready table · place with B", "place_workbench", true, count > 0)
+		f.action(button, "Ready table · place with B", "place_workbench", true, count > 0)
 	else:
-		f.action(rect, "Hold in hand", "ready:" + item, false, available > 0)
-	var reserved := false
-	for cell in grid_cells():
-		if not cell.is_empty(): reserved = true; break
-	f.label(Vector2(pos.x, 584), "Clear grid before splitting." if reserved and split_mode else "Tap → tap, or drag to move.", 12, GOLD if reserved and split_mode else FAINT)
+		f.action(button, "Hold in hand", "ready:" + item, false, available > 0)
 
 func draw_grid(origin: Vector2, side: float, compact := false) -> void:
 	var size_value := grid_size()
@@ -325,12 +308,11 @@ func draw_grid(origin: Vector2, side: float, compact := false) -> void:
 		f.action(Rect2(origin + Vector2(224, 165), Vector2(142, 44)), "Clear grid", "grid_clear")
 
 func draw_craft() -> void:
-	f.sheet("THE FIELD WORKSHOP", "MAKE EVERY PIECE COUNT / THE MAKER'S RECIPE BOOK")
-	var categories: Array = ["all"]
-	categories.append_array(Catalog.categories())
-	var cw := 1120.0 / categories.size()
-	for i in range(categories.size()):
-		f.action(Rect2(80 + i * cw, 160, cw - 7, 48), str(categories[i]).capitalize(), "category:" + str(categories[i]), f.category == categories[i])
+	f.sheet("THE WORKSHOP", "PICK A RECIPE  ·  CRAFT IT DIRECTLY, OR LAY THE PATTERN IN THE GRID")
+	f.wallet()
+	var categories: Array = [["all", "All"]]
+	for c in Catalog.categories(): categories.append([c, str(c)])
+	f.chips(Rect2(80, 160, 1120, 48), categories, str(f.category), "category")
 	var ids: Array = f.recipes()
 	if not ids.has(f.selected_recipe):
 		f.selected_recipe = str(ids[0]) if not ids.is_empty() else ""
@@ -342,8 +324,12 @@ func draw_craft() -> void:
 		var affordable: bool = can_stage(id)
 		Art.draw_button(h, rect, f.selected_recipe == id)
 		var recipe: Dictionary = Catalog.RECIPES[id]
-		f.schematic(rect.position + Vector2(29, 27), str(recipe.get("output", id)), 0.47, PAPER)
-		h.txt(rect.position + Vector2(57, 9), f.fit_text(Catalog.recipe_name(id), 228, 16), 16, Art.PAPER if f.selected_recipe == id else Art.INK)
+		var box := Rect2(rect.position + Vector2(9, 3), Vector2(48, 48))
+		h.panel(box, Color("#294349"), Color(Art.SILVER, 0.4), 2)
+		f.schematic(box.get_center(), str(recipe.get("output", id)), 0.5, PAPER)
+		var picked: bool = f.selected_recipe == id
+		h.txt(rect.position + Vector2(66, 7), f.fit_text(Catalog.recipe_name(id), 222, 16), 16, Art.PAPER if picked else Art.INK)
+		h.txt(rect.position + Vector2(66, 30), "Ready to make" if affordable else "Needs materials", 11, Art.PAPER if picked else (Color("#236c62") if affordable else Art.MUTED))
 		h.draw_rect(Rect2(rect.position + Vector2(4, 5), Vector2(3, rect.size.y - 10)), Color("#236c62") if affordable else Art.BRASS)
 		register(rect, "recipe:" + id)
 	f.pager(Rect2(80, 548, 298, 48), int(f.recipe_page), ids.size(), 5, "recipes")
@@ -359,7 +345,7 @@ func draw_craft() -> void:
 			inventory_square(Vector2(438 + col * 60, 494 + row * 58), 56, index, slots)
 	f.action(Rect2(1002, 494, 198, 48), "Split half · ON" if split_mode else "Split half · OFF", "split", split_mode)
 	f.pager(Rect2(1002, 552, 198, 48), tray_page, slots.size(), 18, "tray")
-	f.section_nav("craft")
+	f.section_tabs(Rect2(80, 614, 1120, 48), "craft")
 
 func can_stage(id: String) -> bool:
 	return game.state.can_craft(id, game.near_camp(), at_bench())
@@ -393,7 +379,10 @@ func draw_pattern_details(pos: Vector2, width: float) -> void:
 		return
 	var recipe: Dictionary = Catalog.RECIPES.get(id, {})
 	var output := str(recipe.get("output", id))
-	f.schematic(pos + Vector2(30, 24), output, 0.6, PAPER)
+	h.panel(Rect2(pos - Vector2(10, 8), Vector2(width + 20, 196)), Color("#efe4cb"), Color(Art.BRASS, 0.55), 4)
+	var box := Rect2(pos + Vector2(0, -2), Vector2(56, 56))
+	h.panel(box, Color("#294349"), Color(Art.SILVER, 0.45), 3)
+	f.schematic(box.get_center(), output, 0.6, PAPER)
 	f.fitted_label(pos + Vector2(70, 0), Catalog.recipe_name(id), width - 70, 22, PAPER, true)
 	var repeatable := repeatable_recipe(id)
 	var batches := batch_count() if repeatable else 1
@@ -408,7 +397,8 @@ func draw_pattern_details(pos: Vector2, width: float) -> void:
 	for item in recipe.get("needs", {}):
 		var needed := int(recipe.needs[item]) * preview_batches
 		var owned := int(game.state.items.get(item, 0))
-		f.fitted_label(Vector2(pos.x + 100, y), "%s  %d / %d" % [Catalog.item_name(str(item)), owned, needed], width - 100, 13, CYAN if owned >= needed else RED)
+		f.schematic(Vector2(pos.x + 112, y + 9), str(item), 0.24, PAPER)
+		f.fitted_label(Vector2(pos.x + 128, y), "%s  %d / %d" % [Catalog.item_name(str(item)), owned, needed], width - 128, 13, CYAN if owned >= needed else RED)
 		y += 25
 	var total := int(recipe.get("amount", 1)) * preview_batches
 	f.fitted_label(pos + Vector2(0, 136), "OUTPUT  %d × %s%s" % [total, Catalog.item_name(output), " / %d batch%s" % [preview_batches, "es" if preview_batches != 1 else ""] if repeatable else ""], width, 14, CYAN)
