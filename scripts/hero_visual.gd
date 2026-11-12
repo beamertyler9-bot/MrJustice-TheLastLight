@@ -36,6 +36,10 @@ var ordinary_digit_meshes: Array[MeshInstance3D] = []
 var tool_support_grip: MeshInstance3D
 var ordinary_support_digits: Array[MeshInstance3D] = []
 var _support_grip_owned := false
+# Which hand meshes should show this frame. The pose code changes its mind several times a
+# frame; showing/hiding the finger meshes is expensive, so it is applied once, at the end.
+var _pick_grip_want := false
+var _support_grip_want := false
 var _flight_pose_weight := 0.0
 var _flight_pivot_offset := Vector3.ZERO
 var _flight_pitch := 0.0
@@ -83,6 +87,7 @@ func end_camp_pose() -> void:
 	_show_pick_power_grip(false); reset_cape_motion()
 
 func set_weapon(id: String) -> void:
+	id = MODEL_ALIASES.get(id, id)
 	if id != weapon_id and id in TOOLS and arms.size() == 2:
 		_tool_equip_age = 0.0; _tool_equip_starts.clear()
 		for joint in arms + forearms + wrists: _tool_equip_starts.append(joint.quaternion)
@@ -121,6 +126,10 @@ func _mining_recovery_blocked(motion: String) -> bool:
 	return motion in ["climb", "mantle", "swim", "beam", "hook"] or _hand_occupied() or dodge_progress >= 0.0 or not held_item_id.is_empty()
 
 func _advance_pose(dt: float, motion: String, speed: float) -> void:
+	_advance_pose_body(dt, motion, speed)
+	_apply_grips()
+
+func _advance_pose_body(dt: float, motion: String, speed: float) -> void:
 
 	rig.position -= _flight_pivot_offset
 	_flight_pivot_offset = Vector3.ZERO
@@ -413,9 +422,7 @@ func _pick_grip_link(parent: Node3D, a: Vector3, b: Vector3, width: float, depth
 	mesh.name = label; mesh.quaternion = Quaternion(Vector3.UP, (b - a).normalized())
 
 func _show_pick_power_grip(active: bool) -> void:
-	if pick_power_grip == null: return
-	pick_power_grip.visible = active
-	for mesh in ordinary_digit_meshes: mesh.visible = not active
+	_pick_grip_want = active
 
 func _build_tool_support_grip() -> void:
 	for joint in hands[0].knuckles + [hands[0].thumb_base]:
@@ -426,9 +433,16 @@ func _build_tool_support_grip() -> void:
 	_dodge_surfaces.append(tool_support_grip)
 
 func _show_tool_support_grip(active: bool) -> void:
-	if tool_support_grip == null or tool_support_grip.visible == active: return
-	tool_support_grip.visible = active
-	for mesh in ordinary_support_digits: mesh.visible = not active
+	_support_grip_want = active
+
+## Show the gripping hand or the ordinary fingers, touching the meshes only on a change.
+func _apply_grips() -> void:
+	if pick_power_grip != null and pick_power_grip.visible != _pick_grip_want:
+		pick_power_grip.visible = _pick_grip_want
+		for mesh in ordinary_digit_meshes: mesh.visible = not _pick_grip_want
+	if tool_support_grip != null and tool_support_grip.visible != _support_grip_want:
+		tool_support_grip.visible = _support_grip_want
+		for mesh in ordinary_support_digits: mesh.visible = not _support_grip_want
 
 func _grasp_frame(shaft: Vector3, across: Vector3) -> Basis:
 	var x = -shaft.normalized()

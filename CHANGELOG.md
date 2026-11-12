@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.73.1 — Smooth with a weapon in hand (2026-11-11)
+
+- **Fixed the lag while holding a weapon or tool.** With a sword, axe or pickaxe out,
+  the hero's fingers were being hidden and shown again every frame to swap in the
+  gripping hand. That cost about 8 ms a frame on a desktop, several times more on a
+  phone. The hand now settles on one grip per frame and only changes when the grip
+  really changes. Hero animation with a weapon out went from about 9 ms to about 1.4 ms
+  a frame (bare hands: about 1.2 ms). The grips look the same.
+- The 0.73 weapons (iron axe and pickaxe, obsidian blade, sunsteel sword, prism saber)
+  no longer cancel a grimoire cast every frame.
+
 ## 0.73.0 — More items and equipment (2026-11-11)
 
 - **Every region has two resources of its own**, growing in patches beside its roads

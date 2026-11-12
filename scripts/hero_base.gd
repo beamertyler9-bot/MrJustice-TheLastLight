@@ -553,11 +553,13 @@ func _tool_head_mesh(id: String) -> ArrayMesh:
 	B.geometry_cache[key] = B._flat_geometry(faces)
 	return B.geometry_cache[key]
 
+## Newer weapons and tools reuse the closest existing model in the hand.
+const MODEL_ALIASES := {"obsidian_blade": "iron_blade", "sunsteel_sword": "dawn_blade", "prism_saber": "dawn_blade", "iron_axe": "stone_axe", "iron_pickaxe": "stone_pickaxe"}
+
 func set_weapon(id: String) -> void:
+	id = MODEL_ALIASES.get(id, id)
 	if id != weapon_id:
 		cancel_grimoire_cast()
-	# Newer weapons and tools reuse the closest existing model in the hand.
-	id = {"obsidian_blade": "iron_blade", "sunsteel_sword": "dawn_blade", "prism_saber": "dawn_blade", "iron_axe": "stone_axe", "iron_pickaxe": "stone_pickaxe"}.get(id, id)
 	weapon_id = id if id in ["iron_blade", "dawn_blade", "grimoire"] or id in TOOLS else "fists"
 	for key in _weapons:
 		_weapons[key].visible = key == weapon_id
