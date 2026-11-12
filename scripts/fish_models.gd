@@ -34,6 +34,9 @@ static func supports(kind: String) -> bool:
 static func build(parent: Node3D, kind: String) -> Node3D:
 	var fish := MeshInstance3D.new(); fish.name = "Fish"
 	fish.mesh = mesh(kind)
+	# One surface, one material (as material_override), so the hero's draw-call merging
+	# and every other single-material path handle it like any other prop.
+	fish.material_override = _materials()[1]
 	parent.add_child(fish)
 	return fish
 
@@ -42,8 +45,12 @@ static func mesh(kind: String) -> ArrayMesh:
 	if _meshes.has(kind): return _meshes[kind]
 	var spec: Dictionary = SPECIES.get(kind, SPECIES.lake_fish)
 	var result := ArrayMesh.new()
-	_add_surface(result, _body(spec), _materials()[0])
-	_add_surface(result, _fins(spec), _materials()[1])
+	var tool := _body(spec)
+	tool.generate_normals()
+	var fins := _fins(spec); fins.generate_normals()
+	tool.append_from(fins.commit(), 0, Transform3D.IDENTITY)
+	result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, tool.commit_to_arrays())
+	result.surface_set_material(0, _materials()[1])
 	_meshes[kind] = result
 	return result
 
@@ -56,7 +63,7 @@ static func _materials() -> Array:
 		_body_material.metallic_specular = 0.7
 		_fin_material = StandardMaterial3D.new()
 		_fin_material.vertex_color_use_as_albedo = true
-		_fin_material.roughness = 0.55
+		_fin_material.roughness = 0.35; _fin_material.metallic = 0.12; _fin_material.metallic_specular = 0.7
 		_fin_material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	return [_body_material, _fin_material]
 

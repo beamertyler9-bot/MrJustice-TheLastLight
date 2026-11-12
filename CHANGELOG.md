@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.76.1 — Holding fish by the tail (2026-11-11)
+
+- **Mr. Justice holds a fish by the base of its tail**, in his fist, with the fish
+  hanging head-down, at a size you can actually see.
+- **Fix:** in 0.76 a fish held in the hand didn't show. Each fish is now one piece with
+  one material, like every other prop.
+
 ## 0.76.0 — Better fish and creatures (2026-11-11)
 
 - **All 10 fish rebuilt.** Fish used to be a plain egg shape with a block for a tail and

@@ -1,5 +1,6 @@
 extends Node3D
 
+const FishModels = preload("res://scripts/fish_models.gd")
 const B = preload("res://scripts/build.gd")
 const Hand = preload("res://scripts/justice_hand.gd")
 const Grapple = preload("res://scripts/grapple_hand.gd")
@@ -627,6 +628,7 @@ func _held_busy() -> bool:
 	return _hand_occupied() or attack_time > 0.0 or dodge_progress >= 0.0 or _last_motion == "jump" or float(_weights.jump) > 0.05
 
 func _held_supporting() -> bool:
+	if FishModels.supports(held_item_id): return false
 	return held_item_id not in ["herb", "tonic", "mana_potion", "coffee", "wood", "stick", "crystal", "shard", "marshmallow", "roasted_marshmallow", "chocolate_bar", "graham_cracker", "smore"]
 
 func _held_two_hands() -> bool:
@@ -665,6 +667,15 @@ func _create_held_prop(n: Node3D, id: String) -> void:
 		var resource = ItemModels.build(n, id)
 		resource.scale = Vector3.ONE * (0.55 if id in ["tonic", "mana_potion"] else 0.5)
 		resource.position = -(resource.basis * ItemModels.grip_anchor(id))
+		if FishModels.supports(id):
+			# Held in the fist by the base of the tail, hanging head-down.
+			var length := float(FishModels.SPECIES[id].length)
+			var tail_base := Vector3(-length * 0.5 + length * 0.07, FishModels.CENTER_Y, 0.0)
+			var body: Node3D = resource.get_child(0)
+			body.basis = Basis.from_euler(Vector3(0.0, 0.0, -PI * 0.5))
+			body.position = -(body.basis * tail_base)
+			resource.position = Vector3.ZERO
+			resource.scale = Vector3.ONE * 1.3
 		return
 	var timber = B.mat("#835b3e")
 	var dark = B.mat("#29393d", 0.5)
