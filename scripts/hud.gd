@@ -269,15 +269,18 @@ func _cached_vector(pos: Vector2, bounds: Rect2, key: String, paint: Callable) -
 	var density := get_viewport().get_stretch_transform().get_scale() * ratio
 
 
+	# The picture is baked once per size, not per screen position: the floating joystick and
+	# every round button reuse it wherever they are drawn (re-baking on every new touch
+	# position, and evicting other buttons to make room, made combat stutter on phones).
 	var origin := get_viewport().get_stretch_transform().origin
-	var pixel_start := ((pos + bounds.position) * density + origin).floor()
-	var pixel_end := ((pos + bounds.end) * density + origin).ceil()
-	var aligned := Rect2((pixel_start - origin) / density - pos, (pixel_end - pixel_start) / density)
-	key += ":%s:%s" % [aligned.position, aligned.size]
+	var pixel_size := (bounds.size * density).ceil()
+	var aligned := Rect2(bounds.position, pixel_size / density)
+	key += ":%s" % [pixel_size]
 	vector_cache.prepare(key, aligned, density, paint)
 	var texture = vector_cache.lookup(key)
 	if texture == null: return false
-	draw_texture_rect(texture, Rect2(pos + aligned.position, aligned.size), false)
+	var pixel_start := ((pos + aligned.position) * density + origin).round()
+	draw_texture_rect(texture, Rect2((pixel_start - origin) / density, aligned.size), false)
 	return true
 
 func icon(pos: Vector2, kind: String, s: float = 1, color: Color = IVORY, canvas: CanvasItem = null) -> void:
@@ -1099,7 +1102,6 @@ func _draw_levitation_distance() -> void:
 func _draw_combat_controls() -> void:
 	var target = game.player.get("lock_target")
 	var locked := is_instance_valid(target)
-	if not locked and not in_combat() and float(game.player.get("dodge_time")) <= 0.0: return
 	round_button(Vector2(978, 555), 34, "dodge", "evade", "DODGE")
 	round_button(Vector2(1000, 455), 30, "lock", "lock", "RELEASE" if locked else "LOCK ON")
 	var dodge_value = game.player.get("dodge_time")

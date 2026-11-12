@@ -9,6 +9,9 @@ const BOOST_DURATION := 1.35
 const BOOST_WINDUP := 0.14
 const BOOST_SPEED := 58.0
 const BOOST_RECOVERY := 3.0
+const BOOST_RAMP := 0.35        # seconds to build from flying speed up to boost speed
+const NEUTRAL_PITCH := 0.18     # the camera's resting tilt: boosting there flies level
+const BOOST_CLIMB := 0.55       # how steeply looking up or down can climb or dive
 var enabled := false
 var armed := false
 var held := false
@@ -57,7 +60,13 @@ func tick(dt: float, allowed: bool, grounded: bool) -> bool:
 		return false
 	if active:
 		age += dt
-		if boosting(): boost_age += dt
+		if boosting():
+			boost_age += dt
+			boost_left -= dt
+			if boost_left <= 0.0:
+				# The boost runs its course, then eases back to normal flight.
+				boost_left = 0.0
+				boost_recovery = BOOST_RECOVERY
 		boost_recovery = maxf(0.0, boost_recovery - dt)
 		_tap_window = maxf(0.0, _tap_window - dt)
 		return false
@@ -95,12 +104,16 @@ func suspend_input() -> void:
 func boost_direction(stick: Vector2, yaw: float, pitch := 0.0) -> Vector3:
 	if not stick.is_finite() or not is_finite(yaw) or not is_finite(pitch): return Vector3.ZERO
 
-	return Vector3(-sin(yaw) * cos(pitch), -sin(pitch), -cos(yaw) * cos(pitch))
+	# Level flight at the camera's resting tilt; look further up or down to climb or dive.
+	var tilt := clampf(pitch - NEUTRAL_PITCH, -BOOST_CLIMB, BOOST_CLIMB)
+	return Vector3(-sin(yaw) * cos(tilt), -sin(tilt), -cos(yaw) * cos(tilt))
 
 func desired_velocity(stick: Vector2, yaw: float, pitch: float) -> Vector3:
 	if not active or not stick.is_finite() or not is_finite(yaw) or not is_finite(pitch): return Vector3.ZERO
 	stick = stick.limit_length()
-	if boosting(): return boost_direction(stick, yaw, pitch) * (BOOST_SPEED if thrusting() else 0.0)
+	if boosting():
+		# No stall before the burst: speed builds smoothly from flying speed to boost speed.
+		return boost_direction(stick, yaw, pitch) * lerpf(SPEED, BOOST_SPEED, smoothstep(0.0, BOOST_RAMP, boost_age))
 	if stick.length() < 0.12: return Vector3.ZERO
 	var speed := SPEED if powered() else GLIDE_SPEED
 	var forward := boost_direction(stick, yaw, pitch)

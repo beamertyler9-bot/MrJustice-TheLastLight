@@ -3,7 +3,7 @@ extends Node
 
 
 signal changed
-const MAX_ENTRIES := 32
+const MAX_ENTRIES := 64
 var entries: Dictionary = {}
 var density := Vector2.ZERO
 var oversampling := 0.0

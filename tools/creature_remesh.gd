@@ -17,7 +17,7 @@ extends SceneTree
 ## Usage: Godot --headless --path . --script tools/creature_remesh.gd -- [--dry] path.scn ...
 
 const ISO := 0.5
-const COLOR_GAIN := 1.32   # the triplanar coat reads darker than the UV-mapped parts did
+const COLOR_GAIN := 1.0
 const GRID := 46            # cells along the longest side of a group
 const MIN_VOXEL := 0.012
 const DETAIL_THIN := 0.055   # parts thinner than this (m) stay as they are
@@ -176,22 +176,14 @@ static func _tri_count(mesh: Mesh) -> int:
 
 
 func _skin_material(source: Material) -> StandardMaterial3D:
+	# Clean colours with the shading baked into them: no wrapped texture.
 	var m := StandardMaterial3D.new()
 	m.resource_name = "Creature skin"
 	m.vertex_color_use_as_albedo = true
 	m.albedo_color = Color.WHITE
-	if source is StandardMaterial3D:
-		var s: StandardMaterial3D = source
-		if s.albedo_texture: m.albedo_texture = s.albedo_texture
-		if s.normal_enabled and s.normal_texture:
-			m.normal_enabled = true; m.normal_texture = s.normal_texture; m.normal_scale = 0.12
-		m.roughness = clampf(s.roughness, 0.45, 0.9)
-		m.metallic = s.metallic; m.metallic_specular = s.metallic_specular
-	m.uv1_triplanar = true
-	m.uv1_world_triplanar = false
-	m.uv1_scale = Vector3(1.6, 1.6, 1.6)
-
-	m.uv1_triplanar_sharpness = 2.0
+	m.roughness = 0.62
+	m.metallic_specular = 0.45
+	if source is StandardMaterial3D: m.metallic = minf(source.metallic, 0.3)
 	return m
 
 
@@ -393,7 +385,16 @@ func _rebuild_group(group: Node3D, meshes: Array) -> Array:
 				if z < nz - 1 and (field[x + nx * (y + ny * (z + 1))] > ISO) != here:
 					_quad(indices, cell_vertex, nx, ny, Vector3i(x - 1, y - 1, z), Vector3i(x, y - 1, z), Vector3i(x, y, z), Vector3i(x - 1, y, z), here)
 	if indices.is_empty(): return []
-	positions = _smooth(positions, indices, 1 if _hard else 4)
+	# Soft painted shading: a lighter back, a darker belly and underside, a little variation.
+	for i in range(vcolors.size()):
+		var n := normals[i]
+		var up := clampf(n.y * 0.5 + 0.5, 0.0, 1.0)
+		var height := clampf((positions[i].y - box.position.y) / maxf(box.size.y, 0.01), 0.0, 1.0)
+		var grain := (sin(positions[i].x * 37.0) * sin(positions[i].z * 29.0 + positions[i].y * 23.0)) * 0.035
+		var light := lerpf(0.74, 1.12, up) * lerpf(0.9, 1.04, height) + grain
+		var c := vcolors[i] * light
+		vcolors[i] = Color(clampf(c.r, 0.0, 1.0), clampf(c.g, 0.0, 1.0), clampf(c.b, 0.0, 1.0), 1.0)
+	positions = _smooth(positions, indices, 1 if _hard else 6)
 	# 5. Simplify to the budget.
 	var size := maxf(box.size.x, maxf(box.size.y, box.size.z))
 	var budget := int(clampf(size * TRI_BUDGET_PER_M, 120.0, 1300.0))
@@ -409,14 +410,25 @@ func _rebuild_group(group: Node3D, meshes: Array) -> Array:
 		result = flat.commit()
 	else:
 		result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, simplified)
-	var detail_mesh: ArrayMesh = null
 	if not details.is_empty():
-		var tool := SurfaceTool.new(); tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+		# Crisp details join the skin in the same surface: one draw for the whole part.
+		var arrays: Array = result.surface_get_arrays(0)
+		var pos: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		var nor: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+		var col: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
+		var idx: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+		if idx.is_empty():
+			for i in range(pos.size()): idx.append(i)
 		for t in details:
-			tool.set_color(t[3]); tool.add_vertex(t[0]); tool.add_vertex(t[1]); tool.add_vertex(t[2])
-		tool.generate_normals()
-		detail_mesh = tool.commit()
-	return [result, detail_mesh]
+			var n: Vector3 = (t[1] - t[0]).cross(t[2] - t[0]).normalized()
+			var base := pos.size()
+			for k in range(3):
+				pos.append(t[k]); nor.append(-n); col.append(t[3])
+			idx.append_array(PackedInt32Array([base, base + 1, base + 2]))
+		arrays[Mesh.ARRAY_VERTEX] = pos; arrays[Mesh.ARRAY_NORMAL] = nor; arrays[Mesh.ARRAY_COLOR] = col; arrays[Mesh.ARRAY_INDEX] = idx
+		result = ArrayMesh.new()
+		result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return [result, null]
 
 
 ## Laplacian smoothing (vertex moves toward the average of its neighbours).
@@ -452,7 +464,18 @@ func _simplify(positions: PackedVector3Array, normals: PackedVector3Array, color
 		best = candidate
 		if candidate.size() / 3 <= budget: break
 	print("    lods=%d tris %d -> %d (budget %d)" % [count, indices.size() / 3, best.size() / 3, budget])
-	arrays[Mesh.ARRAY_INDEX] = best
+	# Keep only the vertices the simplified mesh still uses.
+	var remap := {}
+	var kept_positions := PackedVector3Array(); var kept_normals := PackedVector3Array(); var kept_colors := PackedColorArray()
+	var compact := PackedInt32Array(); compact.resize(best.size())
+	for i in range(best.size()):
+		var old := best[i]
+		if not remap.has(old):
+			remap[old] = kept_positions.size()
+			kept_positions.append(positions[old]); kept_normals.append(normals[old]); kept_colors.append(colors[old])
+		compact[i] = remap[old]
+	arrays[Mesh.ARRAY_VERTEX] = kept_positions; arrays[Mesh.ARRAY_NORMAL] = kept_normals; arrays[Mesh.ARRAY_COLOR] = kept_colors
+	arrays[Mesh.ARRAY_INDEX] = compact
 	return arrays
 
 

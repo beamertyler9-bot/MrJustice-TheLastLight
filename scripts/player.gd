@@ -992,7 +992,7 @@ func _step_light_flight(dt: float, stick: Vector2) -> void:
 		light_wings.play_boost(light_flight.boost_direction(stick, view.x, view.y))
 		if game != null and game.audio != null: game.audio.magic_cue("light", "release", 1.2)
 		feel_rumble(28, 0.22)
-	var acceleration := 180.0 if light_flight.thrusting() else (75.0 if stick.length() < 0.12 else 30.0)
+	var acceleration := 110.0 if light_flight.boosting() else (75.0 if stick.length() < 0.12 else 30.0)
 	velocity = velocity.move_toward(desired, dt * acceleration)
 	if global_position.y + velocity.y * dt > light_flight.MAX_ALTITUDE: velocity.y = minf(0.0, velocity.y)
 	if world.atlas != null:

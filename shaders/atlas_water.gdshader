@@ -72,7 +72,8 @@ void fragment() {
 		vec2 p = world.xz;
 		vec2 flow = still_lake ? vec2(world_time * 0.12, world_time * 0.07) : vec2(0.0);
 		float t = world_time * (still_lake ? 0.55 : 1.0);
-		vec2 slope = waves(p * 0.6 + flow, t) + waves(p * 1.9 - flow * 1.7, t * 1.3) * 0.45;
+		// One wave field (it used to be two): half the trigonometry on every water pixel.
+		vec2 slope = waves(p * 0.75 + flow, t) * 1.2;
 		if (!still_lake) {
 			// Running water: streaks that slide along the river and a choppier surface.
 			float along = flow_uv.y * 0.9 - world_time * 2.4;
@@ -103,8 +104,9 @@ void fragment() {
 		float streak=sin(flow_uv.x*87.0+sin(flow_uv.x*23.0)*1.4+sin(flow_uv.y*0.09-world_time*2.8)*0.8);
 		float tumble=smoothstep(0.65,0.95,sin(flow_uv.y*0.35-world_time*8.0+flow_uv.x*12.0));
 		float foam=edge*(0.25+broken*0.4)+crest+cascade*(0.35+smoothstep(-0.3,0.8,streak)*0.4+tumble*0.16);
-		if (cola) {
-			// Fizz: tiny bubbles winking in and out.
+		float near_camera = length(CAMERA_POSITION_WORLD - world);
+		if (cola && near_camera < 35.0) {
+			// Fizz: tiny bubbles winking in and out (only close enough to see them).
 			vec2 cell = floor(p * 3.0);
 			float bubble = step(0.93, hash(cell + floor(world_time * 2.0 + hash(cell) * 7.0)));
 			vec2 local = fract(p * 3.0) - 0.5;

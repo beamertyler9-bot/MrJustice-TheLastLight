@@ -14,8 +14,8 @@ const MIST_SHADER = preload("res://shaders/fizz_mist.gdshader")
 const FOAM_SHADER = preload("res://shaders/fizz_foam.gdshader")
 const MIN_DROP := 20.0
 const MAX_FALLS := 3
-const CURTAIN_RANGE := 1400.0
-const SPRAY_RANGE := 320.0
+const CURTAIN_RANGE := 900.0
+const SPRAY_RANGE := 200.0
 
 
 static func build(parent: Node3D) -> void:
@@ -116,7 +116,7 @@ static func _fall(holder: Node3D, sections: Array, from: int, to: int) -> void:
 	var landing: Vector3 = centres[rows]
 	_foam(holder, Vector3(landing.x, bottom + 0.15, landing.z), width * 1.7, 0.8)
 	var rng := RandomNumberGenerator.new(); rng.seed = from * 7919 + to
-	for i in range(5):
+	for i in range(3):
 		var spread := Vector3(rng.randf_range(-0.5, 0.5) * width, rng.randf_range(1.0, 2.0 + drop * 0.04), rng.randf_range(-0.5, 0.5) * width)
 		_mist(holder, landing + spread, width * rng.randf_range(0.6, 0.95), 0.3, 0.0)
 	# A little spray where it pours over the lip.
@@ -127,13 +127,13 @@ static func _lake(holder: Node3D, lake: Dictionary, inflow: Dictionary) -> void:
 	var height := float(lake.height)
 	var entry := _center(inflow)
 	_foam(holder, Vector3(entry.x, height + 0.15, entry.y), 22.0, 0.65)
-	for i in range(3): _mist(holder, Vector3(entry.x + (i - 1) * 4.0, height + 1.2 + i * 0.6, entry.y), 7.0, 0.3, 0.0)
+	for i in range(2): _mist(holder, Vector3(entry.x + (i - 1) * 4.0, height + 1.2 + i * 0.6, entry.y), 7.0, 0.3, 0.0)
 	# Fizz springs: spots well inside the lake where bubbles keep rising.
 	var outline: PackedVector2Array = PackedVector2Array(lake.outline)
 	var rng := RandomNumberGenerator.new(); rng.seed = 4401
 	var springs: Array = []
 	for attempt in range(400):
-		if springs.size() >= 6: break
+		if springs.size() >= 4: break
 		var p: Vector2 = lake.pos + Vector2(rng.randf_range(-1, 1) * lake.extent.x, rng.randf_range(-1, 1) * lake.extent.y) * 0.8
 		if not Geometry2D.is_point_in_polygon(p, outline): continue
 		var inside := true
@@ -144,7 +144,7 @@ static func _lake(holder: Node3D, lake: Dictionary, inflow: Dictionary) -> void:
 		if inside and apart and W.terrain_height(p) < height - 0.5: springs.append(p)
 	for p in springs:
 		_foam(holder, Vector3(p.x, height + 0.15, p.y), 11.0, 0.85)
-		for i in range(6): _mist(holder, Vector3(p.x + rng.randf_range(-2.0, 2.0), height + 0.3, p.y + rng.randf_range(-2.0, 2.0)), rng.randf_range(0.9, 1.6), 0.9, rng.randf_range(3.5, 6.0))
+		for i in range(3): _mist(holder, Vector3(p.x + rng.randf_range(-2.0, 2.0), height + 0.3, p.y + rng.randf_range(-2.0, 2.0)), rng.randf_range(0.9, 1.6), 0.9, rng.randf_range(3.5, 6.0))
 
 
 static func _foam(holder: Node3D, at: Vector3, size: float, strength: float) -> void:
