@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.75.1 — No more land strips through lakes (2026-11-11)
+
+- **Rivers no longer run through lakes.** Where a river reached a lake, it kept going
+  straight across: its water ran on top of the lake, and the ground along its banks
+  stood up out of the water as a long strip of land. Rivers now stop where they meet a
+  lake and start again where they leave it.
+- **The strips of land are gone.** The ground along those old riverbanks is lowered
+  below the water, easing down from the shore. That's 6,918 height points in all,
+  mostly in the cola lake south of Fizzpeak (where a raised channel crossed the whole
+  lake) and the foothill lake at Fizzpeak. A few small bumps in two water lakes went too.
+  Real islands, shores and built platforms in other lakes are untouched.
+- The foam where Fizzpeak's river runs into the foothill lake now sits at the shore,
+  where the river actually meets the lake.
+
 ## 0.75.0 — Fizzpeak's cola falls (2026-11-11)
 
 - **Real waterfalls on Fizzpeak.** The cola river used to run down the mountain as a

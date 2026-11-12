@@ -191,10 +191,11 @@ func set_completed_chunks(chunks: Dictionary) -> void:
 		material.set_shader_parameter("terrain_chunk_count", tree_count); material.set_shader_parameter("terrain_origin", Vector2(origin)); material.set_shader_parameter("terrain_extent", Vector2(domain.size)); material.set_shader_parameter("terrain_ownership", forest_mask)
 
 func _water(water: Dictionary) -> void:
-	var mesh = preload("res://scripts/water_profile.gd").river_mesh(water)
 	var material = _water_material(str(water.kind))
-	var surface = B.mesh(self, mesh, material); surface.name = "Flowing_" + water.kind
-	surface.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for piece in preload("res://scripts/water_profile.gd").river_pieces(water):
+		var mesh = preload("res://scripts/water_profile.gd").river_mesh(piece)
+		var surface = B.mesh(self, mesh, material); surface.name = "Flowing_" + water.kind
+		surface.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 func _water_material(kind: String) -> ShaderMaterial:
 	var material = ShaderMaterial.new(); material.shader = preload("res://shaders/atlas_water.gdshader")

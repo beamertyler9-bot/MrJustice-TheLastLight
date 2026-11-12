@@ -28,7 +28,11 @@ static func build(parent: Node3D) -> void:
 	var sections: Array = cascade.sections
 	for fall in drops(sections): _fall(holder, sections, fall[1], fall[2])
 	for lake in W.lakes():
-		if str(lake.get("id", "")) == "fizzpeak_foothill_lake": _lake(holder, lake, sections[-1])
+		if str(lake.get("id", "")) == "fizzpeak_foothill_lake":
+			var inflow: Dictionary = sections[-1]
+			for s in sections:
+				if s.get("in_lake", false): inflow = s; break
+			_lake(holder, lake, inflow)
 
 
 static func _center(s: Dictionary) -> Vector2:

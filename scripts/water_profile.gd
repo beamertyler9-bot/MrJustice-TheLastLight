@@ -11,9 +11,11 @@ static func _load() -> void:
 	for lake in _data.lakes:
 		_fit_summit_spring(lake)
 		_seat_lake(lake)
+	for river in _data.rivers: _mark_lake_sections(river)
 	for river in _data.rivers:
 		for i in range(river.sections.size() - 1):
 			var a = river.sections[i]; var b = river.sections[i + 1]
+			if a.get("in_lake", false) and b.get("in_lake", false): continue
 			var bounds = Rect2(a.left, Vector2.ZERO).expand(a.right).expand(b.left).expand(b.right)
 			_register(bounds, {"kind": river.kind, "a": a, "b": b})
 	for lake in _data.lakes:
@@ -50,6 +52,40 @@ static func _fit_summit_spring(lake: Dictionary) -> void:
 
 
 
+
+## Rivers stop where they meet a lake and start again where they leave it, so a river
+## never runs (as a strip of water on its own banks) through the middle of a lake.
+static func _mark_lake_sections(river: Dictionary) -> void:
+	for s in river.sections:
+		var c: Vector2 = s.get("channel_center", (s.left + s.right) * 0.5)
+		for lake in _data.lakes:
+			if c.x < lake.pos.x - lake.extent.x or c.x > lake.pos.x + lake.extent.x or c.y < lake.pos.y - lake.extent.y or c.y > lake.pos.y + lake.extent.y: continue
+			if Geometry2D.is_point_in_polygon(c, lake.outline):
+				s["in_lake"] = true
+				break
+
+## The parts of a river outside lakes, each reaching one section into the lake it meets.
+static func river_pieces(river: Dictionary) -> Array:
+	_load()
+	var sections: Array = river.sections
+	var pieces: Array = []
+	var current: Array = []
+	for i in range(sections.size()):
+		var inside: bool = sections[i].get("in_lake", false)
+		if not inside:
+			if current.is_empty() and i > 0: current.append(sections[i - 1])
+			current.append(sections[i])
+		elif not current.is_empty():
+			current.append(sections[i])
+			pieces.append(current); current = []
+	if not current.is_empty(): pieces.append(current)
+	var result: Array = []
+	for part in pieces:
+		if part.size() < 2: continue
+		var piece: Dictionary = river.duplicate(false)
+		piece.sections = part
+		result.append(piece)
+	return result
 
 static func _seat_river(river: Dictionary) -> void:
 	if river.get("terrain_fitted", false): return
