@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.77.0 — Enemies as one consistent character (2026-11-11)
+
+- **37 enemies rebuilt as single, continuous creatures.** They used to be separate
+  shapes (body, head, brows, muzzle, plates) pushed into each other, with hard creases
+  where they met and parts tinted differently. Now every set of parts that moves together
+  is one smooth skin:
+  - The parts are filled in as one solid and gently blended, so they flow into each
+    other (necks into heads, shoulders into bodies, muzzles into faces).
+  - Each part's colour carries over and blends softly at the joins.
+  - One shared material (the creature's own texture and finish) covers the whole body.
+  - Eyes, teeth, claws, horns, spikes, bars and glowing cores stay crisp, exactly as
+    before. So do thin details too fine to blend.
+  - Joints, animations, attacks and weak points are unchanged.
+- **Rebuilt:**
+  - **Originals:** wild boar, moss guardian, rootling sentinel, frost brute.
+  - **Bosses:** the mine boss, stonejaw wyrm, grand confectioner, stormhorn matriarch,
+    glass anubid, pale watcher and blackthorn regent.
+  - **Regional enemies:** the other 26.
+- **Kept as built (on purpose):**
+  - **Crisp, faceted designs:** cliffwarden, shard sentinel, geode mimic, wrapper mimic,
+    glass skitter. Blending them made them lumpy.
+  - **Signature thin details that blending would lose:** the thorn wolf's thorny vines,
+    the cinder wisp's mask, the root reaper's ribcage.
+  - **Machines and bandits:** the dissonant machines, the dungeon boss and the scrappers.
+- **Performance:** each rebuilt part is simplified to a budget set by its size. The
+  biggest models got lighter (mine boss 13.7k to 8.1k triangles, frost brute 19k to
+  14.5k); smaller ones gained a little (thistle jackal 4.4k to 5.9k). Draw calls are
+  the same or fewer (one skin plus one detail piece per part).
+- The rebuild tool is in tools/creature_remesh.gd.
+
 ## 0.76.1 — Holding fish by the tail (2026-11-11)
 
 - **Mr. Justice holds a fish by the base of its tail**, in his fist, with the fish
