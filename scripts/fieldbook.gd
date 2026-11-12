@@ -152,18 +152,20 @@ func draw_inventory() -> void:
 	workshop.draw_inventory()
 
 func draw_trade() -> void:
-	sheet("THE EXCHANGE", "HONEST GOODS / FAIR LIGHT")
+	var Merchants = load("res://scripts/merchants.gd")
+	var region := int(game.region)
+	sheet(Merchants.title(game.shop_id).to_upper(), Merchants.blurb(game.shop_id).to_upper())
 	label(Vector2(80, 187), "YOUR LIGHT ESSENCE", 13, FAINT)
 	label(Vector2(77, 207), "%03d" % int(game.state.items.get("shard", 0)), 52, CYAN, true)
 	action(Rect2(80, 294, 145, 52), "Buy", "trade_side:buy", trade_buy)
 	action(Rect2(237, 294, 145, 52), "Sell", "trade_side:sell", not trade_buy)
 	schematic(Vector2(228, 433), "shard", 1.45, GOLD)
-	paragraph(Vector2(80, 517), "One item. One fair price.\nGoods go straight into your satchel.", 302, 16, FAINT)
+	paragraph(Vector2(80, 517), Merchants.region_note(region) if Merchants.region_note(region) != "" else "One item. One fair price.", 302, 14, FAINT)
 
 	action(Rect2(80, 610, 302, 48), "‹  Conversation", "dialogue")
-	var ids: Array = Catalog.SHOPS.get(game.shop_id, []) if trade_buy else game.state.items.keys()
+	var ids: Array = Merchants.stock(game.shop_id) if trade_buy else game.state.items.keys()
 	if not trade_buy:
-		ids = ids.filter(func (id): return Catalog.ITEMS.has(id) and int(game.state.items.get(id, 0)) > 0 and int(Catalog.ITEMS[id].get("sell", 0)) > 0)
+		ids = ids.filter(func (id): return int(game.state.items.get(id, 0)) > 0 and Merchants.sell_price(id, game.shop_id, region) > 0)
 	trade_page = clampi(trade_page, 0, maxi(0, (ids.size() - 1) / 6))
 	label(Vector2(494, 177), "GOODS", 13, FAINT)
 	label(Vector2(899, 177), "OWNED", 13, FAINT)
@@ -171,15 +173,16 @@ func draw_trade() -> void:
 	for i in range(trade_page * 6, mini(ids.size(), trade_page * 6 + 6)):
 		var id := str(ids[i])
 		var y := 212 + i % 6 * 61
-		var price := int(Catalog.ITEMS[id].get("buy" if trade_buy else "sell", 0))
+		var price: int = Merchants.buy_price(id, game.shop_id, region) if trade_buy else Merchants.sell_price(id, game.shop_id, region)
+		var owned: bool = trade_buy and game.state.owns(id)
 		schematic(Vector2(459, y + 23), id, 0.36, PAPER)
 		fitted_label(Vector2(494, y + 11), Catalog.item_name(id), 402, 20)
-		label(Vector2(922, y + 12), str(int(game.state.items.get(id, 0))), 18, CYAN)
-		var enabled: bool = price > 0 and (int(game.state.items.get("shard", 0)) >= price if trade_buy else int(game.state.items.get(id, 0)) > 0)
-		action(Rect2(1022, y, 178, 50), ("Buy · " if trade_buy else "Sell · ") + str(price), ("buy:" if trade_buy else "sell:") + id, false, enabled)
+		label(Vector2(922, y + 12), "✓" if owned else str(int(game.state.items.get(id, 0))), 18, CYAN)
+		var enabled: bool = price > 0 and not owned and (int(game.state.items.get("shard", 0)) >= price if trade_buy else int(game.state.items.get(id, 0)) > 0)
+		action(Rect2(1022, y, 178, 50), "Owned" if owned else ("Buy · " if trade_buy else "Sell · ") + str(price), ("buy:" if trade_buy else "sell:") + id, false, enabled)
 		h.draw_line(Vector2(438, y + 57), Vector2(1200, y + 57), Color(Art.BRASS, 0.25), 1)
 	if ids.is_empty():
-		label(Vector2(494, 309), "Nothing to trade yet.", 24, FAINT)
+		label(Vector2(494, 309), "Nothing to trade yet." if trade_buy else "Nothing this merchant buys.", 24, FAINT)
 	pager(Rect2(438, 610, 762, 48), trade_page, ids.size(), 6, "trade")
 
 func dialogue_layout(request := false) -> Dictionary:

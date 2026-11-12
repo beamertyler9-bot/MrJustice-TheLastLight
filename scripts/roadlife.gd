@@ -148,7 +148,7 @@ func _spawn(record: Dictionary) -> void:
  var sample = traveler_position(record); var p: Vector2 = sample.point
  var camel = game.world.biome_at(p.x, p.y) == 12
  var title = "Caravan trader" if record.kind == "trader" else "Desert rider" if camel and record.kind == "rider" else "Road rider" if record.kind == "rider" else "Road traveler"
- var actor = _resident(self, record.id, title, "general" if record.kind == "trader" else "", ["I travel the " + str(routes[record.route].name) + ". Follow the road and you will find shelter.", "The waystop fires are free to use. At the lakes, wait for the float to dip before reeling in.", "Have a look at my cart. I buy lake fish, and carry food, camp kits and remedies." if record.kind == "trader" else "The roads have been safer since someone started pushing back the Scrappers."])
+ var actor = _resident(self, record.id, title, "trader" if record.kind == "trader" else "", ["I travel the " + str(routes[record.route].name) + ". Follow the road and you will find shelter.", "The waystop fires are free to use. At the lakes, wait for the float to dip before reeling in.", "Have a look at my cart. I buy lake fish, and carry food, camp kits and remedies." if record.kind == "trader" else "The roads have been safer since someone started pushing back the Scrappers."])
  actor.position = Vector3(p.x, game.world.surface_height_at(p.x, p.y), p.y); actor.rotation.y = atan2(sample.direction.x, sample.direction.y)
  var item = {"actor": actor, "record": record, "wheels": [], "mount": {}, "debt": 0.0}
  if record.kind == "trader": item.wheels = Art.cart(actor)

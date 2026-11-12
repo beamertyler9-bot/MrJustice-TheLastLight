@@ -306,10 +306,35 @@ func buy_item(id: String) -> bool:
 	next_items[id] = int(items[id]) + 1
 	return _replace_items_if_fit(next_items)
 
-func sell_item(id: String) -> bool:
+## Buying from a specialist at their price: goods, weapons/tools or armor upgrades.
+func purchase(id: String, price: int) -> bool:
+	if price <= 0 or int(items.get("shard", 0)) < price: return false
+	var next_items: Dictionary = items.duplicate()
+	var next_unlocked: Dictionary = unlocked.duplicate()
+	var next_upgrades: Dictionary = upgrades.duplicate()
+	next_items.shard = int(items.shard) - price
+	if bool(Crafting.RECIPES.get(id, {}).get("upgrade", false)):
+		if upgrades.get(id, false) == true: return false
+		next_upgrades[id] = true
+	elif Crafting.WEAPONS.has(id):
+		if unlocked.get(id, false) == true: return false
+		next_unlocked[id] = true
+	else:
+		if id not in INVENTORY_IDS or int(items.get(id, 0)) >= MAX_ITEMS: return false
+		next_items[id] = int(items.get(id, 0)) + 1
+	var layout: Array = Stacks.reconcile(_slots, _inventory_totals(next_items, next_unlocked, next_upgrades), false)
+	if layout.is_empty(): return false
+	items = next_items; unlocked = next_unlocked; upgrades = next_upgrades; _slots = layout
+	refresh_stats()
+	return true
+
+func owns(id: String) -> bool:
+	return upgrades.get(id, false) == true or unlocked.get(id, false) == true
+
+func sell_item(id: String, price_override: int = -1) -> bool:
 	if id not in INVENTORY_IDS or not Crafting.ITEMS.has(id):
 		return false
-	var price: int = int(Crafting.ITEMS[id].sell)
+	var price: int = int(Crafting.ITEMS[id].sell) if price_override < 0 else price_override
 	if price <= 0 or int(items[id]) <= 0 or int(items.shard) + price > MAX_ITEMS:
 		return false
 	var next_items: Dictionary = items.duplicate()

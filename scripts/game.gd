@@ -1559,9 +1559,11 @@ func advance_dialogue() -> void:
 		set_mode("play")
 
 func trade_item(id: String, buying: bool) -> void:
-	if mode != "trade" or not usable_node(vendor, 3.3) or not Crafting.SHOPS.has(shop_id): return
-	if buying and id not in Crafting.SHOPS[shop_id]: return
-	var success = state.buy_item(id) if buying else state.sell_item(id)
+	var Merchants = load("res://scripts/merchants.gd")
+	if mode != "trade" or not usable_node(vendor, 3.3) or shop_id == "": return
+	if buying and id not in Merchants.stock(shop_id): return
+	if not buying and not Merchants.buys(shop_id, id): return
+	var success = state.purchase(id, Merchants.buy_price(id, shop_id, region)) if buying else state.sell_item(id, Merchants.sell_price(id, shop_id, region))
 	if success:
 		audio.cue("collect")
 		state.save_game()

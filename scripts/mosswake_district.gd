@@ -33,11 +33,11 @@ static func build(world, parent: Node3D) -> void:
 		var flag = B.box(district, Vector3(-14 + i * 2.8, 3.9, 34), Vector3(0.75, 0.65, 0.045), B.world_surface("cloth", ["#a65b49", "#708d70", "#c6b47a"][i % 3]))
 		flag.rotation.z = 0.06 * sin(i)
 	var people = [
-		["herbalist", "Fenna Mossbasket", "elf", "gardener", "general", Vector2(-7.7, 8), "Two herbs make a Lantern Tonic. Add a crystal to one herb instead, and the campfire brews a Mana Potion."],
-		["brewer", "Orrin Blueglass", "human", "merchant", "general", Vector2(7.3, 17), "Blue bottles restore mana. The crystal holds the infusion; the herb steadies it."],
-		["baker", "Nella Honeycrumb", "smallfolk", "baker", "general", Vector2(-7.4, 17), "Marshmallows for the camp, coffee for the road. A warm fire makes both better."],
+		["herbalist", "Fenna Mossbasket", "elf", "gardener", "alchemist", Vector2(-7.7, 8), "Two herbs make a Lantern Tonic. Add a crystal to one herb instead, and the campfire brews a Mana Potion."],
+		["brewer", "Orrin Blueglass", "human", "merchant", "alchemist", Vector2(7.3, 17), "Blue bottles restore mana. The crystal holds the infusion; the herb steadies it."],
+		["baker", "Nella Honeycrumb", "smallfolk", "baker", "grocer", Vector2(-7.4, 17), "Marshmallows for the camp, coffee for the road. A warm fire makes both better."],
 		["woodwright", "Bram Cedarhand", "dwarf", "mason", "smith", Vector2(11, -13), "The worktable is ready. Timbermarket keeps a clear avenue all the way to the travel plaza."],
-		["tea_host", "Mira Kettleleaf", "human", "baker", "general", Vector2(-10, -36), "Rest a moment beneath the awning. Rootglow's old tree arch is on our western edge."],
+		["tea_host", "Mira Kettleleaf", "human", "baker", "grocer", Vector2(-10, -36), "Rest a moment beneath the awning. Rootglow's old tree arch is on our western edge."],
 		["porter", "Rook Copperstrap", "orc", "porter", "", Vector2(7, 30), "Cedarwatch's watchgate stands on the eastern edge. Its armory lies below the old barracks."],
 		["gardener", "Sylva Fernwell", "elf", "gardener", "", Vector2(-8, 12), "Glimmerstags browse the valley. Fernhares disappear into the undergrowth before you notice their ears."],
 		["watcher", "Edda Bellward", "human", "forester", "", Vector2(8, -24), "Rootlings guard the hollow. Watch their glowing seed before their arms rise to strike."]]

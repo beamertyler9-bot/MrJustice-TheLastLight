@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.72.0 — Specialist merchants (2026-11-11)
+
+- **Merchants specialise now** instead of all selling the same things. Each town has a
+  mix of:
+  - **General store:** timber, planks, stone, sticks, string, crafting tables, camp
+    kits, coffee beans, herbs.
+  - **Blacksmith:** weapons, armor and tools (makeshift and stone axes, stone pickaxe,
+    iron blade, plated chest, heart coil, spring boots, grapple spool) and iron.
+  - **Alchemist:** tonics, mana potions, herbs, crystal, coffee.
+  - **Grocer:** marshmallows, chocolate, graham crackers, roasted marshmallows, s'mores,
+    coffee.
+  - **Angler:** fishing rods and line; pays the best price for every fish.
+  - **Curio dealer:** crystal, old relics, ancient cores.
+  - **Caravan traders** on the roads carry a bit of everything and buy fish.
+- **They buy what they deal in:** the Sell tab only lists what that merchant will buy.
+  Specialists (angler, curio dealer, alchemist, blacksmith) pay 25% more for their own
+  trade's goods.
+- **Prices depend on the region:** what a land makes is 25% cheaper there, and what it
+  lacks costs 30% more (and sells for 30% more). Sweets are cheap in S'morewood, iron
+  and armor in Ashfall Caldera, crystal in Prismere, timber and tonics in Mosswake.
+  The shop screen tells you what's cheap and dear where you are.
+- **Gear can be bought:** weapons, tools and armor upgrades from a blacksmith, not just
+  crafted. Things you already own show as Owned.
+- **Shop screen:** shows the merchant's trade as its title, and each specialist tells you
+  what they deal in when you talk to them.
+
 ## 0.71.0 — Camp treats (2026-11-11)
 
 - **Marshmallows, chocolate bars and graham crackers can be eaten**, each with its own

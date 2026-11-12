@@ -1,4 +1,5 @@
 extends Node3D
+const Merchants = preload("res://scripts/merchants.gd")
 
 const B = preload("res://scripts/build.gd")
 const P = preload("res://scripts/locations.gd")
@@ -296,7 +297,7 @@ func _citizens() -> void:
 		var site: Dictionary = world.atlas.sites().filter(func (s): return s.id == root.get_meta("site"))[0]
 		var data = plan(world.atlas, site)
 		for person in data.population:
-			if int(person.home) % 5 != 0 and person.role not in ["stores", "workshop", "bakery", "inn"]: continue
+			if int(person.home) % 5 != 0 and person.role not in ["stores", "workshop", "bakery", "inn", "library"]: continue
 			if int(person.district) != int(root.get_meta("district")) or not root.get_meta("built_plots", []).has(int(person.home)): continue
 			var household = posmod(floori(world.state.journey_time / 90) + int(person.home), 5 if site.kind == "city" else 4)
 			if int(person.id.get_slice("_", 2)) / data.plots.size() != household: continue
@@ -318,8 +319,13 @@ func _citizens() -> void:
 		for d in [-1, 1]:
 			var q = pos + tangent * float(d) * 1.1
 			route.append(Vector3(q.x, world.height_at(site.pos.x + q.x, site.pos.y + q.y) + 0.05, q.y))
-		var role: String = candidate.person.role; var shop = "general" if role in ["bakery", "inn", "stores"] else "smith" if role == "workshop" else ""
-		P.npc(world, candidate.root, id, candidate.person.name, ["#7f9a87", "#a48665", "#8d789a", "#8c9aaf"][int(candidate.person.phase)], shop, ["Welcome to " + str(site.name) + ". This is our " + str(role) + " quarter.", "The main roads connect our homes to neighboring towns.", "Come in and look around. Every house has a place to rest, eat, work and store its belongings."], "human", "merchant" if shop != "" else "neighbor", route, "scarf", Vector3.ZERO, candidate.root.get_node_or_null("Building_" + str(candidate.person.home)) if shop != "" else null)
+		var role: String = candidate.person.role
+		# Specialists: the workshop's blacksmith, the bakery's grocer, the inn's alchemist,
+		# the library's curio dealer; stores are general stores or (every other one) anglers.
+		var shop: String = {"workshop": "blacksmith", "bakery": "grocer", "inn": "alchemist", "library": "curio"}.get(role, "")
+		if role == "stores": shop = "angler" if (int(candidate.person.home) / 8) % 2 == 1 else "general"
+		var trade_line: String = "I'm %s's %s: %s Have a look." % [str(site.name), Merchants.title(shop).to_lower(), Merchants.blurb(shop).to_lower()] if shop != "" else "The main roads connect our homes to neighboring towns."
+		P.npc(world, candidate.root, id, candidate.person.name, ["#7f9a87", "#a48665", "#8d789a", "#8c9aaf"][int(candidate.person.phase)], shop, ["Welcome to " + str(site.name) + ". This is our " + str(role) + " quarter.", trade_line, "Come in and look around. Every house has a place to rest, eat, work and store its belongings."], "human", "merchant" if shop != "" else "neighbor", route, "scarf", Vector3.ZERO, candidate.root.get_node_or_null("Building_" + str(candidate.person.home)) if shop != "" else null)
 		var actor = world.residents.back()
 		actor.set_meta("household_role", role)
 		if actor.imported_actor != null: actor.imported_actor.context = role
