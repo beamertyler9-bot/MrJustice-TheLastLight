@@ -191,8 +191,11 @@ func refresh_stats() -> void:
 	for id in Crafting.UPGRADES:
 		if upgrades.get(id, false) == true:
 			max_health += int(Crafting.UPGRADES[id].get("health", 0))
-	max_stamina = 100.0
-	max_mana = Spellbook.MAX_MANA
+	# Keepsakes from solving each region's trouble (see story.gd).
+	var keepsakes: Dictionary = load("res://scripts/story.gd").keepsake_bonus(taken)
+	max_health += int(keepsakes.health)
+	max_stamina = 100.0 + float(keepsakes.stamina)
+	max_mana = Spellbook.MAX_MANA + float(keepsakes.mana)
 	mana = clampf(mana, 0.0, max_mana)
 	health = clampi(health, 0, max_health)
 	stamina = clampf(stamina, 0.0, max_stamina)

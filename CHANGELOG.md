@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.70.0 — The Last Light: story, goals and lore (2026-11-11)
+
+- **A main story in nine chapters.** The Dawnbell of Bellcrown once rang every morning
+  and carried the light over all seven lands. The Blackthorn Regent cracked it and its
+  seven chimes scattered. Mr. Justice carries the last spark struck from the bell before
+  it fell silent: the Last Light.
+  - **The chapters:** go to Bellcrown, then win back each region's chime from the thing
+    that holds it: the Stonejaw Wyrm, the Grand Confectioner (after climbing Fizzpeak),
+    the Stormhorn Matriarch, the Glass Anubid, the Furnace Cathedral, the Aurora
+    Custodian and the Pale Watcher. The last chapter is the Blackthorn Regent at the top
+    of Blackthorn Keep.
+  - **Story cards:** each chapter opens with a card telling you why and where, and
+    closes with a card telling what happened and what you earned.
+  - **Rewards:** every chapter pays out Light Essence plus supplies (tonics, iron,
+    crystal, ancient cores, s'more makings).
+  - **Out of order is fine:** bosses beaten early still count.
+- **Always know where to go:**
+  - **Tracked automatically:** the current chapter is tracked from the start, on the
+    HUD card, the compass marker with its distance, and a gold star on the world map.
+  - **Compass line:** with nothing tracked, the compass line shows the next goal instead
+    of "explore freely".
+- **Lore by the roads:** 21 pieces to find (an old journal on a lectern, a carved stone
+  and a pinned note in each of the seven regions), each marked by a small floating light.
+  - **Reading:** each one opens a page to read and gives Light Essence.
+  - **Finding them:** unread pieces appear in Places, so they can be tracked, and as
+    gold rings on the world map.
+- **A reason to go everywhere:** each region's three pieces tell of a local trouble
+  (backwards windmills, ovens that never cool, a blue fire, the dead who won't sleep…).
+  Find all three and that trouble is solved, earning the region's keepsake: a lasting
+  bonus to hearts, stamina or mana you can't get anywhere else.
+- **Journal:** new **Story** and **Lore** pages (chapters so far with the chimes
+  recovered; every region's lore and keepsake). The tabs are now Story, Lore, Places,
+  Quests, Goals and Map.
+
 ## 0.69.0 — Lighter on the phone (2026-11-11)
 
 These changes came from measuring what a town actually draws:

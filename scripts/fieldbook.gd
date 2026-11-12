@@ -22,7 +22,7 @@ var recipe_page := 0
 var inventory_page := 0
 var trade_page := 0
 var journal_page := 0
-var journal_tab := "routes"
+var journal_tab := "story"
 var inventory_tab := "supplies"
 var selected_item := ""
 var trade_buy := true
@@ -313,12 +313,12 @@ func draw_camp(mode: String) -> void:
 func draw_journal() -> void:
 	sheet("THE ROAD JOURNAL", "CHART THE FRONTIER / ROUTES & REQUESTS")
 	label(Vector2(80, 184), "THE NEXT CHAPTER", 14, RED)
-	paragraph(Vector2(80, 217), "Seven regions. Ten towns. Follow the roads, discover capitals and return here for free travel." if game.state.expanded_world else "Take the long road. Explore its hidden depths. Complete expeditions for supplies, ancient cores and rare gear.", 302, 20, PAPER)
-	action(Rect2(444, 137, 180, 44), "Destinations", "journal_view:routes", journal_tab == "routes")
-	action(Rect2(636, 137, 180, 44), "Quests", "journal_view:quests", journal_tab == "quests", game.get("quests") != null)
-	action(Rect2(828, 137, 180, 44), "Expeditions", "journal_view:expeditions", journal_tab == "expeditions", game.get("expeditions") != null)
+	paragraph(Vector2(80, 217), (str(game.story.card().name) + ". " + str(game.story.card().objective)) if game.get("story") != null else "Seven regions. Ten towns. Follow the roads, discover capitals and return here for free travel." if game.state.expanded_world else "Take the long road. Explore its hidden depths. Complete expeditions for supplies, ancient cores and rare gear.", 302, 20, PAPER)
+	var has_story: bool = game.get("story") != null
 	var interior: String = game.world.interior_at(game.player.position)
-	action(Rect2(1020, 137, 180, 44), "Local map" if interior != "" and game.state.expanded_world else "World map" if game.state.expanded_world else "Delve map", "journal_view:map", journal_tab == "map", interior != "" or game.state.expanded_world)
+	var tabs := [["story", "Story", has_story], ["lore", "Lore", has_story], ["routes", "Places", true], ["quests", "Quests", game.get("quests") != null], ["expeditions", "Goals", game.get("expeditions") != null], ["map", "Map", interior != "" or game.state.expanded_world]]
+	for i in range(tabs.size()):
+		action(Rect2(444 + i * 127, 137, 121, 44), tabs[i][1], "journal_view:" + tabs[i][0], journal_tab == tabs[i][0], tabs[i][2])
 	var origin := Vector2(228, 438)
 	h.draw_arc(origin, 65, 0, TAU, 64, Color(Art.BRASS, 0.65), 2, true)
 	for i in range(8):
@@ -328,6 +328,10 @@ func draw_journal() -> void:
 	center(origin + Vector2(0, -101), "N", 18, PAPER, true)
 	label(Vector2(80, 552), "ONE WORLD · SEVEN REGIONS", 14, FAINT)
 	label(Vector2(80, 577), "%d MINUTES WANDERED" % int(game.state.journey_time / 60), 13, FAINT)
+	if journal_tab == "story" and has_story:
+		draw_story(); section_nav("journal"); return
+	if journal_tab == "lore" and has_story:
+		draw_lore(); section_nav("journal"); return
 	if journal_tab == "map" and game.state.expanded_world:
 		draw_atlas_map(); section_nav("journal"); return
 	if journal_tab == "quests" and game.get("quests") != null:
@@ -389,6 +393,16 @@ func draw_atlas_map() -> void:
 		var at = offset + (site.pos - left) * scale_value
 		h.draw_circle(at, 4 if site.kind == "city" else 2.5, Art.RED)
 		if site.kind == "city": label(at + Vector2(5, -14), site.name, 10, Art.INK)
+	# The story's next stop (a gold star) and unread lore (small gold rings).
+	var story = game.get("story")
+	if story != null:
+		for site in story.routes():
+			var at = offset + (site.pos - left) * scale_value
+			if str(site.kind) == "lore": h.draw_arc(at, 3.2, 0, TAU, 12, GOLD, 1.4, true)
+			else:
+				var star := PackedVector2Array()
+				for k in range(10): star.append(at + Vector2.from_angle(-PI / 2 + k * PI / 5) * (9.0 if k % 2 == 0 else 4.0))
+				h.draw_colored_polygon(star, GOLD); h.draw_polyline(star + PackedVector2Array([star[0]]), Art.INK, 1.0, true)
 	var player = offset + (Vector2(game.player.position.x, game.player.position.z) - left) * scale_value
 	h.draw_circle(player, 5, Art.PAPER); h.draw_circle(player, 3, Art.RED)
 	label(Vector2(449, 562), "5 CAPITALS  /  10 TOWNS  /  CONNECTING ROADS & WILDERNESS TRAILS", 12, Art.MUTED)
@@ -431,6 +445,53 @@ func draw_regional_map() -> void:
 	var level = clampi(roundi(local.y / 7.5) + 2, 0, 6)
 	label(Vector2(449, 562), str(S.site(id).name).to_upper() + ((" / LEVEL " + str(level - 2)) if S.layout(id).castle else " / LOCAL MAP"), 12, Art.MUTED)
 	paragraph(Vector2(449, 584), "Red marks your position. Follow the surface-return sign to leave." + (" The eastern stair gallery connects all seven floors." if S.layout(id).castle else ""), 736, 14, Art.INK)
+
+## The main story: chapters so far, the current objective and the chimes recovered.
+func draw_story() -> void:
+	var story = game.story
+	var chapters: Array = story.entries()
+	label(Vector2(444, 196), "THE LAST LIGHT  ·  %d OF 7 CHIMES RECOVERED" % story.chimes(), 13, GOLD)
+	for i in range(7):
+		var lit: bool = i < story.chimes()
+		h.draw_circle(Vector2(1000 + i * 28, 204), 9, Color(GOLD, 0.95) if lit else Color(Art.BRASS, 0.25))
+	journal_page = clampi(journal_page, 0, maxi(0, (chapters.size() - 1) / 3))
+	var newest_first: Array = chapters.duplicate(); newest_first.reverse()
+	for i in range(journal_page * 3, mini(newest_first.size(), journal_page * 3 + 3)):
+		var entry: Dictionary = newest_first[i]
+		var y := 228 + (i % 3) * 112
+		var done := bool(entry.done)
+		h.draw_rect(Rect2(444, y, 5, 98), CYAN if done else GOLD)
+		fitted_label(Vector2(464, y), "Chapter %d · %s" % [entry.number, entry.title], 520, 20, PAPER, true)
+		label(Vector2(1005, y + 4), "COMPLETE" if done else "CURRENT", 12, CYAN if done else GOLD)
+		paragraph(Vector2(465, y + 30), str(entry.text), 730 if done else 525, 14, FAINT)
+		if not done:
+			paragraph(Vector2(465, y + 76), "Next: " + str(entry.objective), 520, 13, GOLD)
+			action(Rect2(1000, y + 58, 200, 40), "Tracked" if game.tracked_location == "story_current" else "Track", "track:story_current", game.tracked_location == "story_current")
+	pager(Rect2(444, 560, 756, 44), journal_page, chapters.size(), 3, "journal")
+
+## Lore found in each region, and each region's keepsake.
+func draw_lore() -> void:
+	var story = game.story
+	var regions: Array = story.LORE.keys()
+	journal_page = clampi(journal_page, 0, maxi(0, (regions.size() - 1) / 3))
+	for i in range(journal_page * 3, mini(regions.size(), journal_page * 3 + 3)):
+		var region: int = regions[i]
+		var info: Dictionary = story.LORE[region]
+		var found: int = story.region_found(region)
+		var y := 195 + (i % 3) * 120
+		var solved := found >= 3
+		h.draw_rect(Rect2(444, y, 5, 106), CYAN if solved else (GOLD if found > 0 else Color(Art.BRASS, 0.4)))
+		fitted_label(Vector2(464, y), "%s · %s" % [info.region, info.trouble], 560, 19, PAPER, true)
+		label(Vector2(1030, y + 4), "%d / 3 FOUND" % found, 12, CYAN if solved else GOLD)
+		var line := ""
+		for index in range(3):
+			var piece: Dictionary = info.pieces[index]
+			if game.state.taken.get(story.lore_id(region, index), false): line += "• %s: %s\n" % [piece.title, str(piece.text).left(60) + ("…" if str(piece.text).length() > 60 else "")]
+			else: line += "• Not yet found (%s)\n" % {"journal": "a journal", "stone": "a carved stone", "note": "a note"}[piece.kind]
+		paragraph(Vector2(465, y + 28), line, 735, 12, FAINT)
+		var keepsake: Dictionary = info.keepsake
+		label(Vector2(465, y + 92), ("KEEPSAKE EARNED: " if solved else "KEEPSAKE: ") + "%s (%s)" % [keepsake.name, keepsake.text], 12, CYAN if solved else GOLD)
+	pager(Rect2(444, 560, 756, 44), journal_page, regions.size(), 3, "journal")
 
 func draw_quests() -> void:
 	var requests: Array = game.quests.entries()

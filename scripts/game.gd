@@ -101,6 +101,7 @@ var placement_preview: Node3D
 var deep_adventure
 var expeditions
 var quests
+var story
 var ecology
 var magic
 var wizard_tower
@@ -213,6 +214,7 @@ func _clear_world() -> void:
 	deep_adventure = null
 	expeditions = null
 	quests = null
+	story = null
 	ecology = null
 	if effects != null:
 		effects.clear_effects()
@@ -321,6 +323,10 @@ func _create_quests() -> void:
 	if ResourceLoader.exists("res://scripts/quests.gd"):
 		quests = load("res://scripts/quests.gd").new()
 		quests.setup(self)
+	# The main story and the lore along the roads (the large world only).
+	if state.expanded_world:
+		story = load("res://scripts/story.gd").new()
+		story.setup(self)
 
 func _create_ecology() -> void:
 	if ResourceLoader.exists("res://scripts/ecology.gd"):
@@ -832,7 +838,7 @@ func start_journey(continuing: bool = false, seed_text: String = "") -> void:
 	player.pitch = 0.18
 	player.update_camera(1)
 	region = -1
-	tracked_location = "bellcrown" if state.expanded_world else "mine"
+	tracked_location = "story_current" if state.expanded_world else "mine"
 	if quests != null: quests.restore_tracking()
 	await _present_loaded_world()
 	world_ready = true
@@ -1005,6 +1011,7 @@ func _process(dt: float) -> void:
 		_tick_context_action(dt)
 		if expeditions != null: expeditions.tick(dt)
 		if quests != null: quests.tick(dt)
+		if story != null: story.tick(dt)
 		if deep_adventure != null: deep_adventure.tick(dt)
 		comic_time = maxf(0.0, comic_time - dt)
 		state.journey_time += dt
@@ -1224,6 +1231,7 @@ func interact_with(node: Node3D) -> void:
 	if is_instance_valid(scrappers) and scrappers.interact(node): return
 	if expeditions != null and expeditions.interact(node): return
 	if quests != null and quests.interact(node): return
+	if story != null and story.interact(node): return
 	if is_instance_valid(deep_adventure) and deep_adventure.interact(node): return
 	var kind = str(node.get_meta("kind", ""))
 	var id = str(node.get_meta("id", ""))
@@ -2020,12 +2028,17 @@ func navigation_routes() -> Array:
 	if is_instance_valid(wizard_tower) and not state.expanded_world: result.append(wizard_tower.destination())
 	if expeditions != null: result.append_array(expeditions.routes())
 	if quests != null: result.append_array(quests.destinations())
+	if story != null: result = story.routes() + result
 	return result
 
 func navigation_destination(id: String) -> Dictionary:
 
 
 	if world == null: return {}
+	if story != null and (id == "story_current" or id.begins_with("lore_")):
+		for site in story.routes():
+			if str(site.id) == id: return site.duplicate(true)
+		return {}
 	var selected: Dictionary = {}
 	if world.has_method("navigation_location"): selected = world.navigation_location(id)
 	else:

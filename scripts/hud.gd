@@ -369,6 +369,7 @@ func _draw() -> void:
 			_draw_last_light()
 		if not game.is_title_context():
 			_draw_play(mode == "play")
+			if mode == "play": _draw_lore_card()
 		if mode == "bag":
 			paper_context = true
 			_draw_inventory()
@@ -445,6 +446,19 @@ func modal_header(rect: Rect2, eyebrow: String, title: String, close_tag: String
 		txt(rect.position + Vector2(30, 24), eyebrow, 12, Art.BRASS)
 		txt(rect.position + Vector2(30, 47), title, 34, Art.PAPER, true)
 		button(Rect2(rect.end.x - 150, rect.position.y + 28, 120, 52), "×  Close", close_tag)
+
+func _draw_lore_card() -> void:
+	var story = game.get("story")
+	if story == null or story.reading.is_empty(): return
+	var rect := Rect2(340, 150, 600, 300)
+	var alpha := clampf(story.reading_time / 0.4, 0.0, 1.0)
+	panel(rect, Color(Art.NIGHT, 0.93 * alpha), Color(Art.BRASS, 0.6 * alpha), 6)
+	var eyebrow := str(story.reading.region).to_upper() + ("  ·  LORE" if story.reading.has("from") else "")
+	txt(rect.position + Vector2(28, 22), eyebrow, 11, Color(Art.BRASS.lightened(0.4), alpha))
+	txt(rect.position + Vector2(28, 44), str(story.reading.title), 24, Color(Art.PAPER, alpha), true)
+	draw_line(rect.position + Vector2(28, 84), rect.position + Vector2(572, 84), Color(Art.BRASS, 0.4 * alpha), 1)
+	paragraph(rect.position + Vector2(28, 100), str(story.reading.text), 544, 17, Color(Art.PAPER, alpha))
+	button(Rect2(rect.end.x - 132, rect.end.y - 64, 112, 46), "Close", "lore:close")
 
 func _draw_play(controls: bool) -> void:
 	draw_polygon(PackedVector2Array([Vector2.ZERO, Vector2(1280, 0), Vector2(1280, 118), Vector2(0, 118)]), PackedColorArray([Color(0.015, 0.04, 0.055, 0.55), Color(0.015, 0.04, 0.055, 0.55), Color(0.015, 0.04, 0.055, 0), Color(0.015, 0.04, 0.055, 0)]))
@@ -560,7 +574,10 @@ func _draw_compass() -> void:
 		draw_colored_polygon(PackedVector2Array([Vector2(x, 30), Vector2(x - 5, 41), Vector2(x + 5, 41)]), GOLD)
 		centered(Vector2(640, 60), "%s  /  %d m" % [str(target.get("name", "Lost lantern")), int(offset.length())], 13, Color(IVORY, 0.8))
 	else:
-		centered(Vector2(640, 60), "Explore freely. Find mines, settlements and new roads.", 13, GOLD)
+		var story = game.get("story")
+		var line := "Explore freely. Find mines, settlements and new roads."
+		if story != null: line = str(story.card().get("objective", line))
+		centered(Vector2(640, 60), line, 13, GOLD)
 
 func tracked_destination() -> Dictionary:
 	var selected: Dictionary = {}
@@ -899,6 +916,8 @@ func dispatch(tag: String) -> void:
 				new_journey_confirmation = false
 				seed_entry.release_focus()
 				game.start_journey(false, seed_entry.text)
+		"lore:close":
+			if game.get("story") != null: game.story.close_reading()
 		"quest:open": hud_context.reveal_quest()
 		"quest:fold": hud_context.fold_quest()
 		"continue": game.start_journey(true)
@@ -1108,6 +1127,9 @@ func notify_damage(before: int, after: int, maximum: int) -> void:
 func tracked_request() -> Dictionary:
 	if game == null or not "quests" in game or game.quests == null: return {}
 	var id := str(game.tracked_location)
+	var story = game.get("story")
+	if story != null and id == "story_current": return story.card()
+	if story != null and id.begins_with("lore_"): return {"header": "LORE", "name": "Something written by the road", "objective": "Follow the compass to it and read it. Find all three in a region to earn its keepsake."}
 	if not id.begins_with("quest_"): return {}
 	return game.quests.entry(id.trim_prefix("quest_"))
 
@@ -1180,7 +1202,7 @@ func _draw_quest_card(rect: Rect2, request: Dictionary, alpha: float) -> void:
 	style.shadow_size = 6
 	draw_style_box(style, rect)
 	draw_line(rect.position + Vector2(2, 7), rect.position + Vector2(2, 105), Color(Art.BRASS, alpha), 2, true)
-	txt(rect.position + Vector2(14, 10), "TRACKED REQUEST", 10, Color(Art.BRASS.lightened(0.5), alpha))
+	txt(rect.position + Vector2(14, 10), str(request.get("header", "TRACKED REQUEST")), 10, Color(Art.BRASS.lightened(0.5), alpha))
 	var title := str(request.get("name", "A request for the road"))
 	var size_value := 18
 	while size_value > 12 and title_font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, size_value).x > 243: size_value -= 1
