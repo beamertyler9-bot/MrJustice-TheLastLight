@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.76.0 — Better fish and creatures (2026-11-11)
+
+- **All 10 fish rebuilt.** Fish used to be a plain egg shape with a block for a tail and
+  a dot for an eye. Now each one has:
+  - **A real fish body:** a slim tail end, a rounded belly and a darker back fading
+    to a pale belly.
+  - **Fins:** a forked tail fan, dorsal, pectoral, pelvic and anal fins, and bright
+    eyes with a highlight.
+  - **Its own shape and markings:**
+    - Lake bass: dark side stripe.
+    - Silver trout: pink band and spots.
+    - Reed perch: dark bars and orange fins.
+    - Golden carp and sunscale bream: deep golden bodies with scale shading (the bream is
+      tall and flat).
+    - Moon eel: a long body with moon spots and a fin running round it.
+    - Crystal koi: white with violet and dark patches.
+    - Cola carp: brown with fizz flecks.
+    - Fizzfin: orange with a big sail fin.
+    - Frost char: pale spots and orange fins.
+  - Each fish is one mesh coloured per vertex: two draws, the same cost as before.
+    They're used in your hand, on the line, in the catch display and on the new
+    satchel icons.
+- **Weakest enemies reworked:**
+  - **Cola sloshback:** a glossy amber bubble throat, fizz bubbles across its back and
+    dark spots.
+  - **Dune maw:** the two flat boxes on its head are replaced by a round sandworm mouth
+    ringed with twelve teeth, and rough sand plates run down its body.
+  - **Stonejaw wyrm** (the Mosswake boss): rocky plates with moss along its back and
+    stone brow ridges.
+  - **Resonance wyrm:** glowing crystal shards along its back.
+  - **Wrapper mimic:** now looks like a wrapped sweet, with a foil body, white stripes,
+    and twisted, pleated pink wrapper ends.
+  - **Fudge golem:** chocolate drips running off its shoulders and head, sprinkles, and
+    a cherry on top.
+- **Cinderfin fish** (the wildlife in Ashfall waters): glowing ember scales down each
+  side and a flame-tipped sail fin, merged into one extra piece.
+- **Performance:** the updated models are saved ready-made, so nothing is built while
+  you play. The wyrms gain about 7 draws each (their segments move separately). The
+  other models are the same or one more.
+
 ## 0.75.1 — No more land strips through lakes (2026-11-11)
 
 - **Rivers no longer run through lakes.** Where a river reached a lake, it kept going

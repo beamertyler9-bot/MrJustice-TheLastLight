@@ -37,10 +37,7 @@ static func build(parent: Node3D, kind: String) -> Node3D:
 
 	if kind in preload("res://scripts/fishing_catalog.gd").IDS:
 		var fish = Node3D.new(); parent.add_child(fish)
-		var b = load("res://scripts/build.gd")
-		b.ball(fish, Vector3(0, 0.12, 0), Vector3(0.65, 0.1, 0.1) if kind == "moon_eel" else Vector3(0.36, 0.26, 0.17) if kind in ["golden_carp", "cola_carp", "crystal_koi"] else Vector3(0.46, 0.18, 0.13), b.mat("#" + preload("res://scripts/fishing_catalog.gd").COLORS[preload("res://scripts/fishing_catalog.gd").IDS.find(kind)]))
-		b.facet(fish, Vector3(-0.22, 0.12, 0), Vector3(0.17, 0.22, 0.05), b.mat("#627c78"))
-		b.ball(fish, Vector3(0.14, 0.15, 0.064), Vector3.ONE * 0.025, b.mat("#263b3e"))
+		preload("res://scripts/fish_models.gd").build(fish, kind)
 		return fish
 	if preload("res://scripts/quest_items.gd").is_quest(kind): return preload("res://scripts/quest_item_models.gd").build(parent, kind)
 	assert(supports(kind), "Unknown canonical item " + kind)

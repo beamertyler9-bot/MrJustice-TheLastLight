@@ -510,7 +510,37 @@ static func _enemy_traits(e, stone: Material, accent: Material, y: float) -> voi
 	match e.species_id:
 		"cliffwarden":
 			for i in range(2): B.facet(e.arms[i], Vector3(-0.02 if i == 0 else 0.02, 0, 0), Vector3(0.46, 0.39, 0.43), stone)
+		"cola_sloshback":
+			# A glossy amber bubble throat, fizz on its back and darker spots.
+			var sac := F.material("crystal", Color("#d9863a"), 0.15, 0.12)
+			var fizz := F.material("crystal", Color("#f7e6c6"), 0.1, 0.08)
+			var spot := F.material("bark", Color("#4b2717"))
+			B.ball(e.head, Vector3(0, -0.2, -0.1), Vector3(0.44, 0.3, 0.36), sac)
+			var rng := RandomNumberGenerator.new(); rng.seed = 7
+			for i in range(14):
+				var at := Vector3(rng.randf_range(-0.38, 0.38), 2.0, rng.randf_range(-0.35, 0.45))
+				var hit = F.surface_point(e.model.get_child(0), e.model, at, Vector3.DOWN)
+				if not hit is Vector3: continue
+				if i < 9: B.ball(e.model, hit + Vector3.UP * 0.02, Vector3.ONE * rng.randf_range(0.06, 0.11), fizz)
+				else: G.shape(e.model, hit + Vector3.UP * 0.005, Vector3(0.16, 0.03, 0.14), spot, "plate")
 		"fudge_golem":
+			# Melting fudge: chocolate drips from the shoulders and head, sprinkles, a cherry.
+			var fudge := F.material("crystal", Color("#4a2a1b"), 0.1, 0.0)
+			var cherry := F.material("crystal", Color("#c3202d"), 0.1, 0.1)
+			var colors := ["#f2c94c", "#eb5757", "#6fcf97", "#56ccf2", "#f2f2f2"]
+			for k in range(9):
+				var x := -0.42 + k * 0.105
+				var hit = F.surface_point(e.model.get_child(0), e.model, Vector3(x, 3.0, -0.05), Vector3.DOWN)
+				if hit is Vector3 and hit.y > 1.0:
+					var drop := 0.12 + 0.12 * absf(sin(k * 1.7))
+					F.tube(e.model, PackedVector3Array([hit + Vector3(0, 0.02, -0.12), hit + Vector3(0, -drop * 0.6, -0.17), hit + Vector3(0, -drop, -0.17)]), PackedFloat32Array([0.07, 0.04, 0.05]), fudge, 6)
+					var sprinkle := B.box(e.model, hit + Vector3(0.03, 0.03, 0.04), Vector3(0.07, 0.02, 0.02), F.material("cloth", Color(colors[k % colors.size()])))
+					sprinkle.rotation.y = k * 1.1
+			var top = F.surface_point(e.head.get_child(0), e.head, Vector3(0, 3.0, 0), Vector3.DOWN)
+			if top is Vector3:
+				B.ball(e.head, top + Vector3(0, 0.07, 0), Vector3.ONE * 0.14, cherry)
+				N.segment(e.head, top + Vector3(0, 0.13, 0), top + Vector3(0.05, 0.25, 0.03), 0.015, 0.01, 0.015, 0.01, F.material("bark", Color("#5b7a2e")))
+				F.tube(e.head, PackedVector3Array([top + Vector3(-0.1, 0.0, -0.08), top + Vector3(-0.12, -0.12, -0.12), top + Vector3(-0.12, -0.2, -0.12)]), PackedFloat32Array([0.05, 0.03, 0.04]), fudge, 6)
 			for row in range(3):
 				for side in [-1, 1]:
 					var hit = F.surface_point(e.model.get_child(0), e.model, Vector3(side * 0.145, 0.84 + row * 0.24, -2), Vector3.BACK)
@@ -521,8 +551,17 @@ static func _enemy_traits(e, stone: Material, accent: Material, y: float) -> voi
 				var hit = F.surface_point(e.model.get_child(0), e.model, origin, -normal)
 				if hit is Vector3: N.segment(e.model, hit - normal * 0.025, hit + Vector3.UP * (0.2 + 0.13 * sin(i)) + normal * 0.09, 0.1, 0.015, 0.08, 0.012, F.material("bark", Color("#94a36d")))
 		"wrapper_mimic":
-			F.beveled_box(e.model, Vector3(0, y + 0.1, 0), Vector3(1.1, 0.85, 1.2), B.mat("#bca171"))
-			for side in [-1, 1]: B.facet(e.model, Vector3(side * 0.85, y + 0.2, 0), Vector3(0.8, 0.7, 0.7), B.mat("#976c75"))
+			# A wrapped sweet: a foil-striped body with twisted, pleated ends.
+			var foil := F.material("bone", Color("#e2bf72"), 0.35)
+			var paper := F.material("cloth", Color("#d4708a"))
+			var stripe := F.material("cloth", Color("#fff1e2"))
+			F.beveled_box(e.model, Vector3(0, y + 0.1, 0), Vector3(1.1, 0.85, 1.2), foil)
+			for i in range(3): F.beveled_box(e.model, Vector3(0, y + 0.1, -0.4 + i * 0.4), Vector3(1.13, 0.88, 0.12), stripe)
+			for side in [-1.0, 1.0]:
+				F.tube(e.model, PackedVector3Array([Vector3(side * 0.5, y + 0.12, 0), Vector3(side * 0.74, y + 0.14, 0), Vector3(side * 0.86, y + 0.16, 0), Vector3(side * 1.2, y + 0.2, 0)]), PackedFloat32Array([0.4, 0.09, 0.08, 0.44]), paper, 10)
+				for k in range(6):
+					var a := TAU * k / 6.0
+					N.segment(e.model, Vector3(side * 0.88, y + 0.16, 0), Vector3(side * 1.2, y + 0.2 + sin(a) * 0.4, cos(a) * 0.4), 0.05, 0.02, 0.05, 0.02, stripe)
 		"furnace_hound":
 			for i in range(5):
 				var hit = F.surface_point(e.model.get_child(0), e.model, Vector3(0, 2, 0.48 - i * 0.22), Vector3.DOWN)
@@ -540,9 +579,36 @@ static func _enemy_traits(e, stone: Material, accent: Material, y: float) -> voi
 				var hit = F.surface_point(e.head.get_child(0), e.head, Vector3(side * 0.12, 1, 0.03), Vector3.DOWN)
 				if hit is Vector3: N.segment(e.head, hit - Vector3.UP * 0.025, hit + Vector3(side * 0.08, 0.3, 0.06), 0.13, 0.008, 0.13, 0.008, F.material("crystal", Color("#bbc8dd"), 0.25, 0.09)).name = "RootedPrism"
 		"stonejaw_wyrm", "resonance_wyrm":
-			for i in range(e.visual_rig.tails.size()): F.ring(e.visual_rig.tails[i], Vector3(0, 0, 0.15), 0.3 - i * 0.031, 0.035, accent).rotation.x = PI * 0.5
+			var crystal: bool = e.species_id == "resonance_wyrm"
+			var ridge := F.material("crystal", Color("#b9c8f2"), 0.2, 0.35) if crystal else F.material("stone", Color("#7d7a6c"))
+			var moss := F.material("bark", Color("#6f8a45"))
+			for i in range(e.visual_rig.tails.size()):
+				var segment: Node3D = e.visual_rig.tails[i]
+				F.ring(segment, Vector3(0, 0, 0.15), 0.3 - i * 0.031, 0.035, accent).rotation.x = PI * 0.5
+				var shrink := 1.0 - i * 0.1
+				if crystal:
+					for side in [-1.0, 1.0]: B.facet(segment, Vector3(side * 0.17 * shrink, 0.32 - i * 0.03, 0.12), Vector3(0.14, 0.48, 0.14) * shrink, ridge).rotation.z = -side * 0.45
+				else:
+					B.facet(segment, Vector3(0, 0.3 - i * 0.03, 0.1), Vector3(0.34, 0.2, 0.34) * shrink, ridge).rotation.y = i * 0.7
+					if i % 2 == 0: G.shape(segment, Vector3(0.1, 0.27 - i * 0.03, 0.25), Vector3(0.22, 0.05, 0.2) * shrink, moss, "plate")
+			if not crystal:
+				for side in [-1.0, 1.0]: B.facet(e.head, Vector3(side * 0.22, 0.12, 0.02), Vector3(0.24, 0.2, 0.3), ridge).rotation.z = side * 0.4
 		"dune_maw":
-			for side in [-1, 1]: B.facet(e.head, Vector3(side * 0.4, 0.2, -0.15), Vector3(0.6, 0.7, 0.8), B.mat("#c5a16d"))
+			# A sandworm's round mouth, ringed with teeth, and rough sand plates down its back.
+			var throat := F.material("stone", Color("#3a2218"))
+			var tooth := F.material("bone", Color("#efe2c4"))
+			var plate := F.material("stone", Color("#c9a56f"))
+			var mouth := B.cyl(e.head, Vector3(0, -0.06, -0.42), 0.19, 0.06, throat); mouth.rotation.x = PI * 0.5
+			for k in range(12):
+				var a := TAU * k / 12.0
+				var rim := Vector3(cos(a) * 0.21, -0.06 + sin(a) * 0.19, -0.42)
+				N.segment(e.head, rim, rim * Vector3(0.45, 1.0, 1.0) + Vector3(0, -0.06 * (1.0 - 0.45), -0.12) + Vector3(0, sin(a) * -0.1, 0), 0.05, 0.008, 0.05, 0.008, tooth)
+			F.ring(e.head, Vector3(0, -0.06, -0.4), 0.24, 0.05, plate).rotation.x = PI * 0.5
+			for i in range(e.visual_rig.tails.size()):
+				var segment: Node3D = e.visual_rig.tails[i]
+				var shrink := 1.0 - i * 0.09
+				for side in [-1.0, 0.0, 1.0]:
+					B.facet(segment, Vector3(side * 0.18 * shrink, (0.27 - i * 0.025) - absf(side) * 0.05, 0.12), Vector3(0.22, 0.12, 0.28) * shrink, plate).rotation.z = side * 0.5
 		"sunken_sentinel":
 			B.branch(e.forearms[0], Vector3(0, 0.5, 0), Vector3(0, -1, -0.25), 0.045, accent, 1); B.facet(e.forearms[0], Vector3(0, 0.8, 0), Vector3(0.18, 0.5, 0.18), accent)
 		"mourning_knight": N.y_loft(e.model, [Vector4(0.34, 0.34, 0.32, 0.36), Vector4(0.73, 0.35, 0.3, 0.34), Vector4(1.13, 0.31, 0.25, 0.29), Vector4(1.46, 0.27, 0.13, 0.17)], F.material("cloth", Color("#776184")), "MourningMantle")
