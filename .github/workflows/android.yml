@@ -17,13 +17,42 @@ jobs:
       - name: Get game files
         uses: actions/checkout@v4
 
+      - name: Configure Android build tools
+        run: |
+          apt-get update
+          apt-get install -y fontconfig openjdk-17-jdk unzip
+          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> "$GITHUB_ENV"
+          echo "GODOT_JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> "$GITHUB_ENV"
+          mkdir -p "$HOME/.android"
+          keytool -genkeypair \
+            -keystore "$HOME/.android/debug.keystore" \
+            -storepass android \
+            -alias androiddebugkey \
+            -keypass android \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Install Godot export templates
+        run: |
+          mkdir -p /tmp/godot-templates
+          curl -fL \
+            "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_export_templates.tpz" \
+            -o /tmp/godot-templates/templates.tpz
+          unzip -q /tmp/godot-templates/templates.tpz -d /tmp/godot-templates
+          mkdir -p "$HOME/.local/share/godot/export_templates/4.5.1.stable"
+          cp -r /tmp/godot-templates/templates/. \
+            "$HOME/.local/share/godot/export_templates/4.5.1.stable/"
+
       - name: Import Godot project
         run: godot --headless --editor --path . --import
 
       - name: Build Android APK
         run: |
           mkdir -p build
-          godot --headless --path . --export-debug "Android" build/MrJustice.apk
+          godot --headless --path . \
+            --export-debug "Android" build/MrJustice.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
