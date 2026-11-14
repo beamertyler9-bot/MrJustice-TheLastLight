@@ -1,0 +1,33 @@
+
+name: Build Mr Justice APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.5.1
+
+    steps:
+      - name: Get game files
+        uses: actions/checkout@v4
+
+      - name: Import Godot project
+        run: godot --headless --editor --path . --import
+
+      - name: Build Android APK
+        run: |
+          mkdir -p build
+          godot --headless --path . --export-debug "Android" build/MrJustice.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MrJustice-Android-APK
+          path: build/MrJustice.apk
+          if-no-files-found: error
