@@ -54,7 +54,7 @@ const DATA = {
 	"stonejaw_wyrm": ["sprawl", "stone_surface", "rise", 3.8, 0.22, 0.98, Vector3(0.26, 0.16, 0.055), Vector3(0.1, 0.23, 0.04), 0.1],
 	"fudge_golem": ["lumber", "sticky_wobble", "sticky_slam", 4.6, 0.25, 0.69, Vector3(0.16, 0.075, 0.13), Vector3(0.06, 0.1, 0), 0.22],
 	"wrapper_mimic": ["scurry", "parcel_twitch", "snap", 8.8, 0.3, 0.26, Vector3(0.12, 0.21, 0.12), Vector3(0.09, 0.16, 0), -0.23],
-	"chocobar_croc": ["sprawl", "parcel_twitch", "snap", 8.8, 0.3, 0.26, Vector3(0.12, 0.21, 0.12), Vector3(0.09, 0.16, 0), -0.23],
+	"chocobar_croc": ["sprawl", "parcel_twitch", "snap", 6.5, 0.26, 0.55, Vector3(0.04, 0.12, 0.05), Vector3(0.09, 0.16, 0), -0.23],
 	"chest_mimic": ["scurry", "parcel_twitch", "snap", 8.8, 0.3, 0.26, Vector3(0.12, 0.21, 0.12), Vector3(0.09, 0.16, 0), -0.23],
 	"pretzel_crawler": ["six", "knot_test", "spin", 9.3, 0.32, 0.35, Vector3(0.15, 0.12, 0.1), Vector3(0.04, 0.1, 0), 0.14],
 	"cola_sloshback": ["hop", "bubble_throat", "spray", 6.8, 0.44, 0.43, Vector3(0.22, 0.095, 0.06), Vector3(0.03, 0.07, 0), -0.13],
