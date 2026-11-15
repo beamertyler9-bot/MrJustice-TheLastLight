@@ -39,6 +39,7 @@ static func flying(id: String) -> bool: return entry(id).get("form", "") in ["mo
 const SIZES = {"cocoa_knight": {"radius": 0.6, "height": 2.6, "reach": 2.6}, "fudge_golem": {"radius": 0.75, "height": 1.9, "reach": 2.3}, 
 	"cliffwarden": {"radius": 0.7, "height": 2.6, "reach": 2.7},
 	"stonejaw_wyrm": {"radius": 1.0, "height": 2.0},
+	"pretzel_crawler": {"radius": 0.6, "height": 1.1, "reach": 2.2},
 	"chocobar_croc": {"radius": 0.55, "height": 1.0, "reach": 2.3, "hp": 6},
 	"wrapper_mimic": {"radius": 0.6, "height": 1.5, "reach": 2.4, "hp": 6, "speed": 3.0},
 	"chest_mimic": {"radius": 0.6, "height": 1.6, "reach": 2.4, "hp": 7, "speed": 3.0},

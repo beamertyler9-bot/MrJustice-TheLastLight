@@ -172,6 +172,12 @@ static func _secondary(rig: Dictionary, p: Dictionary, t: float, motion: float, 
 	if features.has("seedlit_antlers"): _rotate(features.seedlit_antlers, Vector3(sin(t * 1.11) * 0.012, 0, sin(t * 0.83) * 0.016))
 	if features.has("moss_brow"): _rotate(features.moss_brow, Vector3(sin(t * 2.2) * 0.035, 0, sin(t * 1.1) * 0.022))
 	if features.has("glowing_throat"): _stretch(features.glowing_throat, Vector3.ONE * (1.0 + _pulse(t * 3.3) * 0.045))
+	# Split-pretzel pincers: each half swings outward about the wrist to open, wide in the
+	# windup, snapping shut as the strike lands.
+	var pincers: Array = features.get("pincers", EMPTY)
+	for i in range(pincers.size()):
+		var open := maxf(0.0, 0.05 + _pulse(t * 1.7 + float(i / 2) * 1.3) * 0.12 + load * 0.62 - release * 0.7)
+		_rotate(pincers[i], Vector3(0, open if i % 2 == 0 else -open, 0))
 	if features.has("jaw"): _rotate(features.jaw, Vector3(-0.025 - _pulse(t * 2.1) * 0.045 - load * (0.71 if str(p.attack) == "snap" else 0.46) + release * 0.3 - settle * 0.11, 0, 0))
 	for i in range(features.get("fronds", EMPTY).size()):
 		_rotate(features.fronds[i], Vector3(sin(t * 1.6 - i * 0.6) * (0.045 + motion * 0.045) + settle * 0.08, 0, sin(t * 1.13 + i) * 0.025))

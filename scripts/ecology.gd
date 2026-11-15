@@ -47,15 +47,21 @@ func _process(dt: float) -> void:
 			rng.seed = hash(victim_id)
 			var point := Vector3((x + 0.5) * CELL_SIZE + rng.randf_range(-9, 9), 0, (z + 0.5) * CELL_SIZE + rng.randf_range(-9, 9))
 			var distance := Vector2(point.x - p.x, point.z - p.z).length()
-			if distance < 17.0 or distance > SPAWN_RADIUS or not _habitable(point): continue
+			if distance < 17.0 or distance > SPAWN_RADIUS: continue
+			# Choco-Bar Crocs keep to S'morewood's cola: lying in the shallows or on the banks.
+			var croc := _croc_spot(point, rng)
+			if croc != Vector3.INF: point = croc
+			elif not _habitable(point): continue
 			point.y = _height(point) + 0.07
-			candidates.append({"id": victim_id, "point": point, "distance": distance})
+			var entry := {"id": victim_id, "point": point, "distance": distance}
+			if croc != Vector3.INF: entry.species = "chocobar_croc"
+			candidates.append(entry)
 	candidates.sort_custom(func (a, b): return float(a.distance) < float(b.distance))
 	var spawned := 0
 	for candidate in candidates:
 		if get_child_count() >= MAX_ACTIVE or spawned >= 2: break
 		var actor = Enemy.new()
-		actor.configure_species(species_at(candidate.point, candidate.id))
+		actor.configure_species(str(candidate.get("species", species_at(candidate.point, candidate.id))))
 		actor.game = game
 		actor.id = candidate.id
 		actor.name = candidate.id
@@ -80,6 +86,32 @@ func _loaded(point: Vector3) -> bool:
 	var chunk_size: float = game.world.CHUNK
 	return game.world.chunks.has(Vector2i(floori(point.x / chunk_size), floori(point.z / chunk_size)))
 
+## For S'morewood only: when there is cola within sixteen metres of a spawn point, four times
+## in five a Choco-Bar Croc takes it instead, moved to the bank just short of the cola (or, one
+## time in three, into the shallows if they are under half a metre deep, where its back and
+## eyes show above the surface). Returns the croc's spot, or Vector3.INF for none.
+func _croc_spot(point: Vector3, rng: RandomNumberGenerator) -> Vector3:
+	var world = game.world
+	if world.get("atlas") == null or not world.has_method("biome_at") or world.biome_at(point.x, point.z) != 10: return Vector3.INF
+	var p := Vector2(point.x, point.z)
+	if p.length() < 35.0 or not _loaded(point) or rng.randf() > 0.8: return Vector3.INF
+	var start := rng.randf() * TAU
+	for ring: float in [4.0, 8.0, 12.0, 16.0]:
+		for i in range(8):
+			var dir := Vector2.from_angle(start + i * TAU / 8.0)
+			var q := p + dir * ring
+			var near: Dictionary = world.atlas.liquid_at(q)
+			if near.is_empty() or str(near.get("kind", "")) != "cola": continue
+			if rng.randf() < 0.34:
+				var wet := Vector3(q.x, 0, q.y)
+				var depth := float(near.height) - _height(wet)
+				if depth > 0.05 and depth < 0.5 and _loaded(wet) and not world.reserved_at(q, 4.0): return wet
+			for back: float in [3.0, 5.0, 7.0]:
+				var bank := Vector3(q.x - dir.x * back, 0, q.y - dir.y * back)
+				if _habitable(bank): return bank
+			return Vector3.INF
+	return Vector3.INF
+
 func _habitable(point: Vector3) -> bool:
 	var p := Vector2(point.x, point.z)
 	if p.length() < 35.0 or (game.world.reserved_at(p, 7.0) if game.world.has_method("reserved_at") else Locations.reserved(p, 7.0)) or not _loaded(point): return false
@@ -103,6 +135,7 @@ func species_at(point: Vector3, victim_id: String) -> String:
 	if game.world.get("atlas") != null:
 		var regional: Array = Creatures.hostiles_for(region)
 		if region == 9: regional.append("rootling_sentinel")
+		regional.erase("chocobar_croc")
 		# Now and then a "chest" lying out in the open is a Chest Mimic.
 		if posmod(hash(victim_id + ":mimic"), 9) == 0: return "chest_mimic"
 		return regional[posmod(hash(victim_id), regional.size())]

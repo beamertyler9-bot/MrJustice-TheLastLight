@@ -56,7 +56,7 @@ const DATA = {
 	"wrapper_mimic": ["scurry", "parcel_twitch", "snap", 8.8, 0.3, 0.26, Vector3(0.12, 0.21, 0.12), Vector3(0.09, 0.16, 0), -0.23],
 	"chocobar_croc": ["sprawl", "parcel_twitch", "snap", 6.5, 0.26, 0.55, Vector3(0.04, 0.12, 0.05), Vector3(0.09, 0.16, 0), -0.23],
 	"chest_mimic": ["scurry", "parcel_twitch", "snap", 8.8, 0.3, 0.26, Vector3(0.12, 0.21, 0.12), Vector3(0.09, 0.16, 0), -0.23],
-	"pretzel_crawler": ["six", "knot_test", "spin", 9.3, 0.32, 0.35, Vector3(0.15, 0.12, 0.1), Vector3(0.04, 0.1, 0), 0.14],
+	"pretzel_crawler": ["six", "knot_test", "tail_sting", 8.0, 0.28, 0.4, Vector3(0.08, 0.14, 0.08), Vector3(0.06, 0.12, 0.1), 0.12],
 	"cola_sloshback": ["hop", "bubble_throat", "spray", 6.8, 0.44, 0.43, Vector3(0.22, 0.095, 0.06), Vector3(0.03, 0.07, 0), -0.13],
 	"sugarspike_wasp": ["hover", "buzz_lock", "sting", 20.0, 0.29, 0.055, Vector3(0.14, 0.18, 0.07), Vector3(0.12, 0.22, -0.05), 0.16],
 	"grand_confectioner": ["march", "beater_wind", "mix", 5.1, 0.25, 0.76, Vector3(0.12, 0.16, 0.095), Vector3(0.05, 0.11, 0), -0.2],

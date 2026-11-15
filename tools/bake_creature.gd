@@ -14,6 +14,7 @@ const DESIGNS := {
 	"fudge_golem": ["res://tools/sculpt_fudge_golem2.gd", "ogre"],
 	"cocoa_knight": ["res://tools/sculpt_fudge_golem2.gd", "knight"],
 	"chocobar_croc": ["res://tools/sculpt_choco_croc.gd", "croc"],
+	"pretzel_crawler": ["res://tools/sculpt_pretzel_crawler.gd", "scorpion"],
 	"wrapper_mimic": ["res://tools/sculpt_mimics.gd", "rock"],
 	"chest_mimic": ["res://tools/sculpt_mimics.gd", "chest"],
 }
