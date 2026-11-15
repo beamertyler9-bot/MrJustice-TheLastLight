@@ -10,13 +10,13 @@ const HURT_DURATION := 0.3
 const WINDUP_TIME: float = 0.65
 const RECOVERY_TIME: float = 0.52
 const BASE_SPECIES = {
-	"rootling_sentinel": {"name": "Rootling Sentinel", "model": "RootlingSentinel", "hp": 4, "speed": 2.3, "reach": 1.6, "windup": 0.72, "recovery": 0.65, "cooldown": 2.3, "damage": 1, "radius": 0.32, "height": 1.6},
-	"moss_guardian": {"name": "Moss guardian", "model": "MossGuardian", "hp": 6, "speed": 1.85, "reach": 1.8, "windup": 0.65, "recovery": 0.52, "cooldown": 2.1, "damage": 1, "radius": 0.43, "height": 1.8},
-	"glass_skitter": {"name": "Glass skitter", "model": "GlassSkitter", "hp": 4, "speed": 3.25, "reach": 1.55, "windup": 0.48, "recovery": 0.65, "cooldown": 1.65, "damage": 1, "radius": 0.45, "height": 0.9},
-	"thorn_wolf": {"name": "Thorn wolf", "model": "ThornWolf", "hp": 5, "speed": 3.0, "reach": 2.0, "windup": 0.62, "recovery": 0.72, "cooldown": 1.9, "damage": 1, "radius": 0.4, "height": 1.25},
-	"cinder_wisp": {"name": "Cinder wisp", "model": "CinderWisp", "hp": 5, "speed": 1.8, "reach": 12.0, "windup": 0.95, "recovery": 0.75, "cooldown": 2.8, "damage": 1, "radius": 0.35, "height": 1.6},
-	"frost_brute": {"name": "Frost brute", "model": "FrostBrute", "hp": 10, "speed": 1.35, "reach": 2.5, "windup": 1.05, "recovery": 1.0, "cooldown": 2.9, "damage": 2, "radius": 0.6, "height": 2.3},
-	"wild_boar": {"name": "Ironhide boar", "model": "IronhideBoar", "hp": 7, "speed": 2.25, "reach": 7.0, "windup": 0.85, "recovery": 1.0, "cooldown": 3.2, "damage": 1, "radius": 0.48, "height": 1.15}
+	"rootling_sentinel": {"name": "Rootling Sentinel", "model": "RootlingSentinel", "hp": 4, "speed": 2.3, "reach": 2.0, "windup": 0.72, "recovery": 0.65, "cooldown": 2.3, "damage": 1, "radius": 0.5, "height": 1.9},
+	"moss_guardian": {"name": "Moss guardian", "model": "MossGuardian", "hp": 6, "speed": 1.85, "reach": 2.4, "windup": 0.65, "recovery": 0.52, "cooldown": 2.1, "damage": 1, "radius": 0.75, "height": 2.5},
+	"glass_skitter": {"name": "Glass skitter", "model": "GlassSkitter", "hp": 4, "speed": 3.25, "reach": 2.1, "windup": 0.48, "recovery": 0.65, "cooldown": 1.65, "damage": 1, "radius": 0.7, "height": 1.3},
+	"thorn_wolf": {"name": "Thorn wolf", "model": "ThornWolf", "hp": 5, "speed": 3.0, "reach": 2.4, "windup": 0.62, "recovery": 0.72, "cooldown": 1.9, "damage": 1, "radius": 0.55, "height": 1.5},
+	"cinder_wisp": {"name": "Cinder wisp", "model": "CinderWisp", "hp": 5, "speed": 1.8, "reach": 12.0, "windup": 0.95, "recovery": 0.75, "cooldown": 2.8, "damage": 1, "radius": 0.5, "height": 2.1},
+	"frost_brute": {"name": "Frost brute", "model": "FrostBrute", "hp": 10, "speed": 1.35, "reach": 2.9, "windup": 1.05, "recovery": 1.0, "cooldown": 2.9, "damage": 2, "radius": 0.75, "height": 2.7},
+	"wild_boar": {"name": "Ironhide boar", "model": "IronhideBoar", "hp": 7, "speed": 2.25, "reach": 7.0, "windup": 0.85, "recovery": 1.0, "cooldown": 3.2, "damage": 1, "radius": 0.62, "height": 1.6}
 }
 static var SPECIES: Dictionary = Difficulty.profiles(BASE_SPECIES.merged(CreatureCatalog.enemy_profiles()))
 var game
@@ -190,6 +190,18 @@ func _physics_process(dt: float) -> void:
 	if pursuing and (species_id == "cinder_wisp" or profile.get("attack", "") == "ranged"):
 		if distance < 5.0: travel = -flat
 		elif distance < 9.0: travel = Vector3(-flat.z, 0, flat.x) * 0.45
+	if pursuing and charge_time <= 0.0 and _keeps_distance():
+		# Stop in front of Mr. Justice to strike instead of walking into him, and ease back
+		# if he steps right up against us.
+		var stand_off := minf(maxf(float(profile.radius), _front()) + 0.6, float(profile.reach) * 0.8)
+		if distance < stand_off * 0.75:
+			travel = -flat; speed = float(profile.speed) * 0.5
+		elif distance < stand_off:
+			speed = 0.0
+	if pursuing:
+		var crowd := _crowd_push()
+		if speed > 0.0: travel += crowd
+		elif crowd.length() > 0.15: travel = crowd; speed = float(profile.speed) * 0.4
 	if pursuing and distance < float(profile.reach) and cooldown <= 0 and windup <= 0 and charge_time <= 0 and recovery <= 0 and hurt_stagger_time <= 0 and not bool(get_meta("magic_steam", false)) and _strike_clear(player, float(profile.reach)):
 		windup = float(profile.windup)
 		cooldown = float(profile.cooldown)
@@ -234,8 +246,10 @@ func _physics_process(dt: float) -> void:
 	velocity.y -= 19 * real_dt * float(get_meta("magic_gravity_scale", 1.0))
 	move_and_slide()
 	if (species_id == "wild_boar" or profile.get("attack", "") == "charge") and speed > 6.0:
-		if not charge_contact and _strike_clear(player, 1.65):
+		# A charge connects when the front of the creature (its snout or tusks) reaches him.
+		if not charge_contact and _strike_clear(player, maxf(1.65, _front() + 0.5)):
 			charge_contact = true
+			charge_time = 0.0
 			_contact_pose()
 			player.take_damage(int(profile.damage))
 			if not is_inside_tree() or is_queued_for_deletion(): return
@@ -259,11 +273,21 @@ func _launch_projectile() -> void:
 	ember.name = "CinderBolt"
 	add_child(ember)
 	ember.top_level = true
-	ember.global_position = global_position + Vector3.UP * 1.02
+	# Embers fly from whatever the creature casts with (the Cinder Wisp's lantern), if it has
+	# one, otherwise from its chest.
+	var launch := model.find_child("LaunchPoint", true, false) as Node3D
+	ember.global_position = launch.global_position if launch != null else global_position + Vector3.UP * 1.02
 	B.facet(ember, Vector3.ZERO, Vector3(0.23, 0.23, 0.4), B.mat("#ffb760", 0, 0.8))
 	B.facet(ember, Vector3(0, 0, 0.18), Vector3(0.13, 0.13, 0.4), B.mat("#e97343", 0, 0.5))
 	ember.rotation.y = atan2(-attack_direction.x, -attack_direction.z)
-	projectiles.append({"node": ember, "direction": attack_direction, "life": 2.4})
+	# Keep the aim taken at wind-up (so it can still be sidestepped), but tilt the shot so it
+	# arrives at Mr. Justice's chest height however high it was thrown from.
+	var direction := Vector3(attack_direction.x, 0, attack_direction.z).normalized()
+	if game != null and is_instance_valid(game.player):
+		var target: Vector3 = game.player.global_position + Vector3.UP * 0.95
+		var across := Vector2(target.x - ember.global_position.x, target.z - ember.global_position.z).length()
+		if across > 0.5: direction = (direction + Vector3.UP * clampf((target.y - ember.global_position.y) / across, -0.6, 0.6)).normalized()
+	projectiles.append({"node": ember, "direction": direction, "life": 2.4})
 
 func _tick_projectiles(dt: float, player: Node3D) -> void:
 	for i in range(projectiles.size() - 1, -1, -1):
@@ -295,6 +319,44 @@ func _clear_projectiles() -> void:
 	for bolt in projectiles:
 		if is_instance_valid(bolt.node): bolt.node.queue_free()
 	projectiles.clear()
+
+## How far this species' model reaches out in front of its centre (its snout, claws or
+## head), worked out once per species from the model's meshes.
+static var _front_cache := {}
+func _front() -> float:
+	if _front_cache.has(species_id): return _front_cache[species_id]
+	var front := float(profile.radius)
+	var to_model := model.global_transform.affine_inverse()
+	for m in model.find_children("*", "MeshInstance3D", true, false):
+		var b: AABB = (to_model * m.global_transform) * m.get_aabb()
+		front = maxf(front, -b.position.z * rest_scale.z)
+	front = minf(front, 1.6)
+	_front_cache[species_id] = front
+	return front
+
+
+## Fighters keep a little space from Mr. Justice (chargers too, outside the charge itself);
+## ranged casters keep their own distance.
+func _keeps_distance() -> bool:
+	if species_id == "cinder_wisp": return false
+	return str(profile.get("attack", "")) != "ranged"
+
+
+## A nudge away from other enemies standing too close, so a pack spreads out round
+## Mr. Justice instead of piling into one spot.
+func _crowd_push() -> Vector3:
+	var push := Vector3.ZERO
+	var mine := float(profile.radius)
+	for other in get_tree().get_nodes_in_group("enemy"):
+		if other == self or not other is Node3D or not other.visible: continue
+		var away: Vector3 = global_position - other.global_position
+		away.y = 0.0
+		var room: float = mine + float(other.profile.radius) if other.get("profile") is Dictionary and other.profile.has("radius") else mine * 2.0
+		var gap := away.length()
+		if gap < room and gap > 0.01: push += away / gap * (room - gap) / room * 1.5
+		elif gap <= 0.01: push += Vector3(1, 0, 0) if posmod(hash(id), 2) == 0 else Vector3(-1, 0, 0)
+	return push
+
 
 func _strike_clear(player: Node3D, reach: float) -> bool:
 	var delta = preload("res://scripts/target_bounds.gd").closest(player, global_position + Vector3.UP * 0.65) - (global_position + Vector3.UP * 0.65)

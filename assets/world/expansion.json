@@ -11291,6 +11291,14 @@
       "hook": "Chunky cocoa plates and soft caramel joints; slow sticky slam telegraphed by a wobble."
     },
     {
+      "id": "cocoa_knight",
+      "name": "Cocoa Knight",
+      "region": 10,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "Dark-chocolate armour, a chocolate-bar shield and a white-edged greatsword; raises the blade high before a heavy cut."
+    },
+    {
       "id": "wrapper_mimic",
       "name": "Wrapper Mimic",
       "region": 10,

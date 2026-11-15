@@ -11,7 +11,7 @@ const FORMS = {
 	"mistrunner_fox": "fox", "sandshell_lizard": "lizard", "dune_jerboa": "rodent", "oasis_ibis": "crane", "amber_scarab": "beetle", "shadeback_camel": "camel",
 	"ember_salamander": "lizard", "ash_moth": "moth", "basalt_beetle": "beetle", "copperback_gecko": "lizard", "cinderfin_fish": "fish", "ventwing_swift": "bird",
 	"ashen_raven": "bird", "pallid_moth": "moth", "gravemoss_snail": "snail", "prismhart": "deer", "opaline_otter": "otter", "chimewing_manta": "manta", "geode_tortoise": "tortoise", "faceted_finch": "bird", "quartz_hare": "hare",
-	"cliffwarden": "golem", "stonejaw_wyrm": "wyrm", "fudge_golem": "golem", "wrapper_mimic": "mimic", "pretzel_crawler": "crawler", "cola_sloshback": "frog", "sugarspike_wasp": "winged", "grand_confectioner": "knight",
+	"cliffwarden": "golem", "stonejaw_wyrm": "wyrm", "fudge_golem": "golem", "cocoa_knight": "knight", "wrapper_mimic": "mimic", "pretzel_crawler": "crawler", "cola_sloshback": "frog", "sugarspike_wasp": "winged", "grand_confectioner": "knight",
 	"windwhistle_stalker": "cat", "thistle_jackal": "hound", "grassland_colossus": "golem", "kiteclaw_raptor": "winged", "stormhorn_matriarch": "boar", "dune_maw": "wyrm", "sunken_sentinel": "knight", "sandwraith": "wraith", "obelisk_scorpion": "scorpion", "glass_anubid": "hound",
 	"riftback": "armored", "furnace_hound": "hound", "slag_crawler": "crawler", "ash_harpy": "winged", "root_reaper": "reaper", "wraithhart": "deer", "hollow_hound": "hound", "grave_creeper": "crawler", "veil_moth": "winged", "thorn_widow": "spider", "mourning_knight": "knight", "pale_watcher": "wraith", "blackthorn_regent": "knight",
 	"shard_sentinel": "knight", "prismstalker": "cat", "geode_mimic": "mimic", "resonance_wyrm": "wyrm", "glasswing_reaver": "winged", "aurora_custodian": "wraith"}
@@ -34,6 +34,14 @@ static func wildlife_for(region: int) -> Array:
 static func hostiles_for(region: int) -> Array:
 	return entries().filter(func (e): return e.region == region and e.kind == "hostile" and not e.boss).map(func (e): return enemy_id(e.id))
 static func flying(id: String) -> bool: return entry(id).get("form", "") in ["moth", "bee", "bird", "manta"]
+## Size, hitbox and reach for regional enemies that have been re-sculpted, so they stand at
+## their intended size beside Mr. Justice (who is 1.22 m tall).
+const SIZES = {"cocoa_knight": {"radius": 0.6, "height": 2.6, "reach": 2.6}, "fudge_golem": {"radius": 0.75, "height": 1.9, "reach": 2.3}, 
+	"cliffwarden": {"radius": 0.7, "height": 2.6, "reach": 2.7},
+	"stonejaw_wyrm": {"radius": 1.0, "height": 2.0},
+}
+
+
 static func enemy_profiles() -> Dictionary:
 	var result = {}
 	for e in entries():
@@ -44,4 +52,5 @@ static func enemy_profiles() -> Dictionary:
 		var height = 2.3 if boss else 2.0 if tall else 1.15
 		var reach = 9.0 if attack == "ranged" else 6.0 if attack == "charge" else 2.3 if tall else 1.8
 		result[enemy_id(e.id)] = {"name": e.name, "model": e.name.replace(" ", ""), "hp": 24 if boss else 8 if form in ["golem", "knight", "armored"] else 5, "speed": 1.6 if tall else 2.8, "reach": reach, "windup": 1.1 if boss else 0.85 if tall else 0.65, "recovery": 1.0 if boss else 0.8, "cooldown": 3.4 if boss else 2.5, "damage": 2 if boss else 1, "radius": 0.65 if boss else 0.5, "height": height, "attack": attack, "form": form, "region": e.region, "boss": boss}
+		result[enemy_id(e.id)].merge(SIZES.get(enemy_id(e.id), {}), true)
 	return result
