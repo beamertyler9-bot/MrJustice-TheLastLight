@@ -21,6 +21,7 @@ const DESIGNS := {
 	"slosh_axolotl": ["res://tools/sculpt_cola_sloshback.gd", "axolotl_wild", "wild"],
 	"wrapper_mimic": ["res://tools/sculpt_mimics.gd", "rock"],
 	"chest_mimic": ["res://tools/sculpt_mimics.gd", "chest"],
+	"grand_confectioner": ["res://tools/sculpt_grand_confectioner.gd", "mixer"],
 }
 
 
