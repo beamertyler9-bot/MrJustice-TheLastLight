@@ -90,6 +90,7 @@ static func ground(parent: Node3D, region: int, at: Vector3, variant: int, stabl
 		else: holder = null
 	if holder != null:
 		var model = A.place(holder, rock, rock_at, 0.48 + posmod(variant, 3) * 0.15, variant * 1.7)
+		if region == 10: preload("res://scripts/regional_ground.gd").chocolate_rock(model)
 		if world != null and model != null:
 
 			var bounds = holder.global_transform.affine_inverse() * A.bounds(model)
@@ -178,7 +179,8 @@ static func cave(parent: Node3D, record: Dictionary, room_data: Dictionary) -> v
 		if not natural: at = Vector3((1 if i % 2 else -1) * size.x * 0.25, 0, size.y * 0.32)
 		at.y = S.floor_height(record.id, room_data.p + Vector2(at.x, at.z), level) - base_floor
 		var id = "qnat_rock_medium_" + str(1 + i % 3) if natural else "ruin_pillarsquarecut"
-		A.place(parent, id, at, 1.0 + i * 0.14 if natural else 2.6, i * 0.7)
+		var piece = A.place(parent, id, at, 1.0 + i * 0.14 if natural else 2.6, i * 0.7)
+		if natural and int(record.get("region", 0)) == 10: preload("res://scripts/regional_ground.gd").chocolate_rock(piece)
 		if natural and i % 2 == 0:
 			var mushroom = at + Vector3(0.5, 0, 0.2)
 			mushroom.y = S.floor_height(record.id, room_data.p + Vector2(mushroom.x, mushroom.z), level) - base_floor + 0.02

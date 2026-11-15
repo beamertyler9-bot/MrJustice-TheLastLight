@@ -103,6 +103,8 @@ func species_at(point: Vector3, victim_id: String) -> String:
 	if game.world.get("atlas") != null:
 		var regional: Array = Creatures.hostiles_for(region)
 		if region == 9: regional.append("rootling_sentinel")
+		# Now and then a "chest" lying out in the open is a Chest Mimic.
+		if posmod(hash(victim_id + ":mimic"), 9) == 0: return "chest_mimic"
 		return regional[posmod(hash(victim_id), regional.size())]
 	var choices: Array
 	match region:

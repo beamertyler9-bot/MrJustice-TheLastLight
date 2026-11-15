@@ -11300,11 +11300,19 @@
     },
     {
       "id": "wrapper_mimic",
-      "name": "Wrapper Mimic",
+      "name": "Chocorock Mimic",
       "region": 10,
       "kind": "hostile",
       "boss": false,
-      "hook": "Crinkled bright wrapping around a toothy parcel; rustles and twitches before opening."
+      "hook": "Passes for one of S'morewood's chocolate rocks until you step close, then bursts out of the ground on long, spindly limbs with a mouth full of teeth."
+    },
+    {
+      "id": "chocobar_croc",
+      "name": "Choco-Bar Croc",
+      "region": 10,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "A chocolate bar half out of its blue wrapper, low and long like a crocodile; scurries in and snaps its square-scored jaws."
     },
     {
       "id": "pretzel_crawler",

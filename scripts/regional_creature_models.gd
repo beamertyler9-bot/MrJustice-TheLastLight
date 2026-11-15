@@ -34,7 +34,7 @@ const WILD_PALETTES = {
 	"geode_tortoise": ["#8d8aaf", "#c9d9d2", "#575f80"], "faceted_finch": ["#91bcb7", "#f3d3a8", "#626d94"],
 	"quartz_hare": ["#becbd9", "#f3e9e5", "#9c91b0"]}
 const ENEMY_COATS = {
-	"cliffwarden": "#727e87", "stonejaw_wyrm": "#65776b", "fudge_golem": "#714335", "cocoa_knight": "#3e2215", "wrapper_mimic": "#a8678c", "pretzel_crawler": "#b98651",
+	"cliffwarden": "#727e87", "stonejaw_wyrm": "#65776b", "fudge_golem": "#714335", "cocoa_knight": "#3e2215", "chocobar_croc": "#4a2a18", "chest_mimic": "#7a5232", "wrapper_mimic": "#a8678c", "pretzel_crawler": "#b98651",
 	"cola_sloshback": "#87503b", "sugarspike_wasp": "#ccab70", "grand_confectioner": "#855d80", "windwhistle_stalker": "#aaa26f",
 	"thistle_jackal": "#8c8362", "grassland_colossus": "#6e8567", "kiteclaw_raptor": "#8b795c", "stormhorn_matriarch": "#726347",
 	"dune_maw": "#b99567", "sunken_sentinel": "#737f77", "sandwraith": "#b6a184", "obelisk_scorpion": "#615a55", "glass_anubid": "#536f77",

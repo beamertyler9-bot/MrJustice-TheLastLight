@@ -7,8 +7,24 @@ const GRASS = ["#548361", "#b184a3", "#919877", "#a99e81", "#74655d", "#7a7089",
 const MEADOW = ["#8ca96b", "#d5a2bc", "#b7af8f", "#c5b697", "#a47a61", "#a69aaf", "#afbec8"]
 const FERN = ["#4f8469", "#ca8cba", "#7e9365", "#9b9d69", "#76665a", "#8b7c9b", "#91bbb8"]
 const PATH = ["#b39c76", "#ba9b83", "#c0ad7d", "#d4b37e", "#9d806b", "#a08e95", "#bdc5be"]
-const ROCK = ["#7d8a79", "#9c8a9b", "#a5a58c", "#b39a76", "#7e726e", "#8d8497", "#a9bfc3"]
+const ROCK = ["#7d8a79", "#6e4a36", "#a5a58c", "#b39a76", "#7e726e", "#8d8497", "#a9bfc3"]
 static var painted_meshes = {}
+## S'morewood's rocks are chocolate: the rock's own texture, tinted cocoa brown.
+const CHOCOLATE_ROCK_TINT := Color("#93603f")
+static var _chocolate_rocks := {}
+static func chocolate_rock_material(source: Material) -> Material:
+	if not source is ShaderMaterial: return source
+	var key := source.get_instance_id()
+	if not _chocolate_rocks.has(key):
+		var mat: ShaderMaterial = source.duplicate(); mat.set_shader_parameter("tint", CHOCOLATE_ROCK_TINT)
+		mat.set_shader_parameter("shadow_tint", Color("#5a3a3a")); _chocolate_rocks[key] = mat
+	return _chocolate_rocks[key]
+static func chocolate_rock(model: Node3D) -> void:
+	if model == null: return
+	for art in model.find_children("*", "MeshInstance3D", true, false) + ([model] if model is MeshInstance3D else []):
+		var mi: MeshInstance3D = art
+		if mi.mesh == null: continue
+		mi.material_override = chocolate_rock_material(mi.material_override if mi.material_override != null else mi.mesh.surface_get_material(0))
 static func color_for(region: int) -> Color: return Color(BASE[clampi(region - 9, 0, 6)])
 static func configure(material: ShaderMaterial) -> void:
 	material.set_shader_parameter("magma_pattern", load("res://assets/surfaces/magma_pattern.png"))

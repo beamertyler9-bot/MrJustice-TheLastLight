@@ -5,10 +5,13 @@ const B = preload("res://scripts/build.gd")
 const A = preload("res://scripts/imported_assets.gd")
 const O = preload("res://scripts/world_overhaul.gd")
 static var cliff_material: ShaderMaterial
+## S'morewood's cliffs and boulders are chocolate.
+static var chocolate_material: ShaderMaterial
 static func build(parent: Node3D, tint: Color, variant: int = 0, world = null) -> Node3D:
 	var root = Node3D.new(); root.name = "NaturalCaveMouth"; parent.add_child(root)
 	root.set_meta("natural_cave_revision", 30); root.set_meta("clear_throat_width", 3.2)
 	var cliff = {}
+	var cliff_mat: ShaderMaterial = null
 	if world != null and world.atlas != null:
 		var at = _frame(parent).origin
 		cliff = preload("res://scripts/fixed_world.gd").cliff_at(Vector2(at.x, at.z))
@@ -17,6 +20,13 @@ static func build(parent: Node3D, tint: Color, variant: int = 0, world = null) -
 		if cliff_material == null:
 			cliff_material = ShaderMaterial.new(); cliff_material.shader = preload("res://shaders/cliff_stone.gdshader"); cliff_material.set_shader_parameter("rock_detail", preload("res://assets/surfaces/stone.png"))
 		tint = Color("#606b67").lerp(tint, 0.12)
+		if world.has_method("biome_at") and world.biome_at(at.x, at.z) == 10:
+			if chocolate_material == null:
+				chocolate_material = cliff_material.duplicate()
+				chocolate_material.set_shader_parameter("stone_low", Vector3(0.15, 0.08, 0.045))
+				chocolate_material.set_shader_parameter("stone_high", Vector3(0.34, 0.19, 0.11))
+				chocolate_material.set_shader_parameter("moss_color", Color("#8a5636"))
+			cliff_mat = chocolate_material
 	var fronts = []; var outer = []; var backs = []; var throat = []; var segments = 13
 	for i in range(segments + 1):
 		var angle = float(i) / segments * PI; var wave = sin(i * 2.13 + variant * 0.7)
@@ -38,7 +48,8 @@ static func build(parent: Node3D, tint: Color, variant: int = 0, world = null) -
 	var shell = B.mesh(root, B._flat_geometry(outside), B.world_surface("stone", "#" + tint.to_html(false))); shell.name = "ContinuousBluff"
 	var tunnel = B.mesh(root, _inward(inside), B.world_surface("stone", "#" + tint.darkened(0.23).to_html(false))); tunnel.name = "RecessedThroat"
 	var skins = [shell, tunnel]
-	if not cliff.is_empty(): shell.material_override = cliff_material; tunnel.material_override = cliff_material
+	if cliff_mat == null: cliff_mat = cliff_material
+	if not cliff.is_empty(): shell.material_override = cliff_mat; tunnel.material_override = cliff_mat
 	if not cliff.is_empty():
 
 
@@ -83,7 +94,7 @@ static func build(parent: Node3D, tint: Color, variant: int = 0, world = null) -
 					shift = minf(shift, _ground(parent, p, world) - p.y)
 			if is_finite(shift): model.position.y += shift - 0.06
 			if not cliff.is_empty() and str(model.get_meta("imported_asset")).begins_with("u29_nature_rock_"):
-				for mesh in model.find_children("*", "MeshInstance3D", true, false): mesh.material_override = cliff_material
+				for mesh in model.find_children("*", "MeshInstance3D", true, false): mesh.material_override = cliff_mat
 				for mesh in model.find_children("*", "MeshInstance3D", true, false):
 					var points = mesh.mesh.get_faces()
 					for j in range(points.size()): points[j] = model.transform * mesh.transform * points[j]

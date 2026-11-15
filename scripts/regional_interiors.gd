@@ -371,6 +371,12 @@ func _encounters() -> void:
 		var options = Creatures.hostiles_for(int(S.site(active_id).region))
 		var actor = Enemy.new(); actor.configure_species(options[posmod(hash(active_id) + i, options.size())])
 		actor.id = key; actor.game = game; actor.position = S.point(active_id, room.p, int(room.level)) - S.origin(active_id) + Vector3(2, 0, 0); actor.home = S.origin(active_id) + actor.position; live.add_child(actor)
+	# Half the caves and ruins keep a Chest Mimic among their treasure.
+	var mimic_key = "site_mimic_" + active_id
+	if rooms.size() > 1 and posmod(hash(active_id + ":mimic"), 2) == 0 and not world.state.taken.has(mimic_key):
+		var room: Dictionary = rooms[1]
+		var mimic = Enemy.new(); mimic.configure_species("chest_mimic"); mimic.id = mimic_key; mimic.game = game
+		mimic.position = S.point(active_id, room.p, int(room.level)) - S.origin(active_id) + Vector3(-2.2, 0, 1.4); mimic.home = S.origin(active_id) + mimic.position; live.add_child(mimic)
 	if Creatures.BOSSES.has(active_id):
 		var key = "site_boss_" + active_id
 		if not world.state.taken.has(key):

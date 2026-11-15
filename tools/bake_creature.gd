@@ -13,6 +13,9 @@ const DESIGNS := {
 	"stonejaw_wyrm": ["res://tools/sculpt_stonejaw_wyrm.gd", "classic"],
 	"fudge_golem": ["res://tools/sculpt_fudge_golem2.gd", "ogre"],
 	"cocoa_knight": ["res://tools/sculpt_fudge_golem2.gd", "knight"],
+	"chocobar_croc": ["res://tools/sculpt_wrapper_mimic.gd", "chocobar"],
+	"wrapper_mimic": ["res://tools/sculpt_mimics.gd", "rock"],
+	"chest_mimic": ["res://tools/sculpt_mimics.gd", "chest"],
 }
 
 

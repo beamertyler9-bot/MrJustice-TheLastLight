@@ -61,6 +61,11 @@ var noticed := false
 var calm_time := 0.0
 var wander_target := Vector3.INF
 var wander_wait := 0.0
+## Ambushers (see CreatureCatalog.AMBUSH): 0 = lying disguised in the ground, 1 = fully out.
+const EMERGE_TIME := 0.85
+var ambush: Dictionary = {}
+var emergence := 1.0
+var emerge_dir := 0.0
 
 func configure_species(kind: String) -> void:
 
@@ -91,7 +96,13 @@ func _ready() -> void:
 	_build_visual()
 	model.scale = rest_scale
 	hurt_side = -1.0 if posmod(hash(id if id != "" else species_id), 2) == 0 else 1.0
-	add_to_group("enemy")
+	ambush = profile.get("ambush", {})
+	if ambush.is_empty(): add_to_group("enemy")
+	else:
+		emergence = 0.0; set_meta("dormant", true)
+		# Pin the model's resting place now, before it is sunk, so the pose code rests it there.
+		if not model.has_meta("pose_rest_position"): model.set_meta("pose_rest_position", model.position)
+		model.rotation.y = float(posmod(hash(id + "yaw"), 628)) * 0.01
 	set_meta("health", health)
 	set_meta("max_health", health)
 	set_meta("name", display_name)
@@ -146,9 +157,12 @@ func _physics_process(dt: float) -> void:
 		telegraph.visible = false
 		_clear_projectiles()
 		noticed = false
+		if not ambush.is_empty() and (emergence > 0.0 or emerge_dir != 0.0):
+			emergence = 0.0; emerge_dir = 0.0; set_meta("dormant", true); remove_from_group("enemy")
 		return
 	_tick_projectiles(real_dt, player)
 	if not is_inside_tree() or is_queued_for_deletion(): return
+	if not ambush.is_empty() and _tick_ambush(dt, player): return
 	var offset: Vector3 = player.global_position - global_position
 	var flat: Vector3 = Vector3(offset.x, 0, offset.z)
 	var distance = flat.length()
@@ -257,6 +271,58 @@ func _physics_process(dt: float) -> void:
 			charge_time = 0
 			recovery = float(profile.recovery)
 	_animate(dt, speed)
+	if not ambush.is_empty(): _pose_emergence()
+
+## Runs the disguise for ambushers. Returns true while it owns the frame: lying still, rising
+## out of the ground, or sinking back into it once Mr. Justice has gone.
+func _tick_ambush(dt: float, player: Node3D) -> bool:
+	var flat := Vector2(player.global_position.x - global_position.x, player.global_position.z - global_position.z)
+	if emerge_dir == 0.0 and emergence <= 0.0:
+		velocity = Vector3(0, velocity.y - 19.0 * dt, 0); move_and_slide()
+		telegraph.visible = false
+		_pose_emergence()
+		if flat.length() < float(ambush.get("trigger", 3.5)): _begin_emerging()
+		return true
+	if emerge_dir != 0.0:
+		emergence = clampf(emergence + emerge_dir * dt / EMERGE_TIME, 0.0, 1.0)
+		velocity = Vector3(0, velocity.y - 19.0 * dt, 0); move_and_slide()
+		if emerge_dir > 0.0 and flat.length() > 0.1:
+			model.rotation.y = lerp_angle(model.rotation.y, atan2(-flat.x, -flat.y), 1.0 - exp(-dt * 6.0))
+		windup = 0.0; telegraph.visible = false
+		_animate(dt, 0.0)
+		_pose_emergence()
+		core.material_override = attack_glow if emerge_dir > 0.0 else normal_glow
+		if emergence >= 1.0 and emerge_dir > 0.0:
+			emerge_dir = 0.0; cooldown = maxf(cooldown, 0.45)
+		elif emergence <= 0.0 and emerge_dir < 0.0:
+			emerge_dir = 0.0; global_position = home; set_meta("dormant", true)
+		return true
+	# Out and about: once Mr. Justice has been gone a while, settle back into disguise.
+	if flat.length() > 16.0 and calm_time > 5.0 and windup <= 0.0 and recovery <= 0.0:
+		emerge_dir = -1.0; remove_from_group("enemy"); noticed = false
+		return true
+	return false
+
+func _begin_emerging() -> void:
+	emerge_dir = 1.0; noticed = true; calm_time = 0.0
+	remove_meta("dormant"); add_to_group("enemy")
+	Feel.notice(self, float(profile.height))
+	if game.has_method("foot_effect"): game.foot_effect(global_position, false, 1.0)
+	if game.has_method("burst"): game.burst(global_position + Vector3(0, 0.3, 0), Color("#5a3a22"), 16)
+	if "audio" in game and game.audio != null: game.audio.cue("impact", 0.55)
+
+## Sinks the body into the ground and folds the legs away by how far out it is, and gapes the
+## jaw wide while it bursts out.
+func _pose_emergence() -> void:
+	var out := smoothstep(0.0, 1.0, emergence)
+	var legs := smoothstep(0.2, 1.0, emergence)
+	if emergence <= 0.0 and emerge_dir == 0.0:
+		model.position = model.get_meta("pose_rest_position", Vector3.ZERO)
+	model.position.y -= float(ambush.get("sink", 0.8)) * (1.0 - out)
+	if emerge_dir > 0.0: model.rotation.z += sin(clock * 47.0) * 0.07 * (1.0 - out)
+	for foot in feet: foot.scale = Vector3.ONE * lerpf(0.04, 1.0, legs)
+	var jaw = visual_rig.get("features", {}).get(&"jaw", null) if visual_rig.get("features", {}) is Dictionary else null
+	if jaw is Node3D and emerge_dir > 0.0: jaw.rotation.x -= sin(emergence * PI) * 0.55
 
 func _same_region(player: Node3D) -> bool:
 	var world = game.world
@@ -397,6 +463,7 @@ func take_damage(amount: int) -> void:
 	if game.get("feel") != null: game.feel.squash(self, 0.5)
 	# Getting hit always gets an enemy's attention.
 	if not noticed: noticed = true; calm_time = 0.0
+	if not ambush.is_empty() and emerge_dir <= 0.0 and emergence < 1.0: _begin_emerging()
 	core.material_override = hurt_glow
 	_animate(0.0, 0.0)
 	if health <= 0:

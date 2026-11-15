@@ -11,7 +11,7 @@ const FORMS = {
 	"mistrunner_fox": "fox", "sandshell_lizard": "lizard", "dune_jerboa": "rodent", "oasis_ibis": "crane", "amber_scarab": "beetle", "shadeback_camel": "camel",
 	"ember_salamander": "lizard", "ash_moth": "moth", "basalt_beetle": "beetle", "copperback_gecko": "lizard", "cinderfin_fish": "fish", "ventwing_swift": "bird",
 	"ashen_raven": "bird", "pallid_moth": "moth", "gravemoss_snail": "snail", "prismhart": "deer", "opaline_otter": "otter", "chimewing_manta": "manta", "geode_tortoise": "tortoise", "faceted_finch": "bird", "quartz_hare": "hare",
-	"cliffwarden": "golem", "stonejaw_wyrm": "wyrm", "fudge_golem": "golem", "cocoa_knight": "knight", "wrapper_mimic": "mimic", "pretzel_crawler": "crawler", "cola_sloshback": "frog", "sugarspike_wasp": "winged", "grand_confectioner": "knight",
+	"cliffwarden": "golem", "stonejaw_wyrm": "wyrm", "fudge_golem": "golem", "cocoa_knight": "knight", "chocobar_croc": "crawler", "wrapper_mimic": "mimic", "pretzel_crawler": "crawler", "cola_sloshback": "frog", "sugarspike_wasp": "winged", "grand_confectioner": "knight",
 	"windwhistle_stalker": "cat", "thistle_jackal": "hound", "grassland_colossus": "golem", "kiteclaw_raptor": "winged", "stormhorn_matriarch": "boar", "dune_maw": "wyrm", "sunken_sentinel": "knight", "sandwraith": "wraith", "obelisk_scorpion": "scorpion", "glass_anubid": "hound",
 	"riftback": "armored", "furnace_hound": "hound", "slag_crawler": "crawler", "ash_harpy": "winged", "root_reaper": "reaper", "wraithhart": "deer", "hollow_hound": "hound", "grave_creeper": "crawler", "veil_moth": "winged", "thorn_widow": "spider", "mourning_knight": "knight", "pale_watcher": "wraith", "blackthorn_regent": "knight",
 	"shard_sentinel": "knight", "prismstalker": "cat", "geode_mimic": "mimic", "resonance_wyrm": "wyrm", "glasswing_reaver": "winged", "aurora_custodian": "wraith"}
@@ -39,12 +39,20 @@ static func flying(id: String) -> bool: return entry(id).get("form", "") in ["mo
 const SIZES = {"cocoa_knight": {"radius": 0.6, "height": 2.6, "reach": 2.6}, "fudge_golem": {"radius": 0.75, "height": 1.9, "reach": 2.3}, 
 	"cliffwarden": {"radius": 0.7, "height": 2.6, "reach": 2.7},
 	"stonejaw_wyrm": {"radius": 1.0, "height": 2.0},
+	"chocobar_croc": {"radius": 0.55, "height": 1.0, "reach": 2.3, "hp": 6},
+	"wrapper_mimic": {"radius": 0.6, "height": 1.5, "reach": 2.4, "hp": 6, "speed": 3.0},
+	"chest_mimic": {"radius": 0.6, "height": 1.6, "reach": 2.4, "hp": 7, "speed": 3.0},
 }
+## Ambushers lie still, disguised (a rock, a chest), until Mr. Justice comes within `trigger`
+## metres; then they rise `sink` metres out of the ground on their legs and fight.
+const AMBUSH = {"wrapper_mimic": {"sink": 0.95, "trigger": 3.6}, "chest_mimic": {"sink": 0.8, "trigger": 3.0}}
+## Hostiles that are not tied to one region (placed by ecology and site interiors instead).
+const WANDERING_HOSTILES = [{"id": "chest_mimic", "name": "Chest Mimic", "region": 0, "kind": "hostile", "boss": false, "form": "mimic"}]
 
 
 static func enemy_profiles() -> Dictionary:
 	var result = {}
-	for e in entries():
+	for e in entries() + WANDERING_HOSTILES:
 		if e.kind != "hostile" or enemy_id(e.id) in ["bellkeeper", "embermaw", "moss_guardian", "thorn_wolf", "frost_brute", "wild_boar", "glass_skitter", "cinder_wisp"]: continue
 		var form: String = e.form; var boss: bool = e.boss
 		var attack = "ranged" if form == "wraith" or e.id in ["cola_sloshback", "sugarspike_wasp"] else "charge" if form in ["hound", "cat", "boar", "wyrm"] else "melee"
@@ -53,4 +61,5 @@ static func enemy_profiles() -> Dictionary:
 		var reach = 9.0 if attack == "ranged" else 6.0 if attack == "charge" else 2.3 if tall else 1.8
 		result[enemy_id(e.id)] = {"name": e.name, "model": e.name.replace(" ", ""), "hp": 24 if boss else 8 if form in ["golem", "knight", "armored"] else 5, "speed": 1.6 if tall else 2.8, "reach": reach, "windup": 1.1 if boss else 0.85 if tall else 0.65, "recovery": 1.0 if boss else 0.8, "cooldown": 3.4 if boss else 2.5, "damage": 2 if boss else 1, "radius": 0.65 if boss else 0.5, "height": height, "attack": attack, "form": form, "region": e.region, "boss": boss}
 		result[enemy_id(e.id)].merge(SIZES.get(enemy_id(e.id), {}), true)
+		if AMBUSH.has(e.id): result[enemy_id(e.id)]["ambush"] = AMBUSH[e.id]
 	return result
