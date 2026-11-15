@@ -13,6 +13,8 @@ const DATA = {
 	"mallow_sheep": ["amble", "chew", "flock", 5.9, 0.23, 0.61, Vector3(0.27, 0.08, 0.1), Vector3(0.06, 0.12, -0.09), -0.07],
 	"cocoa_chipmunk": ["scurry", "nibble", "scamper", 10.2, 0.3, 0.08, Vector3(0.13, 0.23, 0.065), Vector3(0.16, 0.27, -0.11), 0.18],
 	"fizz_frog": ["hop", "croak", "spring", 7.1, 0.47, 0.3, Vector3(0.17, 0.055, 0.035), Vector3(0.02, 0.04, 0), -0.08],
+	"fizz_toad": ["hop", "croak", "spring", 7.1, 0.47, 0.3, Vector3(0.17, 0.055, 0.035), Vector3(0.02, 0.04, 0), -0.08],
+	"slosh_axolotl": ["sprawl", "warm_rock", "low_scurry", 6.9, 0.25, 0.29, Vector3(0.1, 0.13, 0.05), Vector3(0.18, 0.34, 0.04), 0.08],
 	"graham_tortoise": ["crawl", "herb_browse", "withdraw", 2.7, 0.2, 0.76, Vector3(0.2, 0.12, 0.025), Vector3(0.04, 0.06, 0.08), 0.04],
 	"caramel_dormouse": ["scurry", "doze", "wake", 7.8, 0.23, 0.13, Vector3(0.22, 0.1, 0.12), Vector3(0.12, 0.18, -0.2), -0.14],
 	"sugarwing_bee": ["hover", "nectar", "zip", 22.0, 0.25, 0.02, Vector3(0.11, 0.12, 0.055), Vector3(0.04, 0.11, -0.02), 0.08],

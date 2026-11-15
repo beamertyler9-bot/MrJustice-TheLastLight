@@ -11283,6 +11283,22 @@
       "hook": "Translucent sugar-veined wings; visits orchard blossoms in small swarms."
     },
     {
+      "id": "fizz_toad",
+      "name": "Fizz Toad",
+      "region": 10,
+      "kind": "wildlife",
+      "boss": false,
+      "hook": "A squat cola toad with a head of foam on its back and bottle-cap warts; its amber throat swells as it croaks."
+    },
+    {
+      "id": "slosh_axolotl",
+      "name": "Slosh Axolotl",
+      "region": 10,
+      "kind": "wildlife",
+      "boss": false,
+      "hook": "A cola axolotl with frothy pink-tipped gills and a glass dome of sloshing cola on its back."
+    },
+    {
       "id": "fudge_golem",
       "name": "Fudge Golem",
       "region": 10,

@@ -15,6 +15,9 @@ const DESIGNS := {
 	"cocoa_knight": ["res://tools/sculpt_fudge_golem2.gd", "knight"],
 	"chocobar_croc": ["res://tools/sculpt_choco_croc.gd", "croc"],
 	"pretzel_crawler": ["res://tools/sculpt_pretzel_crawler.gd", "scorpion"],
+	"cola_sloshback": ["res://tools/sculpt_cola_sloshback.gd", "bottle"],
+	"fizz_toad": ["res://tools/sculpt_cola_sloshback.gd", "toad_wild", "wild"],
+	"slosh_axolotl": ["res://tools/sculpt_cola_sloshback.gd", "axolotl_wild", "wild"],
 	"wrapper_mimic": ["res://tools/sculpt_mimics.gd", "rock"],
 	"chest_mimic": ["res://tools/sculpt_mimics.gd", "chest"],
 }
@@ -25,6 +28,7 @@ func _initialize() -> void:
 		var design: Array = DESIGNS[id]
 		var path := "res://assets/creatures/enemy_%s.scn" % id
 		if not ResourceLoader.exists(path): path = "res://assets/creatures/regional_enemy_%s.scn" % id
+		if design.size() > 2 and design[2] == "wild": path = "res://assets/creatures/regional_wild_%s.scn" % id
 		var model: Node3D = load(design[0]).new().build(design[1])
 		if ResourceLoader.exists(path):
 			var old: Node = load(path).instantiate()

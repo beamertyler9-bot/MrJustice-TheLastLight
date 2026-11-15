@@ -6,7 +6,7 @@ const LEGACY_WILD = {"starwing_moth": "moth", "fernhare": "hare", "glimmerstag":
 const BOSSES = {"valley-c08": "stonejaw_wyrm", "food-d06": "grand_confectioner", "plains-d06": "stormhorn_matriarch", "desert-d02": "glass_anubid", "haunted-d02": "pale_watcher", "haunted-d01": "blackthorn_regent", "crystal-d06": "aurora_custodian"}
 const FORMS = {
 	"starwing_moth": "moth", "fernhare": "hare", "glimmerstag": "deer", "mossbrow_boar": "boar", "craghorn_goat": "goat", "riverglass_kingfisher": "bird",
-	"mallow_sheep": "sheep", "cocoa_chipmunk": "rodent", "fizz_frog": "frog", "graham_tortoise": "tortoise", "caramel_dormouse": "rodent", "sugarwing_bee": "bee",
+	"mallow_sheep": "sheep", "cocoa_chipmunk": "rodent", "fizz_frog": "frog", "fizz_toad": "frog", "slosh_axolotl": "lizard", "graham_tortoise": "tortoise", "caramel_dormouse": "rodent", "sugarwing_bee": "bee",
 	"dawnbell_songbird": "bird", "meadowhopper": "hopper", "windtail_hare": "hare", "reedcrest_crane": "crane", "goldmane_antelope": "antelope", "streamback_turtle": "tortoise",
 	"mistrunner_fox": "fox", "sandshell_lizard": "lizard", "dune_jerboa": "rodent", "oasis_ibis": "crane", "amber_scarab": "beetle", "shadeback_camel": "camel",
 	"ember_salamander": "lizard", "ash_moth": "moth", "basalt_beetle": "beetle", "copperback_gecko": "lizard", "cinderfin_fish": "fish", "ventwing_swift": "bird",
@@ -40,6 +40,7 @@ const SIZES = {"cocoa_knight": {"radius": 0.6, "height": 2.6, "reach": 2.6}, "fu
 	"cliffwarden": {"radius": 0.7, "height": 2.6, "reach": 2.7},
 	"stonejaw_wyrm": {"radius": 1.0, "height": 2.0},
 	"pretzel_crawler": {"radius": 0.6, "height": 1.1, "reach": 2.2},
+	"cola_sloshback": {"radius": 0.55, "height": 1.0},
 	"chocobar_croc": {"radius": 0.55, "height": 1.0, "reach": 2.3, "hp": 6},
 	"wrapper_mimic": {"radius": 0.6, "height": 1.5, "reach": 2.4, "hp": 6, "speed": 3.0},
 	"chest_mimic": {"radius": 0.6, "height": 1.6, "reach": 2.4, "hp": 7, "speed": 3.0},

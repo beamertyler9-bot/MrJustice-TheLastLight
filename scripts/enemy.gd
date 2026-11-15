@@ -343,8 +343,15 @@ func _launch_projectile() -> void:
 	# one, otherwise from its chest.
 	var launch := model.find_child("LaunchPoint", true, false) as Node3D
 	ember.global_position = launch.global_position if launch != null else global_position + Vector3.UP * 1.02
-	B.facet(ember, Vector3.ZERO, Vector3(0.23, 0.23, 0.4), B.mat("#ffb760", 0, 0.8))
-	B.facet(ember, Vector3(0, 0, 0.18), Vector3(0.13, 0.13, 0.4), B.mat("#e97343", 0, 0.5))
+	if species_id == "cola_sloshback":
+		# A fizzy glob of cola with a cap of foam.
+		ember.name = "ColaGlob"
+		B.facet(ember, Vector3.ZERO, Vector3(0.26, 0.24, 0.34), B.mat("#5a2410", 0, 0.25))
+		B.facet(ember, Vector3(0, 0.09, 0.04), Vector3(0.18, 0.1, 0.2), B.mat("#f4e8d2", 0, 0.2))
+		B.facet(ember, Vector3(0, -0.02, 0.2), Vector3(0.12, 0.12, 0.28), B.mat("#8a3a14", 0, 0.2))
+	else:
+		B.facet(ember, Vector3.ZERO, Vector3(0.23, 0.23, 0.4), B.mat("#ffb760", 0, 0.8))
+		B.facet(ember, Vector3(0, 0, 0.18), Vector3(0.13, 0.13, 0.4), B.mat("#e97343", 0, 0.5))
 	ember.rotation.y = atan2(-attack_direction.x, -attack_direction.z)
 	# Keep the aim taken at wind-up (so it can still be sidestepped), but tilt the shot so it
 	# arrives at Mr. Justice's chest height however high it was thrown from.
