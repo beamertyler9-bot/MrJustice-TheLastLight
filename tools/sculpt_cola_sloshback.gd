@@ -239,7 +239,7 @@ func _axolotl() -> Node3D:
 	var inner := ds.add_painter(func (p, n, v, w): return COLA_HI.lerp(AMBER, 0.45).darkened(clampf(-n.y, 0.0, 1.0) * 0.3) if n.y < 0.8 else FOAM)
 	# The cola inside, tilted as it sloshes, with a foamy surface.
 	ds.blob(Vector3(0, 0.58, 0.15), Vector3(0.2, 0.1, 0.24), inner, {"lat": 7, "lon": 12, "basis": Basis(Vector3.BACK, 0.25)})
-	ds.lathe(Vector3(0, 0.56, 0.15), [Vector2(0.23, -0.02), Vector2(0.27, 0.0), Vector2(0.27, 0.03), Vector2(0.23, 0.03)], ds.add_painter(func (p, n, v, w): return SILVER), {"sides": 16})
+	ds.lathe(Vector3(0, 0.56, 0.15), [Vector2(0.23, 0.03), Vector2(0.27, 0.03), Vector2(0.27, 0.0), Vector2(0.23, -0.02)], ds.add_painter(func (p, n, v, w): return SILVER), {"sides": 16})
 	bubbles(ds, Vector3(0, 0.6, 0.15), Vector3(0.22, 0.2, 0.26), 12, 0.03)
 	part(root, "Dome", ds, shiny)
 	var gs := Sculpt.new(); var gp := gs.add_painter(func (p, n, v, w): return Color(1, 0.93, 0.82, 1))
