@@ -35,11 +35,11 @@ func _init() -> void:
 	foil_mat = StandardMaterial3D.new()
 	foil_mat.vertex_color_use_as_albedo = true
 	foil_mat.vertex_color_is_srgb = true
-	foil_mat.roughness = 0.38
-	foil_mat.metallic = 0.45
-	foil_mat.metallic_specular = 0.8
-	glow.albedo_color = Color("#e09a2a"); glow.emission = Color("#ffae2e")
-	glow.emission_energy_multiplier = 0.8
+	foil_mat.roughness = 0.2
+	foil_mat.metallic = 0.85
+	foil_mat.metallic_specular = 0.9
+	glow.albedo_color = Color("#b8641c"); glow.emission = Color("#d9771e")
+	glow.emission_energy_multiplier = 0.45
 
 
 static func choc(p: Vector3, n: Vector3, _v: float, _w: float) -> Color:
@@ -73,33 +73,44 @@ func teeth(s: Sculpt, painter: int, a: Vector3, b: Vector3, count: int, dir: Vec
 	for k in range(count):
 		var at := a.lerp(b, (k + 0.5) / count)
 		var l := length * (1.6 if k % 4 == 2 else 0.85 + 0.2 * absf(sin(k * 1.7)))
-		s.tube([at, at + dir.normalized() * l * 0.55, at + dir.normalized() * l], [width, width * 0.65, 0.002], painter, {"sides": 6, "per": 2, "cap0": false})
+		s.tube([at, at + dir.normalized() * l * 0.55, at + dir.normalized() * l], [width, width * 0.65, 0.002], painter, {"sides": 6, "per": 2, "cap0": false, "cap_rings": 1})
 
 
 func build(_variant: String) -> Node3D:
 	root = Node3D.new(); root.name = "ChocoBarCroc"
 	# ---- the body: chocolate shoulders and hips, the middle still in its torn wrapper.
-	var bs := Sculpt.new(); var cp := bs.add_painter(choc); var sp := bs.add_painter(scute); var wp := bs.add_painter(wrapper_paint)
-	var fp := bs.add_painter(func (p, n, v, w): return FOIL.lightened(absf(Sculpt.noise(p * 25.0)) * 0.3).darkened(clampf(-n.y, 0.0, 1.0) * 0.3))
+	var bs := Sculpt.new(); var cp := bs.add_painter(choc); var sp := bs.add_painter(scute)
 	var belly := bs.add_painter(func (p, n, v, w): return Color("#8a5a3a").lerp(CHOC_MID, clampf(n.y + 0.3, 0.0, 1.0)))
 	bs.tube([Vector3(0, 0.33, -0.28), Vector3(0, 0.34, 0.0), Vector3(0, 0.33, 0.35), Vector3(0, 0.31, 0.66)], [0.17, 0.2, 0.2, 0.15], cp, {"sides": 16, "per": 3, "flat": 1.55, "side": Vector3.RIGHT, "square": 0.7, "cap_len": 0.4, "lump": 0.06})
 	bs.blob(Vector3(0, 0.2, 0.15), Vector3(0.24, 0.07, 0.42), belly, {"lat": 5, "lon": 12})
-	# The wrapper, torn at both ends: a crumpled sleeve round the middle with silver foil
-	# peeking out of the tears.
-	bs.tube([Vector3(0, 0.335, 0.06), Vector3(0, 0.34, 0.3), Vector3(0, 0.325, 0.56), Vector3(0, 0.31, 0.7), Vector3(0, 0.305, 0.8)], [0.215, 0.222, 0.21, 0.13, 0.12], wp, {"sides": 18, "per": 3, "flat": 1.55, "side": Vector3.RIGHT, "square": 0.7, "cap0": false, "cap1": false, "lump": 0.18})
-	for k in range(11):
-		var ang := TAU * k / 11.0 + 0.15
-		var front := true
-		var z := 0.06
-		var dir := Vector3(cos(ang) * 1.55, sin(ang), 0).normalized()
-		var at := Vector3(dir.x * 0.33, 0.335 + dir.y * 0.21, z)
-		var out := Vector3(0, 0, -1.0 if front else 1.0)
-		var flap_len := 0.05 + 0.06 * absf(sin(k * 2.1))
-		bs.tube([at, at + out * flap_len * 0.6 + dir * 0.012, at + out * flap_len + dir * 0.02], [0.05, 0.035, 0.004], wp if k % 3 else fp, {"sides": 5, "per": 2, "flat": 0.25, "side": dir, "cap0": false})
-	scutes(bs, sp, Vector3(0, 0.515, -0.27), Vector3(0, 0.525, 0.02), 2, 0.085, 0.13)
-	# The crimped end of the wrapper, pinched round the root of the tail.
-	bs.tube([Vector3(0, 0.305, 0.78), Vector3(0, 0.3, 0.86), Vector3(0, 0.3, 0.95)], [0.1, 0.13, 0.17], wp, {"sides": 16, "per": 2, "flat": 1.3, "side": Vector3.RIGHT, "ridges": 8, "ridge": 0.3, "cap0": false, "cap1": false, "lump": 0.2})
+	scutes(bs, sp, Vector3(0, 0.5, -0.3), Vector3(0, 0.51, -0.2), 1, 0.08, 0.1)
 	part(root, "Body", bs, shiny)
+	# ---- the wrapper: crinkled blue tinfoil, burst open at both ends and torn through at
+	# the legs, with the silver inside showing at every rip.
+	var ws := Sculpt.new(); var wp := ws.add_painter(wrapper_paint)
+	var fp := ws.add_painter(func (p, n, v, w): return FOIL.lightened(absf(Sculpt.noise(p * 25.0)) * 0.3).darkened(clampf(-n.y, 0.0, 1.0) * 0.3))
+	ws.tube([Vector3(0, 0.33, -0.16), Vector3(0, 0.34, 0.06), Vector3(0, 0.34, 0.3), Vector3(0, 0.33, 0.52), Vector3(0, 0.315, 0.66)], [0.21, 0.228, 0.232, 0.222, 0.2], wp, {"sides": 28, "per": 4, "flat": 1.5, "side": Vector3.RIGHT, "square": 0.6, "cap0": false, "cap1": false, "lump": 0.32, "facet": true})
+	# Ragged flaps peeling outward at both ends where the croc has burst through.
+	for end: Array in [[-0.16, -1.0, 0.33, 0.21], [0.66, 1.0, 0.315, 0.2]]:
+		var end_z: float = end[0]; var way: float = end[1]; var mid_y: float = end[2]; var rad: float = end[3]
+		for k in range(12):
+			var ang := TAU * k / 12.0 + 0.1 * way
+			var dir := Vector3(cos(ang) * 1.5, sin(ang), 0).normalized()
+			var base := Vector3(dir.x * rad * 1.5, mid_y + dir.y * rad, end_z)
+			var peel := (Vector3(0, 0, way) * 0.55 + dir).normalized()
+			var l := 0.09 + 0.12 * absf(sin(k * 2.3 + way))
+			ws.tube([base, base + peel * l * 0.55, base + peel * l + dir * 0.03 * (1 if k % 2 else -1)], [0.085, 0.07, 0.025], wp if k % 3 else fp, {"sides": 6, "per": 2, "cap_rings": 1, "flat": 0.12, "side": dir.cross(Vector3(0, 0, 1)), "cap0": false, "facet": true, "lump": 0.4})
+	# Torn holes where the legs punch out through the sides.
+	for leg: Vector3 in [Vector3(-0.3, 0.3, -0.12), Vector3(0.3, 0.3, -0.12), Vector3(-0.3, 0.29, 0.52), Vector3(0.3, 0.29, 0.52)]:
+		var side := signf(leg.x)
+		for k in range(5):
+			var ang := TAU * k / 5.0 + 0.3
+			var ring := Vector3(0, cos(ang), sin(ang))
+			var base: Vector3 = leg + ring * 0.08
+			var peel := (Vector3(side, 0, 0) * 0.8 + ring * 0.6).normalized()
+			var l := 0.05 + 0.05 * absf(sin(k * 1.9 + side))
+			ws.tube([base, base + peel * l * 0.6, base + peel * l], [0.055, 0.045, 0.015], wp if k % 2 else fp, {"sides": 6, "per": 2, "cap_rings": 1, "flat": 0.12, "side": ring.cross(Vector3(side, 0, 0)).normalized(), "cap0": false, "facet": true, "lump": 0.4})
+	part(root, "Wrapper", ws, foil_mat)
 	# ---- the tail: nested segments that swing, scuted and tapering.
 	var tail_nodes: Array = []
 	var parent: Node3D = root; var at := TAIL_START
@@ -135,13 +146,25 @@ func build(_variant: String) -> Node3D:
 	# Upper teeth hanging outside the lower jaw, the croc's grin.
 	for side in [-1.0, 1.0]:
 		teeth(hs, ht, Vector3(0.215 * side, 0.3, -0.36), Vector3(0.11 * side, 0.3, -0.92), 9, Vector3(0.25 * side, -1, 0), 0.09, 0.022)
-	part(head, "Snout", hs, shiny)
+	# Eyes: small hooded amber almonds set in the sides of the sockets, looking out and ahead,
+	# with thin slit pupils and a heavy chocolate lid over each.
 	var es := Sculpt.new(); var ew := es.add_painter(func (p, n, v, w): return Color.WHITE)
-	for side in [-1.0, 1.0]: es.blob(Vector3(0.11 * side, 0.55, -0.418), Vector3(0.045, 0.038, 0.035), ew, {"lat": 5, "lon": 8})
-	var core := part(head, "Eyes", es, glow); core.material_override = glow
 	var ps := Sculpt.new(); var pp := ps.add_painter(func (p, n, v, w): return Color("#120604"))
-	for side in [-1.0, 1.0]: ps.blob(Vector3(0.11 * side, 0.55, -0.452), Vector3(0.009, 0.034, 0.006), pp, {"lat": 4, "lon": 6})
+	for side in [-1.0, 1.0]:
+		var look := Vector3(0.75 * side, 0.1, -0.65).normalized()
+		var eye := Vector3(0.13 * side, 0.54, -0.395)
+		es.blob(eye, Vector3(0.03, 0.016, 0.026), ew, {"lat": 5, "lon": 9, "basis": Basis.looking_at(look, Vector3.UP)})
+		ps.blob(eye + look * 0.021, Vector3(0.004, 0.014, 0.004), pp, {"lat": 4, "lon": 6, "basis": Basis.looking_at(look, Vector3.UP)})
+		hs.blob(eye + Vector3(-0.004 * side, 0.016, 0.004), Vector3(0.042, 0.016, 0.04), hc, {"lat": 5, "lon": 8, "basis": Basis.looking_at(look, Vector3.UP)})
 	part(head, "Pupils", ps, shiny)
+	# Front teeth: a row of fangs round the tip of the snout, the middle ones the longest.
+	for k in range(6):
+		var ang := lerpf(-1.1, 1.1, (k + 0.5) / 6.0)
+		var tip := Vector3(sin(ang) * 0.1, 0.3, -0.93 - cos(ang) * 0.045)
+		var l := 0.11 if absf(ang) > 0.5 else 0.08
+		hs.tube([tip, tip + Vector3(sin(ang) * 0.01, -l * 0.55, -0.012), tip + Vector3(sin(ang) * 0.02, -l, -0.01)], [0.019, 0.013, 0.002], ht, {"sides": 6, "per": 2, "cap0": false, "cap_rings": 1})
+	part(head, "Snout", hs, shiny)
+	var core := part(head, "Eyes", es, glow); core.material_override = glow
 	# ---- the lower jaw.
 	var jaw := joint(head, "Jaw", Vector3(0, 0.29, -0.24))
 	var js := Sculpt.new(); var jc := js.add_painter(choc); var jt := js.add_painter(func (p, n, v, w): return TOOTH.lerp(Color("#cdb88f"), 1.0 - v))
@@ -152,6 +175,9 @@ func build(_variant: String) -> Node3D:
 	js.blob(Vector3(0, 0.3, -0.45), Vector3(0.07, 0.02, 0.17), jtongue, {"lat": 4, "lon": 9})
 	for side in [-1.0, 1.0]:
 		teeth(js, jt, Vector3(0.2 * side, 0.27, -0.42), Vector3(0.115 * side, 0.27, -0.9), 6, Vector3(0.35 * side, 1, 0), 0.1, 0.022)
+	for side in [-1.0, 1.0]:
+		var fang := Vector3(0.115 * side, 0.27, -0.84)
+		js.tube([fang, fang + Vector3(0.03 * side, 0.07, -0.01), fang + Vector3(0.045 * side, 0.13, -0.02)], [0.024, 0.016, 0.002], jt, {"sides": 6, "per": 2, "cap0": false, "cap_rings": 1})
 	part(jaw, "LowerJaw", js, shiny)
 	# ---- short sprawling legs, elbows out, with clawed feet.
 	var hips: Array = []; var knees: Array = []
