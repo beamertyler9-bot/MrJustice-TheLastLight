@@ -231,7 +231,7 @@ func _mixer() -> Node3D:
 		part(node, "Cord", cs, metal)
 		tails.append(node); parent = node; at = next
 	# The head: the mixer's rounded motor hood tilting forward over the bowl, with copper vent
-	# grooves, a brass speed lever, a big glowing porthole eye in its brass-rimmed face, and the
+	# grooves, a brass speed lever, glowing pilot lamps, a brass hub cap on its face, and the
 	# flat beater on its shaft stirring the batter below.
 	var head := joint(root, "Head", Vector3(0, 2.0, 0.3))
 	var hs := Sculpt.new(); var hep := hs.add_painter(enamel); var hbp := hs.add_painter(brass); var hcp := hs.add_painter(copper)
@@ -242,23 +242,21 @@ func _mixer() -> Node3D:
 	hs.tube([Vector3(-0.29, 2.02, 0.3), Vector3(0.29, 2.02, 0.3)], [0.05, 0.05], hbp, {"sides": 10, "per": 1})
 	hs.tube([Vector3(0.27, 2.14, 0.0), Vector3(0.36, 2.2, -0.04), Vector3(0.42, 2.3, -0.06)], [0.024, 0.02, 0.018], hbp, {"sides": 7, "per": 3})
 	hs.blob(Vector3(0.42, 2.32, -0.06), Vector3.ONE * 0.04, hbp, {"lat": 5, "lon": 8})
+	# The front: a domed brass attachment-hub cap with a knob, ringed with rivets, like a real
+	# mixer's.
 	var face := Vector3(0, 2.07, -0.6)
-	hs.lathe(face, [Vector2(0.14, 0.02), Vector2(0.17, 0.0), Vector2(0.17, -0.03), Vector2(0.14, -0.04)], hbp, {"sides": 20, "basis": Basis(Vector3.RIGHT, PI * 0.5 - 0.15)})
-	rivets(hs, hbp, face + Vector3(0, 0.0, 0.015), 0.205, Vector3(0, 0.15, -1), 10, 0.014)
-	# Brass brows over the porthole make it scowl.
-	for side in [-1.0, 1.0]:
-		hs.tube([face + Vector3(0.04 * side, 0.17, -0.02), face + Vector3(0.16 * side, 0.2, 0.02)], [0.022, 0.016], hbp, {"sides": 7, "per": 1})
+	hs.tube([face + Vector3(0, -0.006, 0.05), face + Vector3(0, 0.0, -0.01)], [0.15, 0.15], hbp, {"sides": 20, "per": 1, "cap0": false, "cap_len": 0.45, "cap_rings": 3})
+	hs.tube([face + Vector3(0, 0.0, -0.05), face + Vector3(0, 0.002, -0.1)], [0.045, 0.04], hbp, {"sides": 10, "per": 1, "ridges": 10, "ridge": 0.15, "cap_rings": 2})
+	rivets(hs, hbp, face + Vector3(0, 0.0, 0.03), 0.19, Vector3(0, 0.15, -1), 10, 0.014)
 	# The beater: a brass shaft down into the bowl and a flat paddle buried in batter.
 	var beater_at := Vector3(0, 1.94, -0.28)
 	hs.tube([beater_at, beater_at + Vector3(0, -0.18, 0.02)], [0.04, 0.035], hbp, {"sides": 10, "per": 1})
 	hs.tube([beater_at + Vector3(-0.12, -0.18, 0.02), beater_at + Vector3(0, -0.32, 0.03), beater_at + Vector3(0.12, -0.18, 0.02)], [0.025, 0.03, 0.025], hbp, {"sides": 8, "per": 3})
 	part(head, "MotorHood", hs, enamel_mat)
+	# Its glowing heart is a pilot lamp on each side of the hood, next to the speed lever.
 	var es := Sculpt.new(); var ew := es.add_painter(func (p, n, v, w): return Color.WHITE)
-	es.blob(face + Vector3(0, 0, -0.01), Vector3(0.135, 0.135, 0.05), ew, {"lat": 7, "lon": 14, "basis": Basis(Vector3.RIGHT, -0.15)})
-	var core := part(head, "Porthole", es, glow); core.material_override = glow
-	var ps := Sculpt.new(); var pp := ps.add_painter(func (p, n, v, w): return Color("#3a1404"))
-	ps.blob(face + Vector3(0, 0, -0.055), Vector3(0.045, 0.06, 0.015), pp, {"lat": 4, "lon": 8, "basis": Basis(Vector3.RIGHT, -0.15)})
-	part(head, "Pupil", ps, metal)
+	for side in [-1.0, 1.0]: es.blob(Vector3(0.275 * side, 2.12, -0.2), Vector3(0.025, 0.035, 0.035), ew, {"lat": 5, "lon": 8})
+	var core := part(head, "PilotLamps", es, glow); core.material_override = glow
 	var a := arms(1.86, 0.55)
 	for i in range(2):
 		var elbow: Node3D = a[1][i]
