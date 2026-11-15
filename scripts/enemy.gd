@@ -349,6 +349,11 @@ func _launch_projectile() -> void:
 		B.facet(ember, Vector3.ZERO, Vector3(0.26, 0.24, 0.34), B.mat("#5a2410", 0, 0.25))
 		B.facet(ember, Vector3(0, 0.09, 0.04), Vector3(0.18, 0.1, 0.2), B.mat("#f4e8d2", 0, 0.2))
 		B.facet(ember, Vector3(0, -0.02, 0.2), Vector3(0.12, 0.12, 0.28), B.mat("#8a3a14", 0, 0.2))
+	elif species_id == "sugarspike_wasp":
+		# A sharp shard of sugar, candy-corn tipped.
+		ember.name = "SugarShard"
+		B.facet(ember, Vector3.ZERO, Vector3(0.09, 0.09, 0.42), B.mat("#fff4dc", 0, 0.55))
+		B.facet(ember, Vector3(0, 0, -0.16), Vector3(0.06, 0.06, 0.14), B.mat("#f08a1c", 0, 0.5))
 	else:
 		B.facet(ember, Vector3.ZERO, Vector3(0.23, 0.23, 0.4), B.mat("#ffb760", 0, 0.8))
 		B.facet(ember, Vector3(0, 0, 0.18), Vector3(0.13, 0.13, 0.4), B.mat("#e97343", 0, 0.5))

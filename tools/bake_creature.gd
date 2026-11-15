@@ -16,6 +16,7 @@ const DESIGNS := {
 	"chocobar_croc": ["res://tools/sculpt_choco_croc.gd", "croc"],
 	"pretzel_crawler": ["res://tools/sculpt_pretzel_crawler.gd", "scorpion"],
 	"cola_sloshback": ["res://tools/sculpt_cola_sloshback.gd", "bottle"],
+	"sugarspike_wasp": ["res://tools/sculpt_sugarspike_wasp.gd", "candycorn"],
 	"fizz_toad": ["res://tools/sculpt_cola_sloshback.gd", "toad_wild", "wild"],
 	"slosh_axolotl": ["res://tools/sculpt_cola_sloshback.gd", "axolotl_wild", "wild"],
 	"wrapper_mimic": ["res://tools/sculpt_mimics.gd", "rock"],
