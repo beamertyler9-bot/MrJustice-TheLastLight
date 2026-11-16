@@ -105,6 +105,7 @@ var food
 var story
 var gathering
 var ecology
+var barrowback
 var magic
 var wizard_tower
 var dev_tools
@@ -339,6 +340,11 @@ func _create_ecology() -> void:
 		ecology = load("res://scripts/ecology.gd").new()
 		ecology.setup(self)
 		world.add_child(ecology)
+	# Barrowback, the one great walking hill, roams the large world.
+	if state.expanded_world and ResourceLoader.exists("res://scripts/barrowback.gd"):
+		barrowback = load("res://scripts/barrowback.gd").new()
+		world.add_child(barrowback)
+		barrowback.setup(self)
 
 func _bind_world_services() -> void:
 	if state.expanded_world:

@@ -48,7 +48,11 @@ func _surface(pos: Vector2) -> Vector3:
 
 func destinations() -> Array:
 	if game == null or not is_instance_valid(game.world): return []
-	if game.world.get("atlas") != null: return _atlas_destinations()
+	if game.world.get("atlas") != null:
+		var list: Array = _atlas_destinations().duplicate()
+		var giant = game.get("barrowback")
+		if is_instance_valid(giant): list.append({"id": "barrowback", "name": "Barrowback, the walking hill · root curtain", "kind": "Landmark", "point": giant.approach_point()})
+		return list
 	var result: Array = []
 	for site in Locations.SITES + Locations.MOUNTAINS:
 		var point: Vector3 = _surface(site.pos)

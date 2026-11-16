@@ -7,6 +7,10 @@ extends "res://tools/creature_kit.gd"
 ##           crown of wheat
 ##   hill  - a hunched giant carrying a grassy hill on its back, with a gnarled little tree and
 ##           standing stones on top, its small stone face peering out from under the hill
+##   barrowback - the hill giant made for Barrowback, the one enormous friendly walking hill
+##           (scripts/barrowback.gd scales it up about twelve times): a root curtain to climb up
+##           its side, a ring of standing stones and three trees on top, and a hidden collision
+##           shell for its back
 
 const SOIL := Color("#6b4a2e")
 const SOIL_LIGHT := Color("#8a6440")
@@ -36,6 +40,7 @@ func build(variant: String) -> Node3D:
 		"sod": return _sod()
 		"hay": return _hay()
 		"hill": return _hill()
+		"barrowback": return _hill(true)
 	return null
 
 
@@ -89,14 +94,14 @@ func blade(s: Sculpt, painter: int, base: Vector3, dir: Vector3, length: float, 
 
 
 ## A clump of tall grass blades springing from a patch of ground.
-func grass_clump(s: Sculpt, painter: int, center: Vector3, radius: float, count: int, height: float, lean := Vector3.ZERO) -> void:
+func grass_clump(s: Sculpt, painter: int, center: Vector3, radius: float, count: int, height: float, lean := Vector3.ZERO, width := 0.022) -> void:
 	for k in range(count):
 		var ang := k * 2.399 + center.x * 3.0
 		var r := radius * sqrt((k + 0.5) / count)
 		var radial := Vector3(cos(ang), 0, sin(ang))
 		var base := center + radial * r
 		var dir := radial * 0.3 + Vector3.UP + lean
-		blade(s, painter, base, dir, height * (0.7 + 0.5 * absf(Sculpt.noise(base * 9.0))), 0.022, radial, 0.3)
+		blade(s, painter, base, dir, height * (0.7 + 0.5 * absf(Sculpt.noise(base * 9.0))), width, radial, 0.3)
 
 
 ## A seed head of wheat: plump grains along the top of a stalk.
@@ -338,7 +343,15 @@ func _hay() -> Node3D:
 
 # ------------------------------------------------------------------ C: barrow hill
 
-func _hill() -> Node3D:
+## Height of the top of the hill on its back at (x, z), in model units.
+static func hill_top_y(x: float, z: float) -> float:
+	return 2.32 + 0.62 * sqrt(maxf(0.0, 1.0 - pow(x / 1.05, 2.0) - pow((z - 0.25) / 0.95, 2.0)))
+
+
+func _hill(big := false) -> Node3D:
+	if big: root.name = "Barrowback"
+	## Upright solid things on Barrowback's back (stones, trunks): [base, radius, height].
+	var solids: Array = []
 	_eyes(Color("#9dfff0"))
 	var skin := func (p, n, v, w): return soil(p, n, v, w)
 	var legs := earth_legs(skin, 1.15, 0.38, 0.3)
@@ -352,9 +365,43 @@ func _hill() -> Node3D:
 		body.tube([from, from + Vector3(-cos(ang) * 0.2, 0.25, -0.12), from + Vector3(-cos(ang) * 0.35, 0.5, -0.05)], [0.04, 0.035, 0.02], rp, {"sides": 5, "per": 2, "cap_rings": 1, "lump": 0.3})
 	body.rock(Vector3(0, 2.32, 0.25), Vector3(1.05, 0.62, 0.95), tp, {"lat": 12, "lon": 20, "lump": 0.18})
 	body.blob(Vector3(0, 2.05, 0.2), Vector3(0.95, 0.35, 0.85), sp, {"lat": 8, "lon": 14, "lump": 0.3})
-	# Standing stones on the hill.
-	for spec in [[Vector3(0.45, 2.78, 0.45), 0.1], [Vector3(-0.35, 2.84, 0.55), -0.15], [Vector3(0.6, 2.66, 0.05), 0.25]]:
-		body.rock(spec[0] + Vector3(0, 0.12, 0), Vector3(0.13, 0.28, 0.09), st, {"lat": 6, "lon": 8, "lump": 0.3, "basis": Basis(Vector3.FORWARD, spec[1]) * Basis(Vector3.UP, spec[1] * 3.0)})
+	# Standing stones on the hill: three leaning stones, or for Barrowback a ring of seven.
+	if not big:
+		for spec in [[Vector3(0.45, 2.78, 0.45), 0.1], [Vector3(-0.35, 2.84, 0.55), -0.15], [Vector3(0.6, 2.66, 0.05), 0.25]]:
+			body.rock(spec[0] + Vector3(0, 0.12, 0), Vector3(0.13, 0.28, 0.09), st, {"lat": 6, "lon": 8, "lump": 0.3, "basis": Basis(Vector3.FORWARD, spec[1]) * Basis(Vector3.UP, spec[1] * 3.0)})
+	else:
+		for k in range(7):
+			var ang := TAU * k / 7.0 + 0.3
+			var x := 0.05 + cos(ang) * 0.42; var z := 0.32 + sin(ang) * 0.36
+			var lean := Sculpt.noise(Vector3(k, 2, 0) * 2.3) * 0.25
+			solids.append([Vector3(x, hill_top_y(x, z) - 0.05, z), 0.06, 0.3 + 0.08 * (k % 3)])
+			body.rock(Vector3(x, hill_top_y(x, z) + 0.08, z), Vector3(0.07, 0.17 + 0.04 * (k % 3), 0.05), st, {"lat": 6, "lon": 8, "lump": 0.25, "basis": Basis(Vector3.UP, -ang) * Basis(Vector3.FORWARD, lean)})
+		# A root curtain hanging down its right side from the rim of the hill nearly to the
+		# ground: the way up. Strands woven across with cross-roots, like a ladder.
+		var strands := 9
+		for i in range(strands):
+			var z := 0.05 + i * 0.05
+			var rim := 1.05 * sqrt(maxf(0.0, 1.0 - pow((z - 0.25) / 0.95, 2.0)))
+			var pts: Array = []; var radii: Array = []
+			for k in range(7):
+				var t := k / 6.0
+				pts.append(Vector3(rim + 0.03 + sin(t * 9.0 + i) * 0.012, lerpf(2.34, 0.13, t), z + sin(t * 7.0 + i * 1.7) * 0.012))
+				radii.append(lerpf(0.022, 0.012, t))
+			body.tube(pts, radii, rp, {"sides": 5, "per": 2, "cap_rings": 1, "lump": 0.3})
+		for k in range(11):
+			var y := 0.25 + k * 0.19
+			var pts: Array = []
+			for i in range(strands):
+				var z := 0.05 + i * 0.05
+				var rim := 1.05 * sqrt(maxf(0.0, 1.0 - pow((z - 0.25) / 0.95, 2.0)))
+				pts.append(Vector3(rim + 0.045, y + sin(i * 1.3 + k) * 0.01, z))
+			body.tube(pts, Array(pts.map(func (_q): return 0.011)), rp, {"sides": 4, "per": 1, "cap_rings": 1})
+		# A hidden shell matching its back, for walking on; and the root curtain's footprint.
+		var cs := Sculpt.new(); var cp := cs.add_painter(turf)
+		cs.rock(Vector3(0, 2.32, 0.25), Vector3(1.05, 0.62, 0.95), cp, {"lat": 12, "lon": 20, "lump": 0.18})
+		var shell := part(root, "HillCollision", cs); shell.visible = false
+		var rim0 := 1.05 * sqrt(maxf(0.0, 1.0 - pow((0.25 - 0.25) / 0.95, 2.0)))
+		root.set_meta("barrowback_curtain", {"center": Vector3(rim0 + 0.02, 1.25, 0.25), "size": Vector3(0.05, 2.25, 0.42)})
 	var fist := func (s: Sculpt, painter: int, wr: Vector3, side: float) -> void:
 		s.blob(wr + Vector3(0, -0.12, -0.02), Vector3(0.24, 0.2, 0.24), painter, {"lat": 6, "lon": 9, "lump": 0.35})
 		var rpp := s.add_painter(bark)
@@ -377,15 +424,40 @@ func _hill() -> Node3D:
 	# On top of the hill: tall grass, flowers and a gnarled little tree, all swaying.
 	var fronds: Array = []
 	var top := Sculpt.new(); var tg := top.add_painter(grass_paint())
-	for spot in [Vector3(-0.4, 2.82, 0.2), Vector3(0.2, 2.9, 0.3), Vector3(-0.1, 2.85, -0.1), Vector3(0.5, 2.7, 0.55), Vector3(-0.55, 2.6, 0.6)]:
-		grass_clump(top, tg, spot, 0.2, 10, 0.32)
-	flowers(top, [Vector3(-0.25, 2.88, 0.0), Vector3(0.35, 2.82, 0.4), Vector3(-0.5, 2.7, 0.45), Vector3(0.0, 2.92, 0.5)], 0.05)
+	if not big:
+		for spot in [Vector3(-0.4, 2.82, 0.2), Vector3(0.2, 2.9, 0.3), Vector3(-0.1, 2.85, -0.1), Vector3(0.5, 2.7, 0.55), Vector3(-0.55, 2.6, 0.6)]:
+			grass_clump(top, tg, spot, 0.2, 10, 0.32)
+		flowers(top, [Vector3(-0.25, 2.88, 0.0), Vector3(0.35, 2.82, 0.4), Vector3(-0.5, 2.7, 0.45), Vector3(0.0, 2.92, 0.5)], 0.05)
+	else:
+		# Barrowback stands about twelve times taller, so the grass and flowers on its back
+		# are sculpted small: knee-high tufts and little flowers all over the hilltop.
+		var spots: Array = []
+		for k in range(34):
+			var ang := k * 2.399
+			var r := sqrt((k + 0.5) / 34.0) * 0.82
+			var x := cos(ang) * r * 1.0; var z := 0.25 + sin(ang) * r * 0.9
+			grass_clump(top, tg, Vector3(x, hill_top_y(x, z) - 0.004, z), 0.03, 6, 0.06, Vector3.ZERO, 0.004)
+			if k % 3 == 1: spots.append(Vector3(x + 0.03, hill_top_y(x + 0.03, z + 0.02) + 0.002, z + 0.02))
+		flowers(top, spots, 0.009)
 	_frond(fronds, root, "HillGrass", Vector3(0, 2.85, 0.25), top)
 	var tree := Sculpt.new(); var trp := tree.add_painter(bark); var lp := tree.add_painter(leaf)
 	var trunk := [Vector3(-0.1, 2.85, 0.35), Vector3(-0.05, 3.2, 0.4), Vector3(0.08, 3.5, 0.32), Vector3(0.12, 3.75, 0.38)]
+	solids.append([Vector3(-0.08, 2.82, 0.36), 0.06, 0.7])
 	tree.tube(trunk, [0.07, 0.055, 0.045, 0.035], trp, {"sides": 7, "per": 3, "lump": 0.3})
 	tree.tube([trunk[2], trunk[2] + Vector3(-0.3, 0.25, 0.05)], [0.03, 0.015], trp, {"sides": 5, "per": 1, "cap_rings": 1})
 	for spec in [[Vector3(0.12, 3.85, 0.38), 0.28], [Vector3(-0.28, 3.68, 0.42), 0.22], [Vector3(0.3, 3.65, 0.25), 0.2]]:
 		tree.blob(spec[0], Vector3(spec[1], spec[1] * 0.7, spec[1]), lp, {"lat": 6, "lon": 9, "lump": 0.5})
 	_frond(fronds, root, "HillTree", Vector3(-0.1, 2.85, 0.35), tree)
+	if big:
+		# Two smaller trees toward the back of the hill.
+		for spec in [[Vector3(-0.55, 0.0, 0.55), 0.7], [Vector3(0.45, 0.0, 0.7), 0.6]]:
+			var at: Vector3 = spec[0]; at.y = hill_top_y(at.x, at.z) - 0.03
+			solids.append([at, 0.045 * float(spec[1]), 0.75 * float(spec[1])])
+			var sz: float = spec[1]
+			var t2 := Sculpt.new(); var t2b := t2.add_painter(bark); var t2l := t2.add_painter(leaf)
+			t2.tube([at, at + Vector3(0.03, 0.4, 0.02) * sz, at + Vector3(-0.04, 0.75, 0.05) * sz], [0.05 * sz, 0.04 * sz, 0.03 * sz], t2b, {"sides": 6, "per": 2, "lump": 0.3})
+			t2.blob(at + Vector3(-0.04, 0.85, 0.05) * sz, Vector3(0.25, 0.18, 0.25) * sz, t2l, {"lat": 5, "lon": 8, "lump": 0.5})
+			t2.blob(at + Vector3(0.12, 0.72, 0.0) * sz, Vector3(0.17, 0.12, 0.17) * sz, t2l, {"lat": 5, "lon": 8, "lump": 0.5})
+			_frond(fronds, root, "HillTree", at, t2)
+	if big: root.set_meta("barrowback_solids", solids)
 	return _close(head, core, arms, legs, fronds, 1.15)

@@ -22,6 +22,7 @@ const DESIGNS := {
 	"wrapper_mimic": ["res://tools/sculpt_mimics.gd", "rock"],
 	"chest_mimic": ["res://tools/sculpt_mimics.gd", "chest"],
 	"treeline_lurker": ["res://tools/sculpt_treeline_lurker.gd", "lurker", "lurker"],
+	"barrowback": ["res://tools/sculpt_grassland_colossus.gd", "barrowback", "plain"],
 	"grand_confectioner": ["res://tools/sculpt_grand_confectioner.gd", "mixer"],
 	"windwhistle_stalker": ["res://tools/sculpt_windwhistle_stalker.gd", "lion"],
 	"thistle_jackal": ["res://tools/sculpt_thistle_jackal.gd", "burrcoat"],
@@ -35,7 +36,7 @@ func _initialize() -> void:
 		var path := "res://assets/creatures/enemy_%s.scn" % id
 		if not ResourceLoader.exists(path): path = "res://assets/creatures/regional_enemy_%s.scn" % id
 		if design.size() > 2 and design[2] == "wild": path = "res://assets/creatures/regional_wild_%s.scn" % id
-		if design.size() > 2 and design[2] == "lurker": path = "res://assets/creatures/%s.scn" % id
+		if design.size() > 2 and design[2] in ["lurker", "plain"]: path = "res://assets/creatures/%s.scn" % id
 		var model: Node3D = load(design[0]).new().build(design[1])
 		if ResourceLoader.exists(path):
 			var old: Node = load(path).instantiate()
