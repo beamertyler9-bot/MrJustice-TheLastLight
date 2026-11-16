@@ -8,6 +8,9 @@ extends Node3D
 ##   never comes nearer than about ten metres.
 ## - If he walks up to it, it melts away and turns up again further off.
 ## - It leaves when he leaves Hollowmourn.
+## - Very rarely one turns up anywhere else in the world (a "wanderer"): it follows him for a
+##   minute or two, from behind trees or, where there are none, standing out in the open at a
+##   distance, and then fades away for good.
 ##
 ## Spawned and retired by scripts/ecology.gd.
 
@@ -35,6 +38,12 @@ var tree: Node3D = null
 var peek_side := 1.0
 ## The world direction it leans out toward, past the edge of its trunk.
 var peek_dir := Vector3.RIGHT
+## Where it stands when there is no tree to hide behind (INF when it is at a tree).
+var open_spot := Vector3.INF
+## A wanderer follows him outside Hollowmourn for `lifetime` seconds, then leaves for good.
+var wanderer := false
+var lifetime := -1.0
+var leaving := false
 var timer := 0.0
 var seen_time := 0.0
 var fade := 1.0
@@ -65,8 +74,13 @@ func setup(context) -> void:
 	var eyes := model.find_child("Eyes", true, false)
 	if eyes is GeometryInstance3D and eyes.material_override is StandardMaterial3D:
 		var bright: StandardMaterial3D = eyes.material_override.duplicate()
-		bright.emission_energy_multiplier = 4.0
+		bright.emission_energy_multiplier = 7.0
 		eyes.material_override = bright
+		# A faint cold light from its eyes, just enough to pick out the edge of its face.
+		var shine := OmniLight3D.new(); shine.light_color = Color("#dfe9ff"); shine.light_energy = 0.6
+		shine.omni_range = 0.9; shine.shadow_enabled = false
+		shine.position = Vector3(0, 2.88, -0.6) - (eyes.get_parent() as Node3D).position
+		eyes.get_parent().add_child(shine)
 	_set_fade(1.0)
 	timer = randf_range(1.0, 2.5)
 
@@ -85,37 +99,42 @@ func _process(dt: float) -> void:
 	var distance := to_player.length()
 	var seen := _seen() if fade < 0.9 else false
 	seen_time = seen_time + dt if seen else 0.0
+	if lifetime > 0.0:
+		lifetime -= dt
+		if lifetime <= 0.0:
+			leaving = true
+			if state in ["appearing", "lurking"]: _vanish(0.0, 0.0)
+	if leaving and state == "hidden":
+		queue_free(); return
 	match state:
 		"hidden":
-			# Out of sight; once the timer runs out, pick a tree out of his view to appear at.
+			# Out of sight; once the timer runs out, pick a tree (or, for a wanderer with no
+			# trees about, a spot in the open) out of his view to appear at.
 			timer -= dt
 			if timer <= 0.0:
-				var next := _pick_tree(player, 14.0, 26.0, true)
-				if next == null: timer = 1.5
-				else:
-					_take_tree(next, player)
-					state = "appearing"
+				if _pick_spot(player, 14.0, 26.0): state = "appearing"
+				else: timer = 1.5
 		"appearing":
 			fade = maxf(0.0, fade - dt / FADE_IN)
 			if seen_time > SEEN_TO_VANISH and fade < 0.5: _vanish(1.5, 3.0)
 			elif fade <= 0.0:
 				state = "lurking"; timer = randf_range(4.0, 8.0)
 		"lurking":
-			_place_at_tree(player, dt)
+			_place(player, dt)
 			if seen_time > SEEN_TO_VANISH: _vanish(1.5, 3.5)
 			elif distance < TOO_CLOSE: _vanish(4.0, 7.0)
 			else:
 				timer -= dt
 				if timer <= 0.0 and not seen:
-					# Creep a little closer: slip to a nearer tree he isn't looking at.
-					var next := _pick_tree(player, maxf(NEAREST, distance - 6.0), maxf(NEAREST + 3.0, distance - 1.0), true)
-					if next != null:
-						state = "slipping"; tree = next
+					# Creep a little closer (or keep up, if he has walked on): slip to a nearer
+					# tree or spot he isn't looking at.
+					state = "slipping"
 					timer = randf_range(4.0, 8.0)
 		"slipping":
 			fade = minf(1.0, fade + dt / 0.2)
 			if fade >= 1.0:
-				_take_tree(tree, player)
+				if not _pick_spot(player, maxf(NEAREST, minf(distance, 26.0) - 6.0), maxf(NEAREST + 3.0, minf(distance, 26.0) - 1.0)):
+					if not _pick_spot(player, 14.0, 26.0): _place(player, 1.0, true)
 				state = "appearing"
 		"vanishing":
 			fade = minf(1.0, fade + dt / FADE_OUT)
@@ -169,6 +188,42 @@ func _pick_tree(player: Node3D, near: float, far: float, hidden: bool) -> Node3D
 	return best
 
 
+## Choose where to appear next: a tree he isn't looking toward, or for a wanderer with no
+## trees nearby, a patch of open ground behind or beside him. Returns false if neither.
+func _pick_spot(player: Node3D, near: float, far: float) -> bool:
+	var next := _pick_tree(player, near, far, true)
+	if next != null:
+		open_spot = Vector3.INF
+		_take_tree(next, player)
+		return true
+	if not wanderer: return false
+	var camera := get_viewport().get_camera_3d()
+	var back := Vector3.BACK if camera == null else camera.global_basis.z
+	back.y = 0.0
+	for attempt in range(10):
+		var dir := back.normalized().rotated(Vector3.UP, randf_range(-1.2, 1.2))
+		var at := player.global_position + dir * randf_range(near, far)
+		at.y = _ground(at)
+		if _visible_from_camera(at): continue
+		# Not in the middle of a village or other settled ground.
+		if game.world.has_method("reserved_at") and game.world.reserved_at(Vector2(at.x, at.z), 2.0): continue
+		tree = null; open_spot = at
+		_place(player, 1.0, true)
+		return true
+	return false
+
+
+## Stand at its tree or its spot in the open, facing him.
+func _place(player: Node3D, dt: float, snap := false) -> void:
+	if is_instance_valid(tree) or open_spot == Vector3.INF:
+		_place_at_tree(player, dt, snap); return
+	peek_dir = Vector3.ZERO
+	var at := open_spot; at.y = _ground(at)
+	global_position = at
+	var facing := player.global_position - at; facing.y = 0.0
+	_face(facing.normalized(), dt, 4.0 if not snap else 1000.0)
+
+
 func _take_tree(next: Node3D, player: Node3D) -> void:
 	tree = next
 	peek_side = -1.0 if randf() < 0.5 else 1.0
@@ -184,7 +239,7 @@ func _place_at_tree(player: Node3D, dt: float, snap := false) -> void:
 	away = away.normalized()
 	var side := away.cross(Vector3.UP).normalized() * peek_side
 	peek_dir = side
-	var target := trunk + away * 0.6 + side * (_trunk_radius() * 0.75)
+	var target := trunk + away * (_trunk_radius() + 0.6) + side * (_trunk_radius() * 0.85)
 	target.y = _ground(target)
 	global_position = target if snap else global_position.lerp(target, 1.0 - exp(-dt * 3.0))
 	_face(-away, dt, 6.0 if not snap else 1000.0)
@@ -223,12 +278,12 @@ func _animate(dt: float) -> void:
 	# Stooped low and leaning out past the trunk, so its head comes out under the branches.
 	var out := signf(peek_dir.dot(model.global_basis.x))
 	var follow := 1.0 - exp(-dt * 3.0)
-	model.rotation.z = lerpf(model.rotation.z, -out * 0.34, follow)
-	model.rotation.x = lerpf(model.rotation.x, -0.38, follow)
-	model.position.y = lerpf(model.position.y, -0.3, follow)
+	model.rotation.z = lerpf(model.rotation.z, -out * 0.42, follow)
+	model.rotation.x = lerpf(model.rotation.x, -0.12 if out != 0.0 else -0.05, follow)
+	model.position.y = lerpf(model.position.y, -0.35 if out != 0.0 else 0.0, follow)
 	if head != null:
-		head.rotation.z = sin(clock * 0.7) * 0.15 + out * 0.4
-		head.rotation.x = 0.3 + sin(clock * 0.43) * 0.06
+		head.rotation.z = sin(clock * 0.7) * 0.15 + out * 0.55
+		head.rotation.x = 0.1 + sin(clock * 0.43) * 0.06
 	# Its long fingers flex slowly as it watches.
 	for k in range(arms.size()):
 		arms[k].rotation.x = sin(clock * 0.9 + k) * 0.04

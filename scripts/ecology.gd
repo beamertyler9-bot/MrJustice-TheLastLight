@@ -16,6 +16,11 @@ var update_clock := 0.0
 ## The one Treeline Lurker that may be stalking Mr. Justice through Hollowmourn's woods.
 var lurker: Node3D = null
 var lurker_clock := 4.0
+## After a wanderer has followed him somewhere else in the world, none comes again for a while.
+var wanderer_rest := 300.0
+## Chance, each 8-second check outdoors outside Hollowmourn, that a wanderer appears (about
+## once every quarter of an hour of time spent outdoors, on average).
+const WANDERER_CHANCE := 0.009
 
 func setup(context) -> void:
 	game = context
@@ -169,21 +174,32 @@ func _retire(actor: Node3D) -> void:
 ## Now and then while Mr. Justice is out in Hollowmourn, a Treeline Lurker starts stalking
 ## him; it leaves when he leaves the region or goes far from where it is.
 func _tick_lurker(dt: float) -> void:
+	wanderer_rest = maxf(0.0, wanderer_rest - dt)
+	if lurker != null and not is_instance_valid(lurker):
+		# A wanderer has had its fill of following him and gone.
+		lurker = null; wanderer_rest = 600.0
 	if is_instance_valid(lurker):
-		if not Lurker.hunting_ground(game) or lurker.global_position.distance_to(game.player.global_position) > Lurker.LEAVE_DISTANCE:
-			_retire_lurker()
+		var too_far: bool = lurker.global_position.distance_to(game.player.global_position) > Lurker.LEAVE_DISTANCE
+		if too_far or (not lurker.wanderer and not Lurker.hunting_ground(game)): _retire_lurker()
 		return
 	lurker_clock -= dt
 	if lurker_clock > 0.0: return
 	lurker_clock = 8.0
-	if not Lurker.hunting_ground(game) or randf() > 0.35: return
+	var home := Lurker.hunting_ground(game)
+	if home and randf() > 0.35: return
+	if not home and (wanderer_rest > 0.0 or randf() > WANDERER_CHANCE): return
 	lurker = Lurker.new()
+	if not home:
+		lurker.wanderer = true
+		lurker.lifetime = randf_range(70.0, 130.0)
 	game.add_child(lurker)
 	lurker.setup(game)
 	lurker.global_position = game.player.global_position
 
 func _retire_lurker() -> void:
-	if is_instance_valid(lurker): lurker.queue_free()
+	if is_instance_valid(lurker):
+		if lurker.wanderer: wanderer_rest = 600.0
+		lurker.queue_free()
 	lurker = null
 	lurker_clock = 20.0
 

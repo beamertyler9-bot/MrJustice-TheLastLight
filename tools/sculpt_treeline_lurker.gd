@@ -108,7 +108,7 @@ func _lurker() -> Node3D:
 	var es := Sculpt.new(); var white := es.add_painter(func (p, n, v, w): return Color.WHITE)
 	for side in [-1.0, 1.0]:
 		hs.blob(Vector3(0.009 * side, 2.79, -0.53), Vector3(0.003, 0.009, 0.004), void_paint, {"lat": 3, "lon": 5})
-		es.blob(Vector3(0.028 * side, 2.878, -0.524), Vector3(0.0055, 0.0055, 0.003), white, {"lat": 4, "lon": 6})
+		es.blob(Vector3(0.03 * side, 2.878, -0.524), Vector3(0.012, 0.011, 0.0045), white, {"lat": 5, "lon": 8})
 	hs.blob(Vector3(0, 2.755, -0.528), Vector3(0.02, 0.0025, 0.005), void_paint, {"lat": 3, "lon": 7})
 	part(head, "Head", hs)
 	var core := part(head, "Eyes", es, glow); core.material_override = glow
