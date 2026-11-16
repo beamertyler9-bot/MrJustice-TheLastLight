@@ -23,6 +23,7 @@ const DESIGNS := {
 	"chest_mimic": ["res://tools/sculpt_mimics.gd", "chest"],
 	"grand_confectioner": ["res://tools/sculpt_grand_confectioner.gd", "mixer"],
 	"windwhistle_stalker": ["res://tools/sculpt_windwhistle_stalker.gd", "lion"],
+	"thistle_jackal": ["res://tools/sculpt_thistle_jackal.gd", "burrcoat"],
 }
 
 

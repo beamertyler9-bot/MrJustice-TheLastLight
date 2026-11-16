@@ -264,27 +264,61 @@ func _thistleback() -> Node3D:
 
 # ------------------------------------------------------------------ B: burr-coat
 
+## A shaggy lock of fur: a flattened, lumpy strand that droops toward its tip.
+func shag(s: Sculpt, painter: int, base: Vector3, dir: Vector3, length: float, radius: float, droop := 0.35) -> void:
+	var d := dir.normalized()
+	var sag := Vector3(0, -length * droop, 0)
+	var thin := d.cross(Vector3.UP).normalized().cross(d).normalized() if absf(d.y) < 0.95 else Vector3.RIGHT
+	s.tube([base, base + d * length * 0.5 + sag * 0.3, base + d * length + sag], [radius, radius * 0.8, 0.003], painter, {"sides": 6, "per": 2, "lump": 0.5, "flat": 0.55, "side": thin, "cap_rings": 1, "cap1": false})
+
+
+## A foxtail grass seed head caught in the coat: a short stalk and a fuzzy bristly spike.
+func foxtail(s: Sculpt, stalk: int, fuzz: int, base: Vector3, dir: Vector3, length: float) -> void:
+	var d := dir.normalized()
+	s.tube([base, base + d * length * 0.4], [0.004, 0.004], stalk, {"sides": 4, "per": 1, "cap_rings": 1})
+	var a := base + d * length * 0.35
+	s.tube([a, a + d * length * 0.35 + Vector3(0, -0.01, 0), a + d * length * 0.65 + Vector3(0, -0.025, 0)], [0.012, 0.014, 0.003], fuzz, {"sides": 6, "per": 2, "lump": 0.9, "cap_rings": 1})
+
+
 func _burrcoat() -> Node3D:
-	_eyes(Color("#ffdb6e"))
-	fur_base = Color("#a28c6c"); fur_saddle = Color("#5b4e40"); fur_belly = Color("#ded2b8"); fur_leg = Color("#9a7450"); saddle = 0.7
+	_eyes(Color("#ffc24a"))
+	fur_base = Color("#a28c6c"); fur_saddle = Color("#54473a"); fur_belly = Color("#ded2b8"); fur_leg = Color("#9a7450"); saddle = 0.75
 	var parts := _jackal(fur())
 	var lift: float = parts.lift
 	var body: Sculpt = parts.body; var bp: int = parts.body_painter
-	# A shaggy ruff of bristly seed-like fur round its neck and down its back.
-	_bristles(body, bp, lift, 9, 0.14)
-	for ring in range(2):
-		for k in range(11):
-			var ang := PI * (-0.15 + 1.3 * k / 10.0)
+	var shag_paint := body.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+		return fur_saddle.lerp(fur_base.lightened(0.1), clampf(v * 0.9 + Sculpt.noise(p * 14.0) * 0.35 + 0.1, 0.0, 1.0)))
+	# A shaggy, unkempt coat: a thick ruff of locks round the neck, and a ragged crest down the
+	# back.
+	for ring in range(3):
+		for k in range(15):
+			var jitter := Sculpt.noise(Vector3(k, ring, 11) * 2.7)
+			var ang := PI * (-0.2 + 1.4 * (k + ring * 0.5 + jitter * 0.6) / 14.0)
 			var radial := Vector3(cos(ang), sin(ang), 0)
-			tufts(body, bp, [Vector3(0, 0.9 + lift, -0.48 + ring * 0.09) + radial * 0.11], [radial * 0.7 + Vector3(0, -0.1, 0.7)], 0.12, 0.026)
-	# Spiky burrs caught all through its coat.
+			var base := Vector3(0, 0.9 + lift - ring * 0.02, -0.5 + ring * 0.08 + jitter * 0.03) + radial * (0.1 + ring * 0.015)
+			var dir := radial * (0.45 + jitter * 0.2) + Vector3(jitter * 0.3, -0.2, 0.8)
+			shag(body, shag_paint, base, dir, 0.15 + ring * 0.03 + 0.05 * absf(Sculpt.noise(Vector3(k, ring, 9) * 2.0)), 0.022, 0.55)
+	for k in range(14):
+		var t := k / 13.0
+		var z := lerpf(-0.42, 0.42, t)
+		var y := lerpf(1.0, 0.92, t) + lift - absf(t - 0.6) * 0.05
+		for side in [-1.0, 1.0]:
+			shag(body, shag_paint, Vector3(0.03 * side, y, z), Vector3(side * 0.6, 0.55, 0.8), 0.09 + 0.03 * absf(Sculpt.noise(Vector3(k, side, 4) * 2.3)), 0.026, 0.5)
+	# Spiky burrs caught all through its coat, alone and in little clusters, and a few
+	# foxtail seed heads.
 	var bur := body.add_painter(func (p, n, v, w): return Color("#4a2f18").lerp(Color("#8a5a2a"), clampf(Sculpt.noise(p * 30.0) + 0.4, 0.0, 1.0)))
-	var spots := [Vector3(0.1, 0.92, -0.42), Vector3(-0.12, 0.9, -0.36), Vector3(0.14, 0.83, -0.2), Vector3(-0.15, 0.82, -0.12), Vector3(0.08, 0.92, -0.05),
-		Vector3(-0.06, 0.92, 0.12), Vector3(0.13, 0.8, 0.2), Vector3(-0.14, 0.82, 0.3), Vector3(0.1, 0.88, 0.4), Vector3(-0.04, 0.92, 0.33),
-		Vector3(0.0, 0.7, -0.15), Vector3(0.16, 0.7, 0.35), Vector3(-0.16, 0.66, 0.42)]
-	for at in spots: burr(body, bur, at + Vector3(0, lift, 0), 0.032)
-	var ts: Sculpt = parts.tail_sculpts[0]; var tb := ts.add_painter(func (p, n, v, w): return Color("#7a5631"))
-	for at in [Vector3(0.05, 0.64, 0.7), Vector3(-0.06, 0.52, 0.8), Vector3(0.03, 0.46, 0.84)]: burr(ts, tb, at + Vector3(0, lift, 0), 0.028)
+	var spots := [[Vector3(0.1, 0.94, -0.44), 0.034], [Vector3(-0.13, 0.9, -0.38), 0.03], [Vector3(-0.1, 0.92, -0.33), 0.024], [Vector3(0.15, 0.84, -0.2), 0.036],
+		[Vector3(-0.16, 0.82, -0.12), 0.032], [Vector3(0.08, 0.95, -0.03), 0.028], [Vector3(0.11, 0.94, 0.0), 0.022], [Vector3(-0.07, 0.95, 0.13), 0.034],
+		[Vector3(0.14, 0.82, 0.2), 0.03], [Vector3(-0.15, 0.83, 0.3), 0.036], [Vector3(-0.13, 0.85, 0.35), 0.024], [Vector3(0.1, 0.9, 0.4), 0.03],
+		[Vector3(0.0, 0.66, -0.12), 0.03], [Vector3(0.16, 0.7, 0.36), 0.028]]
+	for spot in spots: burr(body, bur, spot[0] + Vector3(0, lift, 0), spot[1])
+	var stalk := body.add_painter(func (p, n, v, w): return Color("#b39c63"))
+	var fuzz := body.add_painter(func (p, n, v, w): return Color("#cdb87a").lerp(Color("#e8dcae"), v))
+	for spec in [[Vector3(0.06, 0.98, -0.22), Vector3(0.8, 0.6, 0.6)], [Vector3(-0.08, 0.96, 0.22), Vector3(-0.7, 0.7, 0.8)], [Vector3(0.13, 0.86, 0.3), Vector3(1.0, 0.3, 0.5)]]:
+		foxtail(body, stalk, fuzz, spec[0] + Vector3(0, lift, 0), spec[1], 0.16)
+	var ts: Sculpt = parts.tail_sculpts[0]; var tb := ts.add_painter(func (p, n, v, w): return Color("#5a3a1e"))
+	for spec in [[Vector3(0.05, 0.64, 0.7), 0.03], [Vector3(-0.06, 0.53, 0.79), 0.034], [Vector3(0.04, 0.46, 0.84), 0.026], [Vector3(-0.03, 0.66, 0.66), 0.022]]:
+		burr(ts, tb, spec[0] + Vector3(0, lift, 0), spec[1])
 	return _close(parts, 1.1)
 
 
