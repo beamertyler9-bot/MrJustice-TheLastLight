@@ -1,7 +1,7 @@
 extends "res://tools/creature_kit.gd"
-## EXPERIMENTAL (not in the game): the Treeline Lurker, a very tall, lanky, alien figure,
-## black as a shadow, with tiny white eyes, a long swept-back skull and long limbs and
-## fingers. It hides behind trees and slips out of sight when you look at it.
+## The Treeline Lurker: a very tall, lanky, alien figure, black as a shadow, with tiny
+## white eyes, a tall skull, long limbs and fingers, and tendrils of shadow drifting off it.
+## It hides behind trees and slips out of sight when you look at it (scripts/treeline_lurker.gd).
 ##   lurker       - the figure on its own (about 3 m tall, Mr. Justice is 1.22 m)
 ##   lurker_scale - the same with a grey 1.22 m stand-in for Mr. Justice beside it
 
@@ -17,6 +17,30 @@ func _init() -> void:
 	material.metallic_specular = 0.55
 	glow.albedo_color = Color("#e8eef5"); glow.emission = Color("#f4f8ff")
 	glow.emission_energy_multiplier = 1.8
+	smoke = StandardMaterial3D.new()
+	smoke.vertex_color_use_as_albedo = true
+	smoke.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	smoke.cull_mode = BaseMaterial3D.CULL_DISABLED
+	smoke.roughness = 1.0
+
+
+var smoke: StandardMaterial3D
+
+
+## A tendril of shadow drifting off the body: thick and dark at the root, curling and thinning
+## to nothing.
+func wisp(s: Sculpt, painter: int, base: Vector3, dir: Vector3, length: float, radius: float, curl: Vector3) -> void:
+	var d := dir.normalized(); var at := base
+	var side := d.cross(Vector3.UP).normalized() if absf(d.y) < 0.95 else Vector3.RIGHT
+	var pts: Array = [at]; var radii: Array = [radius]
+	var phase := Sculpt.noise(base * 7.0) * 3.0
+	for k in range(6):
+		var t := (k + 1) / 6.0
+		d = (d + curl * 0.25 + Vector3(0, 0.12, 0)).normalized()
+		at += d * length / 6.0
+		pts.append(at + side * sin(t * 7.0 + phase) * length * 0.07)
+		radii.append(radius * (1.0 + sin(t * PI) * 0.7))
+	s.tube(pts, radii, painter, {"sides": 7, "per": 2, "cap_rings": 2, "lump": 0.35, "flat": 0.55, "side": side})
 
 
 func build(variant: String) -> Node3D:
@@ -140,8 +164,38 @@ func _lurker() -> Node3D:
 			finger(ss, sp, ball, dir, Vector3(0, -0.25, 0), [0.08, 0.06, 0.04], 0.016)
 		part(knee, "Shin", ss)
 		hips.append(hip); knees.append(knee)
+	# Faint collarbones and hip bones under the skin.
+	for side in [-1.0, 1.0]:
+		body.tube([Vector3(0.03 * side, 2.49, -0.255), Vector3(0.12 * side, 2.5, -0.245), Vector3(0.2 * side, 2.51, -0.2)], [0.012, 0.011, 0.012], bp, {"sides": 5, "per": 2, "cap_rings": 1})
+		body.blob(Vector3(0.095 * side, 1.66, -0.035), Vector3(0.035, 0.028, 0.03), bp, {"lat": 4, "lon": 6})
 	part(root, "Body", body)
-	var node := _finish({"head": head, "core": core, "arms": arms, "forearms": forearms, "feet": hips, "knees": knees, "leaves": []}, 1.0)
+	# Tendrils of shadow curling off its skull, shoulders, elbows and back; they sway on their
+	# own joints.
+	var smoke_paint := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+		var c := INK.lerp(INK_SHEEN, clampf(Sculpt.noise(p * 9.0) * 0.5 + 0.2, 0.0, 1.0))
+		c.a = clampf(0.92 * pow(1.0 - v, 1.6), 0.0, 1.0)
+		return c
+	var wisps: Array = []
+	var groups := [
+		[head, "WispsSkull", Vector3(0, 3.05, -0.3), [[Vector3(0, 3.08, -0.3), Vector3(0, 0.6, 1.0), 0.5, 0.03, Vector3(0, -0.4, 0.3)], [Vector3(0.05, 3.0, -0.33), Vector3(0.7, 0.4, 0.8), 0.4, 0.024, Vector3(0.2, -0.5, 0.2)], [Vector3(-0.05, 3.0, -0.33), Vector3(-0.7, 0.4, 0.8), 0.42, 0.024, Vector3(-0.2, -0.5, 0.2)]]],
+		[root, "WispsShoulders", Vector3(0, 2.52, -0.12), [[Vector3(0.18, 2.55, -0.1), Vector3(0.4, 0.8, 0.8), 0.5, 0.03, Vector3(0.1, -0.3, 0.4)], [Vector3(-0.18, 2.55, -0.1), Vector3(-0.4, 0.8, 0.8), 0.52, 0.03, Vector3(-0.1, -0.3, 0.4)], [Vector3(0, 2.4, 0.06), Vector3(0, 0.5, 1.0), 0.6, 0.032, Vector3(0, -0.5, 0.2)]]],
+		[root, "WispsBack", Vector3(0, 1.95, 0.1), [[Vector3(0.03, 2.0, 0.1), Vector3(0.3, 0.2, 1.0), 0.55, 0.028, Vector3(0.1, -0.5, 0.3)], [Vector3(-0.03, 1.8, 0.1), Vector3(-0.3, -0.1, 1.0), 0.5, 0.026, Vector3(-0.1, -0.5, 0.3)]]],
+	]
+	for group in groups:
+		var ws := Sculpt.new(); var wp := ws.add_painter(smoke_paint)
+		for spec in group[3]: wisp(ws, wp, spec[0], spec[1], spec[2], spec[3], spec[4])
+		var j := joint(group[0], group[1], group[2])
+		var m := part(j, "Smoke", ws, smoke); m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		wisps.append(j)
+	for k in range(2):
+		var side := -1.0 if k == 0 else 1.0
+		var ws := Sculpt.new(); var wp := ws.add_painter(smoke_paint)
+		var elbow := Vector3(0.31 * side, 1.84, -0.06)
+		wisp(ws, wp, elbow, Vector3(0.3 * side, -0.2, 1.0), 0.4, 0.022, Vector3(0, -0.6, 0.2))
+		var j := joint(forearms[k], "WispElbow", elbow)
+		var m := part(j, "Smoke", ws, smoke); m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		wisps.append(j)
+	var node := _finish({"head": head, "core": core, "arms": arms, "forearms": forearms, "feet": hips, "knees": knees, "leaves": wisps}, 1.0)
 	var rig: Dictionary = node.get_meta("rig_bindings")
 	rig["visual_rig"] = {"head": node.get_path_to(head), "wings": [], "wing_meshes": [], "legs": [], "knees": [], "ears": [], "tails": [], "features": {}}
 	node.set_meta("rig_bindings", rig)

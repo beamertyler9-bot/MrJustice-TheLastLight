@@ -5,6 +5,7 @@ extends Node3D
 const Enemy = preload("res://scripts/enemy.gd")
 const Locations = preload("res://scripts/locations.gd")
 const Creatures = preload("res://scripts/creature_catalog.gd")
+const Lurker = preload("res://scripts/treeline_lurker.gd")
 const MAX_ACTIVE := 8
 const CELL_SIZE := 32.0
 const SPAWN_RADIUS := 56.0
@@ -12,6 +13,9 @@ const RETIRE_RADIUS := 72.0
 var game
 var live: Dictionary = {}
 var update_clock := 0.0
+## The one Treeline Lurker that may be stalking Mr. Justice through Hollowmourn's woods.
+var lurker: Node3D = null
+var lurker_clock := 4.0
 
 func setup(context) -> void:
 	game = context
@@ -22,7 +26,9 @@ func _process(dt: float) -> void:
 	if game == null or game.mode != "play" or not is_instance_valid(game.player) or not is_instance_valid(game.world): return
 	if not _player_outdoors() or game.world.chunks.is_empty():
 		_retire_all()
+		_retire_lurker()
 		return
+	_tick_lurker(dt)
 
 
 	for victim_id in live.keys():
@@ -159,6 +165,27 @@ func _retire(actor: Node3D) -> void:
 	actor.remove_from_group("enemy")
 	remove_child(actor)
 	actor.queue_free()
+
+## Now and then while Mr. Justice is out in Hollowmourn, a Treeline Lurker starts stalking
+## him; it leaves when he leaves the region or goes far from where it is.
+func _tick_lurker(dt: float) -> void:
+	if is_instance_valid(lurker):
+		if not Lurker.hunting_ground(game) or lurker.global_position.distance_to(game.player.global_position) > Lurker.LEAVE_DISTANCE:
+			_retire_lurker()
+		return
+	lurker_clock -= dt
+	if lurker_clock > 0.0: return
+	lurker_clock = 8.0
+	if not Lurker.hunting_ground(game) or randf() > 0.35: return
+	lurker = Lurker.new()
+	game.add_child(lurker)
+	lurker.setup(game)
+	lurker.global_position = game.player.global_position
+
+func _retire_lurker() -> void:
+	if is_instance_valid(lurker): lurker.queue_free()
+	lurker = null
+	lurker_clock = 20.0
 
 func _retire_all() -> void:
 	for actor in get_children(): _retire(actor)
