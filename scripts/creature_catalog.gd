@@ -46,6 +46,7 @@ const SIZES = {"cocoa_knight": {"radius": 0.6, "height": 2.6, "reach": 2.6}, "fu
 	"wrapper_mimic": {"radius": 0.6, "height": 1.5, "reach": 2.4, "hp": 6, "speed": 3.0},
 	"chest_mimic": {"radius": 0.6, "height": 1.6, "reach": 2.4, "hp": 7, "speed": 3.0},
 	"grand_confectioner": {"radius": 0.95, "height": 3.0, "reach": 3.0},
+	"windwhistle_stalker": {"radius": 0.65, "height": 1.45, "reach": 2.5},
 }
 ## Ambushers lie still, disguised (a rock, a chest), until Mr. Justice comes within `trigger`
 ## metres; then they rise `sink` metres out of the ground on their legs and fight.

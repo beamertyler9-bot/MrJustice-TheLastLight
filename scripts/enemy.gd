@@ -208,7 +208,9 @@ func _physics_process(dt: float) -> void:
 		# Stop in front of Mr. Justice to strike instead of walking into him, and ease back
 		# if he steps right up against us.
 		var stand_off := minf(maxf(float(profile.radius), _front()) + 0.6, float(profile.reach) * 0.8)
-		if distance < stand_off * 0.75:
+		# Long-snouted creatures back off before their snout reaches into him.
+		var too_close := minf(maxf(stand_off * 0.75, _front() + 0.35), stand_off - 0.15)
+		if distance < too_close:
 			travel = -flat; speed = float(profile.speed) * 0.5
 		elif distance < stand_off:
 			speed = 0.0

@@ -22,6 +22,7 @@ const DESIGNS := {
 	"wrapper_mimic": ["res://tools/sculpt_mimics.gd", "rock"],
 	"chest_mimic": ["res://tools/sculpt_mimics.gd", "chest"],
 	"grand_confectioner": ["res://tools/sculpt_grand_confectioner.gd", "mixer"],
+	"windwhistle_stalker": ["res://tools/sculpt_windwhistle_stalker.gd", "lion"],
 }
 
 
