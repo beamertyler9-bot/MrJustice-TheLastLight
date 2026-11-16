@@ -17,6 +17,8 @@ var fur_base := Color("#c39a5c")
 var fur_dark := Color("#8d6a3a")
 var fur_light := Color("#ecdcb5")
 var spots := 0.0
+## How much grass-green stains the top of the coat.
+var grassy := 0.0
 var stripes := 0.0
 var stripe_color := Color("#1b1610")
 ## Per-design body shape.
@@ -50,7 +52,7 @@ func _eyes(color: Color) -> void:
 ## spots or tiger stripes.
 func fur() -> Callable:
 	var base := fur_base; var dark := fur_dark; var light := fur_light
-	var spotty := spots; var stripy := stripes; var ink := stripe_color
+	var spotty := spots; var stripy := stripes; var ink := stripe_color; var stain := grassy
 	return func (p: Vector3, n: Vector3, _v: float, _w: float) -> Color:
 		var streak := Sculpt.fbm(Vector3(p.x * 10.0, p.y * 10.0, p.z * 3.0))
 		var c := base.lerp(dark, clampf(n.y * 0.7 - 0.1 + streak * 0.5, 0.0, 1.0) * 0.7)
@@ -60,6 +62,9 @@ func fur() -> Callable:
 		for side in [-1.0, 1.0]:
 			pale = maxf(pale, smoothstep(0.03, 0.015, p.distance_to(Vector3(0.065 * side, 1.06, -0.93))))
 		c = c.lerp(light, pale)
+		if stain > 0.0:
+			var g := smoothstep(0.1, 0.8, n.y) * smoothstep(-0.1, 0.5, Sculpt.fbm(p * 5.0) + 0.25) * smoothstep(-0.7, -0.5, p.z)
+			c = c.lerp(Color("#8f8f47"), g * stain * (1.0 - pale))
 		if spotty > 0.0:
 			var s := Sculpt.noise(Vector3(p.x * 22.0, p.y * 22.0, p.z * 22.0))
 			c = c.lerp(dark.darkened(0.1), smoothstep(0.36, 0.46, s) * spotty * (1.0 - pale) * smoothstep(-0.6, 0.2, n.y))
@@ -80,28 +85,30 @@ func grass_paint() -> Callable:
 
 ## A flat blade of grass from `base` along `dir`, drooping at the tip; `thin` is the axis
 ## the blade is thin along (so its width spans the other way).
-func blade(s: Sculpt, painter: int, base: Vector3, dir: Vector3, length: float, width: float, thin: Vector3, droop := 0.25) -> Vector3:
+func blade(s: Sculpt, painter: int, base: Vector3, dir: Vector3, length: float, width: float, thin: Vector3, droop := 0.25, sides := 6, per := 2) -> Vector3:
 	var d := dir.normalized()
 	var mid := base + d * length * 0.5 + Vector3(0, -length * droop * 0.25, 0)
 	var tip := base + d * length + Vector3(0, -length * droop, 0)
-	s.tube([base, mid, tip], [width, width * 0.8, 0.002], painter, {"sides": 6, "per": 2, "flat": 0.18, "side": thin, "cap_rings": 1, "cap1": false})
+	s.tube([base, mid, tip], [width, width * 0.8, 0.002], painter, {"sides": sides, "per": per, "flat": 0.18, "side": thin, "cap_rings": 1, "cap1": false})
 	return tip
 
 
 ## A shaggy lock of hair: a lumpy cone that droops toward its tip.
-func lock(s: Sculpt, painter: int, base: Vector3, dir: Vector3, length: float, radius: float, droop := 0.3) -> void:
+func lock(s: Sculpt, painter: int, base: Vector3, dir: Vector3, length: float, radius: float, droop := 0.3, sides := 6, per := 2, thin := Vector3.ZERO) -> void:
 	var d := dir.normalized()
 	var sag := Vector3(0, -length * droop, 0)
-	s.tube([base, base + d * length * 0.5 + sag * 0.3, base + d * length + sag], [radius, radius * 0.75, 0.003], painter, {"sides": 6, "per": 2, "lump": 0.45, "cap_rings": 1, "cap1": false})
+	var opts := {"sides": sides, "per": per, "lump": 0.45, "cap_rings": 1, "cap1": false}
+	if thin != Vector3.ZERO: opts["side"] = thin; opts["flat"] = 0.5
+	s.tube([base, base + d * length * 0.5 + sag * 0.3, base + d * length + sag], [radius, radius * 0.75, 0.003], painter, opts)
 
 
 ## A wheat-like seed head: a short chain of plump grains along a stalk end.
 func seed_head(s: Sculpt, painter: int, base: Vector3, dir: Vector3, length: float) -> void:
 	var d := dir.normalized()
-	for k in range(5):
-		var at := base + d * length * (k + 0.5) / 5.0
+	for k in range(4):
+		var at := base + d * length * (k + 0.5) / 4.0
 		var side := d.cross(Vector3.UP).normalized() * (0.012 if k % 2 == 0 else -0.012)
-		s.blob(at + side, Vector3(0.016, 0.016, 0.026), painter, {"lat": 4, "lon": 6, "basis": Basis.looking_at(d, Vector3.UP)})
+		s.blob(at + side, Vector3(0.017, 0.017, 0.028), painter, {"lat": 3, "lon": 5, "basis": Basis.looking_at(d, Vector3.UP)})
 
 
 ## The shared big cat: body, head, jaw, ears, legs and tail on the game's rig.
@@ -168,8 +175,8 @@ func _cat(skin: Callable) -> Dictionary:
 		var xs := Sculpt.new()
 		var back := xs.add_painter(func (p, n, v, w): return fur_dark.darkened(0.45))
 		var inner := xs.add_painter(func (p, n, v, w): return fur_light.darkened(0.1))
-		xs.tube([Vector3(0.1 * side, 1.09, -0.775), Vector3(0.118 * side, 1.135, -0.77), Vector3(0.128 * side, 1.16, -0.766)], [0.048, 0.043, 0.022], back, {"sides": 9, "per": 2, "cap_rings": 2, "flat": 0.38, "side": Vector3.BACK})
-		xs.tube([Vector3(0.1 * side, 1.095, -0.787), Vector3(0.116 * side, 1.132, -0.783), Vector3(0.124 * side, 1.15, -0.78)], [0.032, 0.028, 0.012], inner, {"sides": 9, "per": 2, "cap_rings": 2, "flat": 0.3, "side": Vector3.BACK})
+		xs.tube([Vector3(0.1 * side, 1.09, -0.775), Vector3(0.118 * side, 1.135, -0.77), Vector3(0.128 * side, 1.16, -0.766)], [0.048, 0.043, 0.022], back, {"sides": 7, "per": 2, "cap_rings": 1, "flat": 0.38, "side": Vector3.BACK})
+		xs.tube([Vector3(0.1 * side, 1.095, -0.787), Vector3(0.116 * side, 1.132, -0.783), Vector3(0.124 * side, 1.15, -0.78)], [0.032, 0.028, 0.012], inner, {"sides": 7, "per": 2, "cap_rings": 1, "flat": 0.3, "side": Vector3.BACK})
 		ears.append(ear); ear_sculpts.append(xs)
 	parts["ears"] = ears; parts["ear_sculpts"] = ear_sculpts
 
@@ -254,19 +261,20 @@ func _frond(parts: Dictionary, parent: Node3D, name: String, at: Vector3, s: Scu
 
 func _lion() -> Node3D:
 	_eyes(Color("#ffcf4a"))
+	grassy = 0.45
 	var parts := _cat(fur())
-	# The mane: inner rings of thick dark hair round the face and neck, outer rings of grass
-	# blades with ripe seed heads, in four sections that sway on their own.
+	# The mane: chunky locks of dark hair woven with grass blades, the grass thickening toward
+	# the back where ripe seed heads stick out; four sections that sway on their own.
 	var hair_paint := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
-		return Color("#5e3c1f").lerp(Color("#a8773f"), clampf(v * 0.9 + Sculpt.noise(p * 9.0) * 0.3, 0.0, 1.0)).darkened(clampf(-n.y, 0.0, 1.0) * 0.15)
+		var c := Color("#5e3c1f").lerp(Color("#a8773f"), clampf(v * 0.9 + Sculpt.noise(p * 9.0) * 0.3, 0.0, 1.0))
+		return c.lerp(Color("#8a8a40"), smoothstep(0.55, 1.0, v) * 0.35).darkened(clampf(-n.y, 0.0, 1.0) * 0.15)
 	var sections := {}
 	for key in ["Top", "Left", "Right", "Chin"]:
 		var s := Sculpt.new()
 		sections[key] = [s, s.add_painter(hair_paint), s.add_painter(grass_paint()), s.add_painter(func (p, n, v, w): return Color("#e2c977").darkened(Sculpt.noise(p * 30.0) * 0.12))]
-	for ring in range(5):
-		var z := -0.78 + ring * 0.07
-		var count := 16 + ring * 2
-		var grass := ring >= 3
+	for ring in range(4):
+		var z := -0.78 + ring * 0.085
+		var count := 13 + ring * 2
 		for k in range(count):
 			var ang := TAU * (k + ring * 0.5) / count
 			var radial := Vector3(cos(ang), sin(ang) * 0.95, 0)
@@ -276,30 +284,50 @@ func _lion() -> Node3D:
 			elif cos(ang) > 0.3: key = "Right"
 			var sec: Array = sections[key]
 			var center := Vector3(0, 0.99 - ring * 0.015, z)
-			var base := center + radial * (0.15 + ring * 0.018)
-			var dir := radial * (0.95 - ring * 0.12) + Vector3(0, 0.05, 0.3 + ring * 0.22)
+			var base := center + radial * (0.15 + ring * 0.02)
 			var tangent := Vector3(-sin(ang), cos(ang), 0)
-			var length := 0.2 + ring * 0.04 + 0.06 * Sculpt.noise(Vector3(k, ring, 1) * 1.7)
+			var length := (0.22 + ring * 0.07 + 0.06 * Sculpt.noise(Vector3(k, ring, 1) * 1.7)) * (0.8 if ring == 0 else 1.0)
 			if sin(ang) < -0.6: length *= 1.15
+			var grass := (ring == 1 and k % 4 == 0) or (ring == 2 and k % 2 == 0) or (ring == 3 and k % 3 != 0)
 			if grass:
-				var tip := blade(sec[0], sec[2], base, dir, length + 0.06, 0.03, dir.normalized().cross(tangent), 0.3)
-				if (k + ring) % 4 == 0 and sin(ang) > -0.3:
-					seed_head(sec[0], sec[3], tip - dir.normalized() * 0.01, dir + Vector3(0, -0.3, 0.2), 0.12)
+				var dir := radial * (0.95 - ring * 0.12) + Vector3(0, 0.12, 0.3 + ring * 0.22)
+				var tip := blade(sec[0], sec[2], base, dir, length + 0.08, 0.034, dir.normalized().cross(tangent), 0.3, 5, 1)
+				if ring >= 2 and k % 3 == 1 and sin(ang) > -0.3:
+					seed_head(sec[0], sec[3], tip - dir.normalized() * 0.01, dir + Vector3(0, -0.3, 0.2), 0.11)
 			else:
 				var hair_dir := radial * (0.7 - ring * 0.12) + Vector3(0, 0.05, 0.55 + ring * 0.2)
-				lock(sec[0], sec[1], base, hair_dir, length * (1.15 + ring * 0.15) * (0.75 if ring == 0 else 1.0), 0.036, 0.5)
-				lock(sec[0], sec[1], base + tangent * 0.03 + Vector3(0, 0, 0.02), hair_dir + tangent * 0.2, length * (1.05 + ring * 0.15) * (0.75 if ring == 0 else 1.0), 0.03, 0.55)
+				lock(sec[0], sec[1], base, hair_dir, length * 1.2, 0.058, 0.5, 6, 2, hair_dir.normalized().cross(tangent))
 	_frond(parts, parts.head, "ManeTop", Vector3(0, 1.12, -0.66), sections.Top[0])
 	_frond(parts, parts.head, "ManeLeft", Vector3(-0.17, 0.98, -0.66), sections.Left[0])
 	_frond(parts, parts.head, "ManeRight", Vector3(0.17, 0.98, -0.66), sections.Right[0])
 	_frond(parts, root, "ManeChin", Vector3(0, 0.84, -0.66), sections.Chin[0])
-	# A dark tuft at the tail tip with a few grass blades.
+	# Grass grows from its coat: tufts along the spine, at the elbows and a fringe of long
+	# blades hanging under its belly.
+	var body: Sculpt = parts.body; var bg := body.add_painter(grass_paint())
+	for spot in [[-0.2, 1.17], [0.08, 1.04], [0.36, 1.08]]:
+		for b in range(4):
+			var ang: float = b * 1.6 + spot[0] * 7.0
+			var dir := Vector3(cos(ang) * 0.5, 1.0, 0.35 + sin(ang) * 0.3)
+			blade(body, bg, Vector3(cos(ang) * 0.025, spot[1] - 0.02, spot[0] + sin(ang) * 0.025), dir, 0.15 + 0.04 * (b % 2), 0.022, dir.normalized().cross(Vector3(-sin(ang), 0, cos(ang))), 0.35, 5, 1)
+	for side in [-1.0, 1.0]:
+		for k in range(7):
+			var z := -0.28 + k * 0.08
+			var dir := Vector3(side * 0.35, -1.0, 0.25)
+			blade(body, bg, Vector3(0.09 * side, 0.62 + absf(z - 0.05) * 0.05, z), dir, 0.13 + 0.05 * Sculpt.noise(Vector3(k, side, 2) * 2.0), 0.024, Vector3(side, 0.2, 0).normalized(), 0.05, 5, 1)
+	for k in range(2):
+		var side := -1.0 if k == 0 else 1.0
+		var ls: Sculpt = Sculpt.new(); var lg := ls.add_painter(grass_paint())
+		for b in range(4):
+			var dir := Vector3(side * 0.6, -0.3 + b * 0.15, 0.8)
+			blade(ls, lg, Vector3(0.2 * side, 0.45, -0.3 + b * 0.012), dir, 0.12 + 0.03 * (b % 2), 0.02, Vector3(0, 1, -0.3).normalized(), 0.2, 5, 1)
+		part(parts.knees[k], "GrassTuft", ls)
+	# The tail tip: a dark tuft of hair with grass blades through it.
 	var tts: Sculpt = parts.tail_sculpts[1]; var tuft := tts.add_painter(hair_paint); var gp := tts.add_painter(grass_paint())
-	for k in range(8):
-		var ang := TAU * k / 8.0
+	for k in range(5):
+		var ang := TAU * k / 5.0
 		var dir := Vector3(cos(ang) * 0.4, 0.7 + sin(ang) * 0.4, 0.7)
-		lock(tts, tuft, Vector3(0, 0.55, 1.71) + Vector3(cos(ang), sin(ang), 0) * 0.02, dir, 0.13, 0.03, 0.2)
-		if k % 2 == 0: blade(tts, gp, Vector3(0, 0.55, 1.71), dir + Vector3(0, 0.2, 0), 0.2, 0.018, dir.normalized().cross(Vector3(-sin(ang), cos(ang), 0)), 0.3)
+		lock(tts, tuft, Vector3(0, 0.55, 1.71) + Vector3(cos(ang), sin(ang), 0) * 0.02, dir, 0.14, 0.035, 0.2, 5, 1)
+		if k % 2 == 0: blade(tts, gp, Vector3(0, 0.55, 1.71), dir + Vector3(0, 0.2, 0), 0.21, 0.018, dir.normalized().cross(Vector3(-sin(ang), cos(ang), 0)), 0.3, 5, 1)
 	return _close(parts, 1.25)
 
 
