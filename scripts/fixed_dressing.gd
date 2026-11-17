@@ -7,6 +7,7 @@ const P = preload("res://scripts/locations.gd")
 const Trees = preload("res://scripts/regional_trees.gd")
 static func tree(world, root: Node3D, key: Vector2i, record: Dictionary):
 	var p: Vector3 = record.point; var at = Vector2(root.position.x + p.x, root.position.z + p.z)
+	if preload("res://scripts/alderhaven_masterplan.gd").affects(at) or preload("res://scripts/brindlewick_masterplan.gd").affects(at): p.y = world.height_at(at.x, at.y)
 	var id = str(record.get("id", "atlas_tree_%s_%s_%s" % [key.x, key.y, record.slot]))
 	if world.state.taken.has(id) or not world.decoration_allowed(root, Vector2(p.x, p.z), 2.0): return
 	var tree = preload("res://scripts/harvestable.gd").new(); tree.world = world; tree.position = p; root.add_child(tree)
@@ -68,6 +69,8 @@ static func cover(world, root: Node3D, index: int, tile: int, quality: int, layo
 			layout.get_or_add("pebble_ids", []).append(str(stable_ids[decor_index]) if decor_index < stable_ids.size() else "")
 static func item(world, root: Node3D, key: Vector2i, record: Dictionary):
 	var slot = int(record.slot); var p: Vector3 = record.point
+	var at = Vector2(root.position.x + p.x, root.position.z + p.z)
+	if preload("res://scripts/alderhaven_masterplan.gd").affects(at) or preload("res://scripts/brindlewick_masterplan.gd").affects(at): p.y = world.height_at(at.x, at.y)
 	if not world.decoration_allowed(root, Vector2(p.x, p.z), 0.6): return
 	var id = str(record.get("id", "%s_%s_%s" % [key.x, key.y, slot] if slot < 3 else "carry_%s_%s_%s" % [key.x, key.y, slot - 3]))
 	if world.state.taken.has(id): return
@@ -75,6 +78,8 @@ static func item(world, root: Node3D, key: Vector2i, record: Dictionary):
 	else: world.carryable(root, p + Vector3.UP * 0.4, slot - 3, id)
 static func loose(world, root: Node3D, key: Vector2i, record: Dictionary):
 	var slot = int(record.slot); var p: Vector3 = record.point; var material = "stone" if slot % 2 == 0 else "stick"
+	var at = Vector2(root.position.x + p.x, root.position.z + p.z)
+	if preload("res://scripts/alderhaven_masterplan.gd").affects(at) or preload("res://scripts/brindlewick_masterplan.gd").affects(at): p.y = world.height_at(at.x, at.y)
 	var id = str(record.get("id", "loose_%s_%s_%s_%s" % [material, key.x, key.y, slot]))
 	if world.state.taken.has(id) or not world.decoration_allowed(root, Vector2(p.x, p.z), 0.7) or not world.loose_point_clear(root, p): return
 	world.carryable(root, p + Vector3.UP * 0.4, 0 if slot % 2 == 0 else 2, id)

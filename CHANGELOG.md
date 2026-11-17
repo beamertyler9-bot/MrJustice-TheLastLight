@@ -1,5 +1,66 @@
 # Changelog
 
+## 0.81.0 — Redesigned creatures, Barrowback and the Treeline Lurker (2026-11-16)
+
+Builds on 0.80.0 (the Brindlewick revamp, below). Creature redesigns are still in
+progress: the regions not listed here keep their current models for now.
+
+- **Hand-sculpted creatures** (made with tools/creature_sculpt.gd and creature_kit.gd,
+  baked by tools/bake_creature.gd):
+  - **Mosswake and the starting regions:** rootling sentinel, moss guardian, glass
+    skitter, thorn wolf, cinder wisp, frost brute, wild boar, cliffwarden and stonejaw wyrm.
+  - **S'morewood:**
+    - **Candy-Bar Ogre** (the fudge golem).
+    - **Cocoa Knight**, a new enemy with sword and shield.
+    - **Choco-Bar Croc**, a new enemy modelled on an alligator and bursting out of a
+      tinfoil wrapper. It keeps to cola river banks and shallows.
+    - **Chocorock Mimic** (the wrapper mimic): it poses as a chocolate rock, half
+      buried, and climbs out with creepy teeth and long limbs when you come close.
+    - **Chest Mimic**, a new enemy that poses as a normal treasure chest, in the world
+      and in half of the sites.
+    - **Knotback Scorpion** (the pretzel crawler): its pretzel pincers split down the
+      middle as they open.
+    - **Bottle Frog** (the cola sloshback): it spits cola globs.
+    - **Candy-Corn Wasp** (the sugarspike wasp): it fires sugar shards.
+    - **New wildlife:** the Fizz Toad and the Slosh Axolotl, which never attack.
+  - **Grand Confectioner boss:** now the Stand-Mixer Colossus.
+  - **Windbell Plains:**
+    - **Windwhistle Stalker:** a lion whose mane is grass and seed heads.
+    - **Thistle Jackal:** a shaggy coat full of burrs and foxtails.
+    - **Grassland Colossus:** a giant of stacked turf with a meadow on its shoulders.
+- **S'morewood rocks are chocolate coloured.**
+- **Enemies keep their distance:** they stop in front of Mr. Justice instead of walking
+  into him, back off before a long snout reaches into him, and keep apart from each other.
+- **Barrowback, the walking hill:** one enormous, friendly giant carrying a grassy hill
+  on its back.
+  - **Size:** its back is about 40 m up.
+  - **Its walk:** a slow 14.6 km loop through Mosswake, Windbell, Prismere, the Dunes
+    and S'morewood, clear of every town and site.
+  - **Climbing and riding:** climb the root curtain on its right side, walk among the
+    standing stones and trees on top, and ride along as it walks.
+  - **Finding it:** it's on the travel menu.
+- **The Treeline Lurker:** a very tall shadow figure with tiny white eyes.
+  - **What it does:** it watches you from behind trees, melts away when you look at it,
+    and never attacks.
+  - **Where:** it haunts Hollowmourn, and very rarely follows you for a minute or two
+    anywhere else outdoors.
+- **App:** same app as 0.77.0, so it updates over it and keeps its saves. Version code 129.
+
+## 0.78.0–0.80.0 — Brindlewick and Alderhaven revamps (2026-11-14)
+
+These builds were made outside this repository. Their scripts and data were recovered
+from the 0.80.0 APK: the scripts were decompiled, and the 0.77.0 source was kept
+(comments included) wherever the code was unchanged.
+
+- **Approved Brindlewick blueprint:** 12 buildings around a village green, connected
+  roads, a forge yard, the original quest givers, and foundations for both close and
+  distant views. New journeys start at Brindlewick's south arrival lane.
+- **Alderhaven masterplan:** 36 plots with entrances facing north, south, east and west,
+  a central plaza, streets that follow the terrain, a west bridge and a cargo pier. It's
+  switched off for now (application/config/alderhaven_preview).
+- **Tests and tools:** tests/brindlewick_*.gd, tests/alderhaven_*.gd and
+  tools/capture_*.gd, tools/validate_update.gd.
+
 ## 0.77.0 — Smoother combat, cheaper water, better boosting (2026-11-11)
 
 - **Fixed the stutter when combat starts.** The HUD keeps a pre-drawn picture of each

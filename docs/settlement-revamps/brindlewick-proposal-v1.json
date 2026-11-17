@@ -1,0 +1,367 @@
+{
+  "status": "proposed awaiting user review",
+  "site": "brindlewick",
+  "revision": 1,
+  "units": "metres",
+  "plots": [
+    {
+      "number": 1,
+      "title": "Village hall",
+      "position": [
+        0,
+        -49
+      ],
+      "footprint": [
+        16,
+        10
+      ],
+      "door": "S",
+      "approach": [
+        0,
+        -30
+      ],
+      "type": "civic"
+    },
+    {
+      "number": 2,
+      "title": "Hillside home",
+      "position": [
+        -36,
+        -46
+      ],
+      "footprint": [
+        12,
+        10
+      ],
+      "door": "S",
+      "approach": [
+        -36,
+        -30
+      ],
+      "type": "home"
+    },
+    {
+      "number": 3,
+      "title": "West-lane home",
+      "position": [
+        -56,
+        -12
+      ],
+      "footprint": [
+        12,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        -40,
+        -12
+      ],
+      "type": "home"
+    },
+    {
+      "number": 4,
+      "title": "Wayfarer inn",
+      "position": [
+        33,
+        -49
+      ],
+      "footprint": [
+        18,
+        12
+      ],
+      "door": "S",
+      "approach": [
+        33,
+        -30
+      ],
+      "type": "shop"
+    },
+    {
+      "number": 5,
+      "title": "Provisions",
+      "position": [
+        39,
+        -10
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "W",
+      "approach": [
+        22,
+        -10
+      ],
+      "type": "shop"
+    },
+    {
+      "number": 6,
+      "title": "Orc blacksmith",
+      "position": [
+        41,
+        15
+      ],
+      "footprint": [
+        16,
+        12
+      ],
+      "door": "W",
+      "approach": [
+        22,
+        15
+      ],
+      "type": "craft"
+    },
+    {
+      "number": 7,
+      "title": "Outfitter",
+      "position": [
+        35,
+        49
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "N",
+      "approach": [
+        35,
+        32
+      ],
+      "type": "shop"
+    },
+    {
+      "number": 8,
+      "title": "Herbalist",
+      "position": [
+        0,
+        49
+      ],
+      "footprint": [
+        12,
+        10
+      ],
+      "door": "N",
+      "approach": [
+        0,
+        32
+      ],
+      "type": "shop"
+    },
+    {
+      "number": 9,
+      "title": "Garden home",
+      "position": [
+        -23,
+        49
+      ],
+      "footprint": [
+        12,
+        10
+      ],
+      "door": "N",
+      "approach": [
+        -23,
+        32
+      ],
+      "type": "home"
+    },
+    {
+      "number": 10,
+      "title": "Gatherer exchange",
+      "position": [
+        -56,
+        20
+      ],
+      "footprint": [
+        12,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        -40,
+        20
+      ],
+      "type": "craft"
+    },
+    {
+      "number": 11,
+      "title": "Bakery",
+      "position": [
+        -23,
+        0
+      ],
+      "footprint": [
+        12,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        -11,
+        0
+      ],
+      "type": "shop"
+    },
+    {
+      "number": 12,
+      "title": "Timber store",
+      "position": [
+        -59,
+        49
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        -40,
+        49
+      ],
+      "type": "craft"
+    }
+  ],
+  "roads": [
+    {
+      "points": [
+        [
+          -40,
+          -30
+        ],
+        [
+          22,
+          -30
+        ],
+        [
+          22,
+          32
+        ],
+        [
+          -40,
+          32
+        ],
+        [
+          -40,
+          -30
+        ]
+      ],
+      "width": 5
+    },
+    {
+      "points": [
+        [
+          -40,
+          -30
+        ],
+        [
+          -65,
+          -54
+        ],
+        [
+          -78,
+          -64
+        ]
+      ],
+      "width": 5
+    },
+    {
+      "points": [
+        [
+          22,
+          -24
+        ],
+        [
+          57,
+          -24
+        ],
+        [
+          68,
+          -16
+        ]
+      ],
+      "width": 6
+    },
+    {
+      "points": [
+        [
+          10,
+          32
+        ],
+        [
+          13,
+          64
+        ],
+        [
+          13,
+          74
+        ]
+      ],
+      "width": 5
+    },
+    {
+      "points": [
+        [
+          -40,
+          32
+        ],
+        [
+          -40,
+          49
+        ]
+      ],
+      "width": 3
+    },
+    {
+      "points": [
+        [
+          22,
+          32
+        ],
+        [
+          35,
+          32
+        ]
+      ],
+      "width": 3
+    },
+    {
+      "points": [
+        [
+          22,
+          -30
+        ],
+        [
+          33,
+          -30
+        ]
+      ],
+      "width": 3
+    },
+    {
+      "points": [
+        [
+          -23,
+          0
+        ],
+        [
+          22,
+          0
+        ]
+      ],
+      "width": 3
+    },
+    {
+      "points": [
+        [
+          0,
+          -30
+        ],
+        [
+          0,
+          32
+        ]
+      ],
+      "width": 3
+    }
+  ]
+}

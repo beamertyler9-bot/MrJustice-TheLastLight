@@ -33,6 +33,8 @@ static func frame(node: Node3D) -> Transform3D:
 	return result
 
 static func streets(world, site: Dictionary) -> Array:
+	if str(site.get("id", "")) == "alderhaven" and world.get("atlas") != null:
+		return preload("res://scripts/alderhaven_masterplan.gd").roads(site.pos)
 	var result: Array = []
 	var at: Vector2 = site.pos; var reach: float = site.get("clearance", 70.0)
 
@@ -298,7 +300,7 @@ static func _terrain_triangles(world, x: int, z: int) -> Array:
 			triangles.append(PackedVector2Array([o + Vector2(step, 0), o + Vector2(step, step), o + Vector2(0, step)]))
 	return triangles
 
-static func _ribbon(world, points: PackedVector2Array, _start: Vector3, inverse: Transform3D) -> ArrayMesh:
+static func _ribbon(world, points: PackedVector2Array, _start: Vector3, inverse: Transform3D, half_width: float = HALF) -> ArrayMesh:
 	var vertices = PackedVector3Array(); var normals = PackedVector3Array(); var uvs = PackedVector2Array(); var edges = PackedVector2Array(); var traveled = 0.0
 	var total_length = 0.0
 	for i in range(1, points.size()): total_length += points[i - 1].distance_to(points[i])
@@ -311,7 +313,7 @@ static func _ribbon(world, points: PackedVector2Array, _start: Vector3, inverse:
 		if before.is_zero_approx(): before = after
 		if after.is_zero_approx(): after = before
 		var normal = (before.orthogonal() + after.orthogonal()).normalized()
-		var offset = normal * minf(HALF / maxf(0.4, normal.dot(after.orthogonal())), CLEARANCE - 0.05)
+		var offset = normal * minf(half_width / maxf(0.4, normal.dot(after.orthogonal())), half_width + CLEARANCE - HALF - 0.05)
 		left.append(points[i] + offset); right.append(points[i] - offset)
 	for segment in range(points.size() - 1):
 		var a: Vector2 = points[segment]; var b: Vector2 = points[segment + 1]; var length = a.distance_to(b)

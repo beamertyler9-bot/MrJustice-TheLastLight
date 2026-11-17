@@ -1963,7 +1963,7 @@ func atlas_travel_reason(id: String) -> String:
 	if player.climbing or player.mantle_time > 0 or absf(player.velocity.y) > 0.8: return "Land safely first"
 	var departure = false
 	for site in world.atlas.sites():
-		if site.kind == "city" and state.taken.get("atlas_visited_" + site.id, false) and Vector2(player.position.x, player.position.z).distance_to(site.pos + Vector2(0, 67)) < 18: departure = true; break
+		if site.kind == "city" and state.taken.get("atlas_visited_" + site.id, false) and Vector2(player.position.x, player.position.z).distance_to(site.pos + (Vector2.ZERO if site.id == "alderhaven" else Vector2(0, 67))) < 18: departure = true; break
 	if not departure: return "Use a travel plaza"
 	for enemy in get_tree().get_nodes_in_group("enemy"):
 		if is_instance_valid(enemy) and enemy.get("health") != null and enemy.health > 0 and enemy.global_position.distance_to(player.global_position) < 22: return "Finish the encounter"

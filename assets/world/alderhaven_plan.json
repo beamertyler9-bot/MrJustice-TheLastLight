@@ -1,0 +1,1079 @@
+{
+  "revision": 2,
+  "origin_offset": [
+    -130,
+    30
+  ],
+  "districts": [
+    {
+      "name": "Cola Quays",
+      "position": [
+        -57,
+        59
+      ]
+    },
+    {
+      "name": "Baker's Row",
+      "position": [
+        77,
+        -47
+      ]
+    },
+    {
+      "name": "Orchard Ward",
+      "position": [
+        -73,
+        -77
+      ]
+    },
+    {
+      "name": "Graham Market",
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "Clockpantry",
+      "position": [
+        0,
+        -79
+      ]
+    },
+    {
+      "name": "Hearthhomes",
+      "position": [
+        68,
+        71
+      ]
+    }
+  ],
+  "plots": [
+    {
+      "index": 0,
+      "title": "Provisions",
+      "district": 3,
+      "position": [
+        -26,
+        -13
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        -16,
+        -13
+      ],
+      "purpose": "stores",
+      "shop": "general"
+    },
+    {
+      "index": 1,
+      "title": "Apothecary",
+      "district": 3,
+      "position": [
+        26,
+        -13
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "W",
+      "approach": [
+        16,
+        -13
+      ],
+      "purpose": "stores",
+      "shop": "alchemist"
+    },
+    {
+      "index": 2,
+      "title": "Blacksmith",
+      "district": 3,
+      "position": [
+        26,
+        13
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "W",
+      "approach": [
+        16,
+        13
+      ],
+      "purpose": "workshop",
+      "shop": "blacksmith"
+    },
+    {
+      "index": 3,
+      "title": "Cloth & repair",
+      "district": 3,
+      "position": [
+        -26,
+        13
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        -16,
+        13
+      ],
+      "purpose": "stores",
+      "shop": "general"
+    },
+    {
+      "index": 4,
+      "title": "Wayfarer inn",
+      "district": 3,
+      "position": [
+        -12,
+        30
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "N",
+      "approach": [
+        -12,
+        17
+      ],
+      "purpose": "inn",
+      "shop": "trader"
+    },
+    {
+      "index": 5,
+      "title": "Hearth tavern",
+      "district": 3,
+      "position": [
+        12,
+        30
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "N",
+      "approach": [
+        12,
+        17
+      ],
+      "purpose": "bakery",
+      "shop": "grocer"
+    },
+    {
+      "index": 6,
+      "title": "Maps & books",
+      "district": 3,
+      "position": [
+        -12,
+        -30
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "S",
+      "approach": [
+        -12,
+        -17
+      ],
+      "purpose": "stores",
+      "shop": "curio"
+    },
+    {
+      "index": 7,
+      "title": "Guild / quests",
+      "district": 3,
+      "position": [
+        12,
+        -30
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "S",
+      "approach": [
+        12,
+        -17
+      ],
+      "purpose": "library",
+      "shop": ""
+    },
+    {
+      "index": 8,
+      "title": "Town hall",
+      "district": 4,
+      "position": [
+        0,
+        -79
+      ],
+      "footprint": [
+        24,
+        14
+      ],
+      "door": "S",
+      "approach": [
+        0,
+        -70
+      ],
+      "purpose": "library",
+      "shop": ""
+    },
+    {
+      "index": 9,
+      "title": "Public library",
+      "district": 4,
+      "position": [
+        -28,
+        -79
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        -17,
+        -79
+      ],
+      "purpose": "library",
+      "shop": ""
+    },
+    {
+      "index": 10,
+      "title": "Healer / clinic",
+      "district": 4,
+      "position": [
+        28,
+        -79
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "W",
+      "approach": [
+        17,
+        -79
+      ],
+      "purpose": "stores",
+      "shop": "alchemist"
+    },
+    {
+      "index": 11,
+      "title": "Watch post",
+      "district": 4,
+      "position": [
+        -26,
+        -57
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "S",
+      "approach": [
+        -26,
+        -44
+      ],
+      "purpose": "home",
+      "shop": ""
+    },
+    {
+      "index": 12,
+      "title": "School / workshop",
+      "district": 4,
+      "position": [
+        26,
+        -57
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "S",
+      "approach": [
+        26,
+        -44
+      ],
+      "purpose": "library",
+      "shop": ""
+    },
+    {
+      "index": 13,
+      "title": "Bathhouse",
+      "district": 4,
+      "position": [
+        -26,
+        -101
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        -17,
+        -101
+      ],
+      "purpose": "inn",
+      "shop": ""
+    },
+    {
+      "index": 14,
+      "title": "Lantern chapel",
+      "district": 4,
+      "position": [
+        26,
+        -101
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "W",
+      "approach": [
+        17,
+        -101
+      ],
+      "purpose": "library",
+      "shop": ""
+    },
+    {
+      "index": 15,
+      "title": "Bakery",
+      "district": 1,
+      "position": [
+        64,
+        -48
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        76,
+        -48
+      ],
+      "purpose": "bakery",
+      "shop": "grocer"
+    },
+    {
+      "index": 16,
+      "title": "Sweet shop",
+      "district": 1,
+      "position": [
+        88,
+        -48
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "W",
+      "approach": [
+        76,
+        -48
+      ],
+      "purpose": "stores",
+      "shop": "grocer"
+    },
+    {
+      "index": 17,
+      "title": "Grain mill",
+      "district": 1,
+      "position": [
+        64,
+        -22
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        76,
+        -22
+      ],
+      "purpose": "stores",
+      "shop": "general"
+    },
+    {
+      "index": 18,
+      "title": "Shared pantry",
+      "district": 1,
+      "position": [
+        88,
+        -22
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "W",
+      "approach": [
+        76,
+        -22
+      ],
+      "purpose": "stores",
+      "shop": "grocer"
+    },
+    {
+      "index": 19,
+      "title": "Communal ovens",
+      "district": 1,
+      "position": [
+        88,
+        -77
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "W",
+      "approach": [
+        76,
+        -77
+      ],
+      "purpose": "bakery",
+      "shop": ""
+    },
+    {
+      "index": 20,
+      "title": "Farmhouse",
+      "district": 2,
+      "position": [
+        -86,
+        -79
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        -73,
+        -79
+      ],
+      "purpose": "home",
+      "shop": ""
+    },
+    {
+      "index": 21,
+      "title": "Greenhouse",
+      "district": 2,
+      "position": [
+        -60,
+        -79
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "W",
+      "approach": [
+        -73,
+        -79
+      ],
+      "purpose": "stores",
+      "shop": "alchemist"
+    },
+    {
+      "index": 22,
+      "title": "Cider press",
+      "district": 2,
+      "position": [
+        -86,
+        -57
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        -73,
+        -57
+      ],
+      "purpose": "bakery",
+      "shop": "grocer"
+    },
+    {
+      "index": 23,
+      "title": "Seed & tools",
+      "district": 2,
+      "position": [
+        -60,
+        -57
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "W",
+      "approach": [
+        -73,
+        -57
+      ],
+      "purpose": "stores",
+      "shop": "general"
+    },
+    {
+      "index": 24,
+      "title": "Hearthhome 1",
+      "district": 5,
+      "position": [
+        55,
+        47
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        68,
+        47
+      ],
+      "purpose": "home",
+      "shop": ""
+    },
+    {
+      "index": 25,
+      "title": "Hearthhome 2",
+      "district": 5,
+      "position": [
+        82,
+        47
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "W",
+      "approach": [
+        68,
+        47
+      ],
+      "purpose": "home",
+      "shop": ""
+    },
+    {
+      "index": 26,
+      "title": "Hearthhome 3",
+      "district": 5,
+      "position": [
+        55,
+        71
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        68,
+        71
+      ],
+      "purpose": "home",
+      "shop": ""
+    },
+    {
+      "index": 27,
+      "title": "Hearthhome 4",
+      "district": 5,
+      "position": [
+        82,
+        71
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "W",
+      "approach": [
+        68,
+        71
+      ],
+      "purpose": "home",
+      "shop": ""
+    },
+    {
+      "index": 28,
+      "title": "Hearthhome 5",
+      "district": 5,
+      "position": [
+        55,
+        94
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        68,
+        94
+      ],
+      "purpose": "home",
+      "shop": ""
+    },
+    {
+      "index": 29,
+      "title": "Hearthhome 6",
+      "district": 5,
+      "position": [
+        82,
+        94
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "W",
+      "approach": [
+        68,
+        94
+      ],
+      "purpose": "home",
+      "shop": ""
+    },
+    {
+      "index": 30,
+      "title": "Cargo warehouse",
+      "district": 0,
+      "position": [
+        -72,
+        12
+      ],
+      "footprint": [
+        18,
+        14
+      ],
+      "door": "S",
+      "approach": [
+        -72,
+        28
+      ],
+      "purpose": "stores",
+      "shop": "trader"
+    },
+    {
+      "index": 31,
+      "title": "Fishmonger",
+      "district": 0,
+      "position": [
+        -68,
+        51
+      ],
+      "footprint": [
+        16,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        -58,
+        51
+      ],
+      "purpose": "stores",
+      "shop": "angler"
+    },
+    {
+      "index": 32,
+      "title": "Dock office",
+      "district": 0,
+      "position": [
+        -68,
+        79
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "E",
+      "approach": [
+        -58,
+        79
+      ],
+      "purpose": "stores",
+      "shop": "general"
+    },
+    {
+      "index": 33,
+      "title": "Caravan stable",
+      "district": 0,
+      "position": [
+        -40,
+        81
+      ],
+      "footprint": [
+        22,
+        12
+      ],
+      "door": "S",
+      "approach": [
+        -40,
+        97
+      ],
+      "purpose": "inn",
+      "shop": "trader"
+    },
+    {
+      "index": 34,
+      "title": "Boatwright",
+      "district": 0,
+      "position": [
+        -40,
+        60
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "W",
+      "approach": [
+        -58,
+        60
+      ],
+      "purpose": "stores",
+      "shop": "general"
+    },
+    {
+      "index": 35,
+      "title": "Ferryman lodging",
+      "district": 0,
+      "position": [
+        -16,
+        79
+      ],
+      "footprint": [
+        14,
+        10
+      ],
+      "door": "S",
+      "approach": [
+        -16,
+        97
+      ],
+      "purpose": "inn",
+      "shop": "trader"
+    }
+  ],
+  "roads": [
+    {
+      "owner": 3,
+      "points": [
+        [
+          -43,
+          -44
+        ],
+        [
+          43,
+          -44
+        ],
+        [
+          43,
+          44
+        ],
+        [
+          -43,
+          44
+        ],
+        [
+          -43,
+          -44
+        ]
+      ],
+      "width": 6,
+      "kind": "ground"
+    },
+    {
+      "owner": 3,
+      "points": [
+        [
+          0,
+          118
+        ],
+        [
+          0,
+          44
+        ],
+        [
+          0,
+          17
+        ]
+      ],
+      "width": 6,
+      "kind": "ground"
+    },
+    {
+      "owner": 4,
+      "points": [
+        [
+          0,
+          -17
+        ],
+        [
+          0,
+          -70
+        ]
+      ],
+      "width": 6,
+      "kind": "ground"
+    },
+    {
+      "owner": 3,
+      "points": [
+        [
+          -16,
+          0
+        ],
+        [
+          -43,
+          0
+        ]
+      ],
+      "width": 6,
+      "kind": "ground"
+    },
+    {
+      "owner": 3,
+      "points": [
+        [
+          16,
+          0
+        ],
+        [
+          43,
+          0
+        ]
+      ],
+      "width": 6,
+      "kind": "ground"
+    },
+    {
+      "owner": 3,
+      "points": [
+        [
+          43,
+          25
+        ],
+        [
+          125,
+          25
+        ],
+        [
+          140,
+          25
+        ],
+        [
+          140,
+          -30
+        ],
+        [
+          130,
+          -30
+        ]
+      ],
+      "width": 6,
+      "kind": "ground"
+    },
+    {
+      "owner": 3,
+      "points": [
+        [
+          -143,
+          -40
+        ],
+        [
+          -110,
+          -40
+        ]
+      ],
+      "width": 6,
+      "kind": "bridge"
+    },
+    {
+      "owner": 3,
+      "points": [
+        [
+          -110,
+          -40
+        ],
+        [
+          -92,
+          -44
+        ],
+        [
+          -43,
+          -44
+        ]
+      ],
+      "width": 6,
+      "kind": "ground"
+    },
+    {
+      "owner": 2,
+      "points": [
+        [
+          -43,
+          -44
+        ],
+        [
+          -43,
+          -108
+        ],
+        [
+          -73,
+          -108
+        ],
+        [
+          -73,
+          -48
+        ],
+        [
+          -43,
+          -44
+        ]
+      ],
+      "width": 4,
+      "kind": "ground"
+    },
+    {
+      "owner": 1,
+      "points": [
+        [
+          43,
+          -44
+        ],
+        [
+          43,
+          -96
+        ],
+        [
+          76,
+          -96
+        ],
+        [
+          76,
+          -12
+        ],
+        [
+          43,
+          -12
+        ]
+      ],
+      "width": 4,
+      "kind": "ground"
+    },
+    {
+      "owner": 5,
+      "points": [
+        [
+          68,
+          25
+        ],
+        [
+          68,
+          102
+        ],
+        [
+          0,
+          102
+        ]
+      ],
+      "width": 4,
+      "kind": "ground"
+    },
+    {
+      "owner": 0,
+      "points": [
+        [
+          -76,
+          28
+        ],
+        [
+          -43,
+          28
+        ]
+      ],
+      "width": 4,
+      "kind": "ground"
+    },
+    {
+      "owner": 0,
+      "points": [
+        [
+          -58,
+          28
+        ],
+        [
+          -58,
+          97
+        ],
+        [
+          0,
+          97
+        ]
+      ],
+      "width": 4,
+      "kind": "ground"
+    },
+    {
+      "owner": 0,
+      "points": [
+        [
+          -78,
+          97
+        ],
+        [
+          -58,
+          97
+        ]
+      ],
+      "width": 4,
+      "kind": "ground"
+    },
+    {
+      "owner": 4,
+      "points": [
+        [
+          -17,
+          -106
+        ],
+        [
+          -17,
+          -44
+        ]
+      ],
+      "width": 2,
+      "kind": "ground"
+    },
+    {
+      "owner": 4,
+      "points": [
+        [
+          17,
+          -106
+        ],
+        [
+          17,
+          -44
+        ]
+      ],
+      "width": 2,
+      "kind": "ground"
+    }
+  ]
+}

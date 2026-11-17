@@ -130,6 +130,7 @@ func _process(dt: float) -> void:
 func _distant_terrain() -> void:
 
 	var mesh = load("res://assets/world/backdrop/terrain.res") as ArrayMesh
+	mesh = preload("res://scripts/alderhaven_masterplan.gd").fit_distant(mesh)
 	var material = ShaderMaterial.new(); material.shader = preload("res://shaders/atlas_distant.gdshader")
 	preload("res://scripts/regional_ground.gd").configure(material)
 	var channels := PackedVector4Array()

@@ -105,6 +105,7 @@ static func stream_settlements(world, point: Vector3, immediate: bool = true) ->
 	if world.locations == null: return
 	var outdoors: bool = world.interior_at(point).is_empty()
 	for site in world.site_catalog:
+		if site.id in ["alderhaven", "brindlewick"] and world.get("atlas") != null: continue
 		if site.kind != "city" and world.get("atlas") == null: continue
 		var existing = world.locations.get_node_or_null(str(site.id).capitalize())
 		var distance: float = Vector2(point.x, point.z).distance_to(site.pos) if outdoors else INF
@@ -178,12 +179,13 @@ static func building(parent: Node3D, p: Vector3, width: float, depth: float, col
 	load("res://scripts/village_architecture.gd").build(n, width, depth, region, identity, color, roof_color)
 	var first_interior = n.get_child_count()
 	load("res://scripts/building_interiors.gd").furnish(n, width - 0.4, depth - 0.4, purpose, identity, region)
+	if identity.begins_with("alderhaven_home_") and purpose == "workshop": load("res://scripts/alderhaven_masterplan.gd").compact_forge(n, width - 0.4, depth - 0.4)
 	var contents = n.get_children().slice(first_interior)
 	var interior = load("res://scripts/interior_visibility.gd").new(); interior.name = "HouseholdInterior"; n.add_child(interior); interior.setup(n, width, depth)
 	for child in contents: child.reparent(interior, false)
 	B.merge_colored(interior); B.batch_static(interior); interior.capture_geometry()
 	if load("res://scripts/shop_architecture.gd").service(purpose): load("res://scripts/shop_architecture.gd").frontage(n, width, depth, title)
-	if purpose in ["workshop", "smith_shop"]: load("res://scripts/shop_architecture.gd").smith_bay(n, width, depth, region)
+	if purpose in ["workshop", "smith_shop"] and not identity.begins_with("alderhaven_home_") and not identity.begins_with("brindlewick_home_"): load("res://scripts/shop_architecture.gd").smith_bay(n, width, depth, region)
 	B.merge_colored(n)
 	return n
 
@@ -308,18 +310,33 @@ static func settlement(world, parent: Node3D, town: bool, site_id: String = "") 
 	var timber = B.world_surface("timber", "#5f4c38")
 	var house_z = [-20.0, -7.0, 7.0, 20.0] if town else [-17.0, 0.0, 17.0]
 	var names = ["Bellkeeper's Hall", "The Copper Kettle", "Mara's Provisions", "The Cloth & Quill", "The Tall Oak", "Ironhand Smithy", "Wayfarer House", "The Little Loaf"] if town else ["Pip's Timber Lodge", "Rowan's Pantry", "Juniper's Cottage", "The Willow House", "Emberhand Smithy", "The Hearth & Honey"]
-	var index = 0
-	for side in [-1.0, 1.0]:
-		var x = (-16.0 if side < 0 else 21.0) if town else side * 18.0
-		for z in house_z:
-			var width = (7.0 if town else 6.3) + layout_rng.randf_range(0.0, 0.55)
-			var purpose = "workshop" if "Smithy" in names[index] else "stores" if "Pantry" in names[index] or "Provisions" in names[index] else "home"
-			var house = building(parent, Vector3(x, 0, z + layout_rng.randf_range(-0.4, 0.4)), width, 6.0, ["#d1bd95", "#bac3a1", "#d4c6a5", "#b5c4b3"][index % 4], "#8f4e3e" if index % 2 == 0 else "#526b63", PI / 2 if side < 0 else -PI / 2, names[index], "", purpose)
-			plot_details(house, width, 6.0, index)
-			if absf(float(z)) > 10 and (not town or side > 0):
-				garden(parent, Vector3(x + side * 5.5, 0, z), index % 2 == 1)
-			index += 1
 
+	if site_id == "brindlewick":
+		var plots = [
+			["Pip's Timber Lodge", "home", -18.0, -17.0, 6.3, 6.0, PI / 2],
+			["Juniper's Cottage", "home", -18.0, 0.0, 6.3, 6.0, PI / 2],
+			["The Willow House", "home", -18.0, 17.0, 6.3, 6.0, PI / 2],
+			["Rowan's Pantry", "stores", 18.0, -17.0, 6.3, 6.0, -PI / 2],
+			["Nim's Bakehouse", "stores", 18.0, 7.0, 6.3, 6.0, -PI / 2],
+			["The Hearth & Honey", "home", 18.0, 17.0, 6.3, 6.0, -PI / 2]
+		]
+		for i in range(plots.size()):
+			var plot = plots[i]
+			var house = building(parent, Vector3(plot[2], 0, plot[3]), plot[4], plot[5], ["#d1bd95", "#bac3a1", "#d4c6a5", "#b5c4b3"][i % 4], "#8f4e3e" if i % 2 == 0 else "#526b63", plot[6], plot[0], "brindlewick_" + str(i), plot[1])
+			plot_details(house, plot[4], plot[5], i)
+			if absf(plot[3]) > 10.0: garden(parent, Vector3(plot[2] + (5.5 if plot[2] > 0 else -5.5), 0, plot[3]), i % 2 == 1)
+	else:
+		var index = 0
+		for side in [-1.0, 1.0]:
+			var x = (-16.0 if side < 0 else 21.0) if town else side * 18.0
+			for z in house_z:
+				var width = (7.0 if town else 6.3) + layout_rng.randf_range(0.0, 0.55)
+				var purpose = "workshop" if "Smithy" in names[index] else "stores" if "Pantry" in names[index] or "Provisions" in names[index] else "home"
+				var house = building(parent, Vector3(x, 0, z + layout_rng.randf_range(-0.4, 0.4)), width, 6.0, ["#d1bd95", "#bac3a1", "#d4c6a5", "#b5c4b3"][index % 4], "#8f4e3e" if index % 2 == 0 else "#526b63", PI / 2 if side < 0 else -PI / 2, names[index], "", purpose)
+				plot_details(house, width, 6.0, index)
+				if absf(float(z)) > 10 and (not town or side > 0):
+					garden(parent, Vector3(x + side * 5.5, 0, z), index % 2 == 1)
+				index += 1
 
 	for z in [-25.0, 25.0]:
 		for x in [-5.7, 5.7]:
@@ -372,6 +389,10 @@ static func settlement(world, parent: Node3D, town: bool, site_id: String = "") 
 		npc(world, parent, prefix + "neighbor_" + str(extra), ["Arlen Reed", "Moss Applewick", "Fenna Clay", "Borin Ash"][extra], "#92785d", "", ["Our new quarter keeps the old road open for every traveler.", "The wider frontier holds Alderhaven's autumn market, Sunspire's desert courts, and snowy Frostharbor."], ["human", "smallfolk", "elf", "dwarf"][extra], ["porter", "gardener", "weaver", "mason"][extra], route, "scarf", home.position + Vector3(-4.4 if town else 4.4, 0, 0))
 
 static func city_plots(site: Dictionary, seed_value: int) -> Array:
+	if str(site.get("id", "")) == "brindlewick":
+		return preload("res://scripts/brindlewick_masterplan.gd").plots()
+	if str(site.get("id", "")) == "alderhaven":
+		return preload("res://scripts/alderhaven_masterplan.gd").plots()
 	if site.has("region") and FileAccess.file_exists("res://assets/world/fixed/map.bin"):
 		return preload("res://scripts/fixed_world.gd").town_plots(site.id)
 	var rng := RandomNumberGenerator.new()
@@ -441,7 +462,7 @@ static func _city_plot(world, parent: Node3D, site: Dictionary, plot: Dictionary
 	elif site.id == "sunspire": lines.append("Our four courtyard markets shelter travelers from the dunes. Take water before crossing the sandstone ridges.")
 	else: lines.append("The long avenues lead through the snow. Conifer woods shelter the road back toward Mosswake.")
 	if shop != "": lines.append("My stock is ready. Come browse when you need provisions or equipment.")
-	var title = forenames[i % 12] + " " + ["Reed", "Copperleaf"][i / 12]; var race = races[i % 5]
+	var title = forenames[i % 12] + " " + ["Reed", "Copperleaf"][(i / 12) % 2]; var race = races[i % 5]
 	if site.id in ["brindlewick", "ironbell"] and i < 8:
 		var identities = ["merchant", "smith", "resident", "gardener", "mason", "baker", "weaver", "porter"]
 		id = site.id + "_" + identities[i]

@@ -80,9 +80,10 @@ func liquid_at(p: Vector2) -> Dictionary:
 	return preload("res://scripts/water_profile.gd").liquid_at(p)
 
 func path_distance(p: Vector2) -> float:
-	var best = INF
+	var best = minf(preload("res://scripts/alderhaven_masterplan.gd").path_distance(p), preload("res://scripts/brindlewick_masterplan.gd").path_distance(p))
 	for road in _near(p).roads: best = minf(best, p.distance_to(Geometry2D.get_closest_point_to_segment(p, road.a, road.b)))
 	for site in _near(p).sites:
+		if site.id in ["alderhaven", "brindlewick"]: continue
 		var local: Vector2 = p - site.pos
 		if maxf(absf(local.x), absf(local.y)) < site.clearance: best = minf(best, minf(absf(local.x), absf(local.y)))
 	return best

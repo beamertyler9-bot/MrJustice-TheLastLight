@@ -9,11 +9,25 @@ static var _cliffs: Dictionary = {}
 static var _feature_grid: Dictionary = {}
 static var _road_grid: Dictionary = {}
 static var _gate_grid: Dictionary = {}
+static var _alderhaven_center := Vector2.INF
+static var _alderhaven_floor := 0.0
 static func _load() -> void:
 	if not _map.is_empty(): return
 	_map = FileAccess.open(PATH + "map.bin", FileAccess.READ).get_var()
 	_heights = FileAccess.get_file_as_bytes(PATH + "heightfield.bin")
 	assert(_heights.size() == int(_map.width) * int(_map.height) * 2, "Incomplete fixed world height field")
+	for site in _map.sites:
+		if str(site.id) == "alderhaven":
+			site.pos += preload("res://scripts/alderhaven_masterplan.gd").ORIGIN_OFFSET
+			site.clearance = 150.0
+			_map.nodes["alderhaven"] = site.pos
+			_alderhaven_center = site.pos
+			_alderhaven_floor = _original_height(site.pos)
+			preload("res://scripts/alderhaven_masterplan.gd").configure(site.pos, _alderhaven_floor)
+			break
+	var brindle = preload("res://scripts/brindlewick_masterplan.gd")
+	brindle.configure(_map.nodes.brindlewick, _original_height(_map.nodes.brindlewick))
+	_map.roads = brindle.reroute(_map.roads)
 	for c in _map.cliffs:
 		_cliffs[c.id] = c
 		for z in range(floori((c.pos.y - 140) / 128), ceili((c.pos.y + 140) / 128) + 1):
@@ -43,13 +57,25 @@ static func deep_plan(id: String) -> Dictionary:
 static func gates() -> Dictionary:
 	_load(); return _map.gates.duplicate(true)
 static func spawn() -> Vector2:
-	_load(); return _map.spawn
+	_load()
+	if bool(ProjectSettings.get_setting("application/config/brindlewick_preview", false)):
+		return _map.nodes.brindlewick + Vector2(13, 72)
+	if bool(ProjectSettings.get_setting("application/config/alderhaven_preview", false)):
+		return _alderhaven_center + Vector2(0, 112)
+	return _map.spawn
 static func wizard_anchor() -> Vector2:
 	_load(); return _map.wizard_tower
 static func service_points(kind: String) -> Dictionary:
 	_load(); return _map.get(kind, {}).duplicate(true)
 static func height_at(p: Vector2) -> float:
-	_load(); var q = (p - _map.origin) / 3.0
+	_load()
+	var original = preload("res://scripts/brindlewick_masterplan.gd").terrain_height(p, _original_height(p))
+	if _alderhaven_center != Vector2.INF:
+		return preload("res://scripts/alderhaven_masterplan.gd").terrain_height(p, original, _alderhaven_center, _alderhaven_floor)
+	return original
+
+static func _original_height(p: Vector2) -> float:
+	var q = (p - _map.origin) / 3.0
 	q.x = clampf(q.x, 0, int(_map.width) - 1.001); q.y = clampf(q.y, 0, int(_map.height) - 1.001)
 	var x = floori(q.x); var z = floori(q.y); var u = q.x - x; var v = q.y - z; var index = (z * int(_map.width) + x) * 2
 	var a = _heights.decode_u16(index); var b = _heights.decode_u16(index + 2)
@@ -100,7 +126,7 @@ static func region_at(p: Vector2) -> int:
 		if d < nearest: nearest = d; chosen = r.id
 	return chosen
 static func path_distance(p: Vector2) -> float:
-	_load(); var best = INF
+	_load(); var best = minf(preload("res://scripts/alderhaven_masterplan.gd").path_distance(p), preload("res://scripts/brindlewick_masterplan.gd").path_distance(p))
 	for r in _road_grid.get(Vector2i(floori(p.x / 128), floori(p.y / 128)), []): best = minf(best, p.distance_to(Geometry2D.get_closest_point_to_segment(p, r.a, r.b)))
 	return best
 static func liquid_at(p: Vector2) -> bool:
@@ -108,6 +134,12 @@ static func liquid_at(p: Vector2) -> bool:
 static func reserved(p: Vector2, padding: float = 0) -> bool:
 	_load()
 	for s in _map.sites:
+		if s.id == "brindlewick":
+			if preload("res://scripts/brindlewick_masterplan.gd").reserved(p - s.pos, padding): return true
+			continue
+		if s.id == "alderhaven":
+			if preload("res://scripts/alderhaven_masterplan.gd").reserved(p - s.pos, padding): return true
+			continue
 		var q = (p - s.pos).abs()
 		if maxf(q.x, q.y) < s.clearance + padding: return true
 	for c in _feature_grid.get(Vector2i(floori(p.x / 128), floori(p.y / 128)), []):

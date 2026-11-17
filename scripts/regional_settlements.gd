@@ -22,6 +22,8 @@ var active_residents: Dictionary = {}
 var clock := 0.0
 var viewer := Vector3.ZERO
 var proxies: Node3D
+var alderhaven_art: Node3D
+var brindlewick_art: Node3D
 
 
 const PROXY_LOAD_DISTANCE = 900.0
@@ -34,13 +36,21 @@ static func plan(atlas, site: Dictionary) -> Dictionary:
 	if plans.has(key): return plans[key]
 	var plots = P.city_plots(site, atlas.seed_value).duplicate(true); var districts: Array = []
 	for i in range(plots.size()):
-		plots[i].index = i; plots[i].legacy = false; plots[i].district = i / 4 if site.kind == "city" else 0
-		plots[i].purpose = ["stores", "workshop", "library", "bakery", "home", "home", "inn", "home"][i % 8]
+		plots[i].index = i; plots[i].legacy = false
+		if site.id not in ["alderhaven", "brindlewick"]:
+			plots[i].district = i / 4 if site.kind == "city" else 0
+			plots[i].purpose = ["stores", "workshop", "library", "bakery", "home", "home", "inn", "home"][i % 8]
 	for i in range(6 if site.kind == "city" else 1):
 		var center = Vector2.ZERO; var count = 0
 		for plot in plots:
 			if plot.district == i: center += plot.p; count += 1
-		districts.append({"name": DISTRICTS[int(site.region)][i] if site.kind == "city" else site.name + " / homes", "p": center / maxi(1, count), "index": i})
+		if site.id == "brindlewick":
+			districts.append({"name": "Brindlewick / Village Green", "p": Vector2.ZERO, "index": 0})
+		elif site.id == "alderhaven":
+			var ward = preload("res://scripts/alderhaven_masterplan.gd").DISTRICTS[i]
+			districts.append({"name": ward.name, "p": ward.p, "index": i})
+		else:
+			districts.append({"name": DISTRICTS[int(site.region)][i] if site.kind == "city" else site.name + " / homes", "p": center / maxi(1, count), "index": i})
 	var population: Array = []
 	var names = ["Ada", "Bram", "Cora", "Della", "Edric", "Fenna", "Galen", "Hesta", "Ivo", "Junia", "Kellan", "Lira", "Milo", "Nessa", "Orin", "Pella", "Quinn", "Rhea", "Soren", "Tamsin", "Una", "Venn", "Willa", "Yarrow"]
 	var surnames = ["Bellward", "Cedarhand", "Riverreed", "Mosswell", "Fernlight", "Willowmere", "Honeycrumb", "Cocoavale", "Grahamwood", "Fizzbrook", "Windweaver", "Goldseed", "Reedcrest", "Millward", "Sunthread", "Saffron", "Oasisleaf", "Dunewalker", "Opalbrook", "Gemward", "Chimeleaf", "Prismwell", "Mirrorlake", "Starshard", "Copperstrap"]
@@ -54,6 +64,12 @@ static func reserved(atlas, p: Vector2, padding: float = 0) -> bool:
 	for site in atlas.sites():
 		var local = p - site.pos
 		if local.length() > 230 + padding: continue
+		if site.id == "alderhaven":
+			if preload("res://scripts/alderhaven_masterplan.gd").reserved(local, padding): return true
+			continue
+		if site.id == "brindlewick":
+			if preload("res://scripts/brindlewick_masterplan.gd").reserved(local, padding): return true
+			continue
 		if site.kind == "town":
 			if absf(local.x) > 36 and absf(local.x) < 51 + padding and absf(local.y) < 26 + padding: return true
 			continue
@@ -83,7 +99,7 @@ func _stream_proxies(point: Vector3, immediate: bool) -> void:
 	var wanted = {}; var queued = {}; var at = Vector2(point.x, point.z)
 	for job in proxy_jobs: queued[job.id] = true
 	for site in world.atlas.sites():
-		if site.kind != "city": continue
+		if site.kind != "city" and site.id != "brindlewick": continue
 		for plot in plan(world.atlas, site).plots:
 			var id = site.id + "_home_" + str(plot.index)
 			var distance = at.distance_to(site.pos + plot.p)
@@ -106,24 +122,30 @@ func step_proxy() -> void:
 	var job = proxy_jobs.pop_front(); var site: Dictionary = job.site; var plot: Dictionary = job.plot
 	var p: Vector2 = site.pos + plot.p; var high: float = world.height_at(p.x, p.y)
 	for d in [Vector2(-5, -5), Vector2(5, -5), Vector2(-5, 5), Vector2(5, 5)]: high = maxf(high, world.height_at(p.x + d.x, p.y + d.y))
+	if site.id in ["alderhaven", "brindlewick"]:
+		for dx in [-plot.footprint.x * 0.5, plot.footprint.x * 0.5]:
+			for dz in [-plot.footprint.y * 0.5, plot.footprint.y * 0.5]: high = maxf(high, world.height_at(p.x + dx, p.y + dz))
 	var n = Node3D.new(); proxies.add_child(n); n.position = Vector3(p.x, high + 0.08, p.y); n.rotation.y = plot.heading
 	n.set_meta("site", site.id); n.set_meta("plot_index", plot.index); n.set_meta("plot_id", job.id); n.set_meta("world_plot", p)
 	n.set_meta("purpose", plot.purpose)
+	if plot.has("footprint"): n.set_meta("occupancy_rect", Rect2(p - plot.footprint * 0.5, plot.footprint).grow(0.5))
 	load("res://scripts/village_architecture.gd").build(n, plot.w, plot.d, int(site.region), str(job.id), site.wall_color, site.roof_color, false)
+	if site.id in ["alderhaven", "brindlewick"]:
+		preload("res://scripts/alderhaven_masterplan.gd").support_house(world, n, plot, false)
 	B.batch_static(n)
 	for mesh in n.find_children("*", "GeometryInstance3D", true, false): mesh.visibility_range_end = 750; mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	proxy_live[job.id] = n
 	# Only the new house needs its visibility decided now; re-checking every distant house
 	# after each build made streaming cost grow with the size of the town (40-65 ms hitches).
 	if n.is_in_group("housing_representation"):
-		n.visible = not has_plot(n.get_meta("site"), n.get_meta("plot_index")) and not _occupied(n.get_meta("world_plot"), 7)
+		n.visible = not has_plot(n.get_meta("site"), n.get_meta("plot_index")) and not _proxy_occupied(n)
 	if proxy_jobs.is_empty():
 		_update_proxies()
 		DistrictBatches.rebuild(proxies, "housing-vistas", null, true)
 func _update_proxies() -> void:
 	if proxies == null: return
 	for n in proxies.get_children():
-		if n.is_in_group("housing_representation"): n.visible = not has_plot(n.get_meta("site"), n.get_meta("plot_index")) and not _occupied(n.get_meta("world_plot"), 7)
+		if n.is_in_group("housing_representation"): n.visible = not has_plot(n.get_meta("site"), n.get_meta("plot_index")) and not _proxy_occupied(n)
 func bind_game(context) -> void: game = context
 func _process(dt: float) -> void:
 	if game == null or game.mode != "play": return
@@ -135,6 +157,25 @@ func _process(dt: float) -> void:
 func _key(site: Dictionary, district: Dictionary) -> String: return "%s:%d" % [site.id, district.index]
 func stream_at(point: Vector3, immediate: bool = false) -> void:
 	viewer = point
+	var city: Dictionary = world.atlas.sites().filter(func (s): return s.id == "alderhaven")[0]
+	var city_distance = Vector2(point.x, point.z).distance_to(city.pos)
+	if city_distance < 260 and not is_instance_valid(alderhaven_art):
+		alderhaven_art = Node3D.new(); alderhaven_art.name = "AlderhavenBlueprintInfrastructure"
+		alderhaven_art.position = Vector3(city.pos.x, 0, city.pos.y); add_child(alderhaven_art)
+		var masterplan = preload("res://scripts/alderhaven_masterplan.gd")
+		for i in range(masterplan.DISTRICTS.size()):
+			var ward = masterplan.DISTRICTS[i].duplicate(); ward.index = i
+			masterplan.district_art(world, alderhaven_art, city, ward)
+	elif city_distance > 350 and is_instance_valid(alderhaven_art):
+		remove_child(alderhaven_art); alderhaven_art.queue_free(); alderhaven_art = null
+	var town: Dictionary = world.atlas.sites().filter(func (s): return s.id == "brindlewick")[0]
+	var town_distance = Vector2(point.x, point.z).distance_to(town.pos)
+	if town_distance < 200 and not is_instance_valid(brindlewick_art):
+		brindlewick_art = Node3D.new(); brindlewick_art.name = "BrindlewickBlueprintInfrastructure"
+		brindlewick_art.position = Vector3(town.pos.x, 0, town.pos.y); add_child(brindlewick_art)
+		preload("res://scripts/brindlewick_masterplan.gd").infrastructure(world, brindlewick_art, town)
+	elif town_distance > 290 and is_instance_valid(brindlewick_art):
+		remove_child(brindlewick_art); brindlewick_art.queue_free(); brindlewick_art = null
 	var wanted = {}; var outdoors = world.interior_at(point).is_empty(); proxies.visible = outdoors
 	if outdoors: _stream_proxies(point, immediate)
 	else: proxy_jobs.clear()
@@ -153,6 +194,7 @@ func stream_at(point: Vector3, immediate: bool = false) -> void:
 			continue
 		var n = Node3D.new(); n.name = key.replace(":", "_"); n.position = Vector3(site.pos.x, 0, site.pos.y); add_child(n)
 		n.set_meta("site", site.id); n.set_meta("district", district.index); n.set_meta("built_plots", []); live[key] = n
+		if site.id == "alderhaven": _district_art(n, site, district)
 		_queue_missing(n, site, district)
 	for key in live.keys():
 		if not wanted.has(key): _remove(key)
@@ -165,7 +207,7 @@ func _queue_missing(root: Node3D, site: Dictionary, district: Dictionary) -> voi
 	var built: Array = root.get_meta("built_plots", [])
 	for plot in plan(world.atlas, site).plots:
 		if plot.district != district.index or built.has(int(plot.index)): continue
-		if _occupied(site.pos + plot.p, 7): continue
+		if _plot_occupied(site, plot): continue
 		var pending = false
 		for job in jobs:
 			if job.root == root and int(job.plot.index) == int(plot.index): pending = true; break
@@ -189,12 +231,20 @@ func has_plot(site_id: String, index: int) -> bool:
 func _occupied(p: Vector2, radius: float) -> bool:
 	return Occupancy.conflicts(world.state, Rect2(p - Vector2.ONE * radius, Vector2.ONE * radius * 2))
 
+func _plot_occupied(site: Dictionary, plot: Dictionary) -> bool:
+	if plot.has("footprint"):
+		return Occupancy.conflicts(world.state, Rect2(site.pos + plot.p - plot.footprint * 0.5, plot.footprint).grow(0.5))
+	return _occupied(site.pos + plot.p, 7)
+func _proxy_occupied(proxy: Node3D) -> bool:
+	if proxy.has_meta("occupancy_rect"): return Occupancy.conflicts(world.state, proxy.get_meta("occupancy_rect"))
+	return _occupied(proxy.get_meta("world_plot"), 7)
+
 func step() -> void:
 	if jobs.is_empty(): return
 	var job = jobs.pop_front()
 	if not is_instance_valid(job.root) or job.root.is_queued_for_deletion(): return
 	var at: Vector2 = job.site.pos + job.plot.p
-	if _occupied(at, 7) or job.root.get_meta("built_plots", []).has(int(job.plot.index)):
+	if _plot_occupied(job.site, job.plot) or job.root.get_meta("built_plots", []).has(int(job.plot.index)):
 		_batch_completed(job.root); return
 	_house(job.root, job.site, job.plot)
 	var built: Array = job.root.get_meta("built_plots"); built.append(int(job.plot.index)); job.root.set_meta("built_plots", built)
@@ -207,8 +257,16 @@ func _batch_completed(root: Node3D):
 func _house(parent: Node3D, site: Dictionary, plot: Dictionary) -> void:
 	var p: Vector2 = site.pos + plot.p; var high: float = world.height_at(p.x, p.y)
 	for d in [Vector2(-5, -5), Vector2(5, -5), Vector2(-5, 5), Vector2(5, 5)]: high = maxf(high, world.height_at(p.x + d.x, p.y + d.y))
-	var house = P.building(parent, Vector3(plot.p.x, high + 0.08, plot.p.y), plot.w, plot.d, site.wall_color, site.roof_color, plot.heading, "Home", site.id + "_home_" + str(plot.index), plot.purpose, int(site.region))
+	if site.id in ["alderhaven", "brindlewick"]:
+		for dx in [-plot.footprint.x * 0.5, plot.footprint.x * 0.5]:
+			for dz in [-plot.footprint.y * 0.5, plot.footprint.y * 0.5]: high = maxf(high, world.height_at(p.x + dx, p.y + dz))
+	var house = P.building(parent, Vector3(plot.p.x, high + 0.08, plot.p.y), plot.w, plot.d, site.wall_color, site.roof_color, plot.heading, str(plot.get("title", "Home")), site.id + "_home_" + str(plot.index), plot.purpose, int(site.region))
 	house.name = "Building_" + str(plot.index)
+	if site.id in ["alderhaven", "brindlewick"]:
+		preload("res://scripts/alderhaven_masterplan.gd").support_house(world, house, plot)
+		preload("res://scripts/alderhaven_masterplan.gd").attach_path(world, house, site, plot)
+		B.batch_static(house); P.cull_art(house, 155)
+		return
 	var paths = load("res://scripts/building_paths.gd")
 	var obstacles = paths.planned(parent, plan(world.atlas, site).plots, true) + paths.civic(site) + paths.props(world.locations) + paths.props(parent)
 
@@ -234,6 +292,8 @@ static func _walk_surface(faces: Array[PackedVector3Array]) -> ArrayMesh:
 	var mesh = ArrayMesh.new(); mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays); return mesh
 
 func _district_art(parent: Node3D, site: Dictionary, district: Dictionary) -> void:
+	if site.id in ["alderhaven", "brindlewick"]:
+		return
 	var p: Vector2 = site.pos + district.p; var h: float = world.height_at(p.x, p.y)
 	P.signboard(parent, Vector3(district.p.x, h + 3, district.p.y), district.name, 0, 6)
 	if site.kind == "city":
@@ -293,11 +353,15 @@ func _district_art(parent: Node3D, site: Dictionary, district: Dictionary) -> vo
 
 func _citizens() -> void:
 	var candidates: Array = []
+	var wanted = {}
+	if live.has("brindlewick:0"):
+		_brindlewick_citizens(live["brindlewick:0"], wanted)
 	for root in live.values():
 		var site: Dictionary = world.atlas.sites().filter(func (s): return s.id == root.get_meta("site"))[0]
+		if site.id == "brindlewick": continue
 		var data = plan(world.atlas, site)
 		for person in data.population:
-			if int(person.home) % 5 != 0 and person.role not in ["stores", "workshop", "bakery", "inn", "library"]: continue
+			if site.id != "alderhaven" and int(person.home) % 5 != 0 and person.role not in ["stores", "workshop", "bakery", "inn", "library"]: continue
 			if int(person.district) != int(root.get_meta("district")) or not root.get_meta("built_plots", []).has(int(person.home)): continue
 			var household = posmod(floori(world.state.journey_time / 90) + int(person.home), 5 if site.kind == "city" else 4)
 			if int(person.id.get_slice("_", 2)) / data.plots.size() != household: continue
@@ -305,7 +369,7 @@ func _citizens() -> void:
 			var distance = at.distance_to(Vector2(viewer.x, viewer.z))
 			if distance < 62: candidates.append({"person": person, "plot": plot, "site": site, "root": root, "distance": distance})
 	candidates.sort_custom(func (a, b): return a.distance < b.distance)
-	var wanted = {}; var homes = {}
+	var homes = {}
 	for candidate in candidates:
 		var house_id = "%s:%s" % [candidate.site.id, candidate.person.home]
 		if wanted.size() >= 16: break
@@ -324,6 +388,7 @@ func _citizens() -> void:
 		# the library's curio dealer; stores are general stores or (every other one) anglers.
 		var shop: String = {"workshop": "blacksmith", "bakery": "grocer", "inn": "alchemist", "library": "curio"}.get(role, "")
 		if role == "stores": shop = "angler" if (int(candidate.person.home) / 8) % 2 == 1 else "general"
+		if site.id == "alderhaven": shop = str(plot.get("shop", ""))
 		var trade_line: String = "I'm %s's %s: %s Have a look." % [str(site.name), Merchants.title(shop).to_lower(), Merchants.blurb(shop).to_lower()] if shop != "" else "The main roads connect our homes to neighboring towns."
 		P.npc(world, candidate.root, id, candidate.person.name, ["#7f9a87", "#a48665", "#8d789a", "#8c9aaf"][int(candidate.person.phase)], shop, ["Welcome to " + str(site.name) + ". This is our " + str(role) + " quarter.", trade_line, "Come in and look around. Every house has a place to rest, eat, work and store its belongings."], "human", "merchant" if shop != "" else "neighbor", route, "scarf", Vector3.ZERO, candidate.root.get_node_or_null("Building_" + str(candidate.person.home)) if shop != "" else null)
 		var actor = world.residents.back()
@@ -335,3 +400,19 @@ func _citizens() -> void:
 		var actor = active_residents[id]
 		if is_instance_valid(actor): world.residents.erase(actor); actor.remove_from_group("npc"); actor.remove_from_group("interactable"); actor.queue_free()
 		active_residents.erase(id)
+
+func _brindlewick_citizens(root: Node3D, wanted: Dictionary) -> void:
+	var master = preload("res://scripts/brindlewick_masterplan.gd")
+	for person in master.residents():
+		var house = root.get_node_or_null("Building_%d" % person.home)
+		var id: String = "brindlewick_" + person.id; wanted[id] = true
+		if active_residents.has(id): continue
+		var plot: Dictionary = master.plots()[person.home]
+		var front = plot.p + Vector2(sin(plot.heading), cos(plot.heading)) * (plot.d * 0.5 + 3)
+		if house == null: front = master.resident_fallback(world, person.home)
+		var route = PackedVector3Array([master.seat(world, front)])
+		P.npc(world, root, id, person.name, "#8e8061", plot.shop if house != null else "", ["Welcome to Brindlewick. The village green connects our homes and shops.", person.line], person.race, person.role, route, "scarf", Vector3.ZERO, house if not plot.shop.is_empty() else null)
+		var actor = world.residents.back()
+		if house == null:
+			actor.set_meta("shop", plot.shop); actor.set_meta("displaced_by_saved_structure", true)
+		active_residents[id] = actor
