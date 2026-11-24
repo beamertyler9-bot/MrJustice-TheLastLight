@@ -81,6 +81,7 @@ const SIZES = {"cocoa_knight": {"radius": 0.6, "height": 2.6, "reach": 2.6}, "fu
 	"volcano_tortoise": {"radius": 0.85, "height": 1.9, "reach": 2.8, "hp": 10, "front_max": 1.9},
 	"furnace_hound": {"radius": 0.6, "height": 1.8, "hp": 6, "front_max": 1.8},
 	"bone_hound": {"radius": 0.6, "height": 1.7, "hp": 6, "front_max": 1.8},
+	"slag_crawler": {"radius": 0.7, "height": 1.8, "reach": 2.4, "hp": 7, "front_max": 1.9},
 	"cerberus": {"radius": 0.75, "height": 1.8, "hp": 10, "damage": 2, "front_max": 1.9},
 	"glass_anubid": {"radius": 0.75, "height": 3.7, "reach": 11.0, "hp": 30, "attack": "ranged", "beam": true, "beam_fan": 3, "windup": 1.2, "front_max": 2.4},
 	"dust_devil": {"radius": 0.55, "height": 2.4},

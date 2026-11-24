@@ -49,6 +49,7 @@ const DESIGNS := {
 	"furnace_hound": ["res://tools/sculpt_hellhound.gd", "infernal"],
 	"cerberus": ["res://tools/sculpt_hellhound.gd", "cerberus"],
 	"bone_hound": ["res://tools/sculpt_hellhound.gd", "bone"],
+	"slag_crawler": ["res://tools/sculpt_slag_crawler.gd", "hermit"],
 	"dust_devil": ["res://tools/sculpt_sandwraith.gd", "dustdevil"],
 	"linen_revenant": ["res://tools/sculpt_sandwraith.gd", "mummy"],
 }

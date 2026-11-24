@@ -91,3 +91,6 @@ monster should stand clearly bigger than him.
 
 ## Furnace Hound, Cerberus and Bone Hound (Ashfall Caldera)
 - These hellhounds are built on the grey wolf: long-legged and deep-chested, with an angled hind leg and a high hock, standing on four-toed paws with a stop above the eyes and a tapering muzzle. Cerberus follows the three-headed hound of Greek myth.
+
+## Slag Crawler (Ashfall Caldera)
+- A giant hermit crab in a turban-like spiralled shell, with one big crushing claw and one smaller claw, eyes on stalks, long antennae and two pairs of big walking legs. The shell and armour are slag: the glassy, rust-streaked crust that forms on cooling molten rock.
