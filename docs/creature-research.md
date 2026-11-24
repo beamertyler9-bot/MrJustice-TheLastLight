@@ -88,3 +88,6 @@ monster should stand clearly bigger than him.
 ## Riftback and Volcano Tortoise (Ashfall Caldera)
 - Riftback: a giant pangolin. Real pangolins have a small smooth tapered head with no external ears, tiny heavy-lidded eyes and a very long tongue. They have about eighteen rows of broad, backward-pointing, overlapping scales over the back, flanks, outer legs and the whole top of the tail; the face, belly and inner legs are bare. Their front claws are huge, with the middle one largest, and are folded so the animal walks on the outer edges of its forefeet. The hind feet are broad and flat-soled with short claws. Sources: [Pholidota (Encyclopedia.com)](https://encyclopedia.com/environment/encyclopedias-almanacs-transcripts-and-maps/pholidota-pangolins), [Pangolin (Britannica)](https://www.britannica.com/animal/pangolin)
 - Volcano Tortoise: a Galápagos giant tortoise (they live on volcanic islands), with large horny scales on the forelegs and a domed shell of scutes. Here the shell is basalt carrying a small volcano.
+
+## Furnace Hound, Cerberus and Bone Hound (Ashfall Caldera)
+- These hellhounds are built on the grey wolf: long-legged and deep-chested, with an angled hind leg and a high hock, standing on four-toed paws with a stop above the eyes and a tapering muzzle. Cerberus follows the three-headed hound of Greek myth.

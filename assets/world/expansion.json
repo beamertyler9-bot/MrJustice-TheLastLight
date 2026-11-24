@@ -11728,7 +11728,23 @@
       "region": 13,
       "kind": "hostile",
       "boss": false,
-      "hook": "Charred armorlike hide and smoky breath; paws glow before its rush."
+      "hook": "A horned hellhound with a mane and tail of fire, lava drooling from its snarl; its paws blaze white-hot before its rush."
+    },
+    {
+      "id": "cerberus",
+      "name": "Cerberus",
+      "region": 13,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "Three snarling heads in spiked iron collars on one burning body; all three throats glow before it charges."
+    },
+    {
+      "id": "bone_hound",
+      "name": "Bone Hound",
+      "region": 13,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "A hellhound burnt to the bone, a bare skull with fire in its eye sockets and a ribcage over a furnace; its paws blaze before its rush."
     },
     {
       "id": "slag_crawler",

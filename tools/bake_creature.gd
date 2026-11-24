@@ -46,6 +46,9 @@ const DESIGNS := {
 	"glass_anubid": ["res://tools/sculpt_anubis_god.gd", "beast"],
 	"riftback": ["res://tools/sculpt_riftback.gd", "pangolin"],
 	"volcano_tortoise": ["res://tools/sculpt_riftback.gd", "tortoise"],
+	"furnace_hound": ["res://tools/sculpt_hellhound.gd", "infernal"],
+	"cerberus": ["res://tools/sculpt_hellhound.gd", "cerberus"],
+	"bone_hound": ["res://tools/sculpt_hellhound.gd", "bone"],
 	"dust_devil": ["res://tools/sculpt_sandwraith.gd", "dustdevil"],
 	"linen_revenant": ["res://tools/sculpt_sandwraith.gd", "mummy"],
 }
