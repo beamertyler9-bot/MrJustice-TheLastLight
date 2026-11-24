@@ -98,28 +98,9 @@ func hide_point(z: float, a: float, out := 1.0) -> Array:
 	return [(b[0] as Vector3) + dir * float(b[1]) * (out + bulge), Vector3(sin(a), cos(a), 0)]
 
 
-## Builds the dog on the jackal's rig parts (see _close in the jackal sculpt).
-func canid(skin: Callable, glow_paws: bool) -> Dictionary:
-	var sh: float = o.sh; var hp: float = o.hp; var hk: float = o.head; var bulk: float = o.bulk
-	var body := Sculpt.new(); var bp := body.add_painter(skin)
-	var zs := [-0.44, -0.26, 0.02, 0.26, 0.44]
-	var pts: Array = []; var rs: Array = []
-	for z in zs:
-		var b: Array = body_at(z)
-		pts.append(b[0]); rs.append(b[1])
-	body.tube(pts, rs, bp, {"sides": 24, "per": 6, "flat": 0.82, "lump": 0.04})
-	body.blob(Vector3(0, sh - 0.22, -0.3), Vector3(0.13, 0.19, 0.16) * bulk, bp, {"lat": 9, "lon": 12})
-	for side: float in [-1.0, 1.0]:
-		body.blob(Vector3(0.09 * side, sh - 0.12, -0.3), Vector3(0.08, 0.15, 0.13) * bulk, bp, {"lat": 7, "lon": 10})
-		body.blob(Vector3(0.08 * side, hp - 0.06, 0.34), Vector3(0.08, 0.13, 0.13) * (0.6 + 0.4 * bulk), bp, {"lat": 7, "lon": 10})
-	body.tube([Vector3(0, sh - 0.06, -0.38), Vector3(0, sh + 0.04, -0.5), Vector3(0, sh + 0.12, -0.58)], [float(o.neck) * 1.1, o.neck, float(o.neck) * 0.85], bp, {"sides": 13, "per": 3})
-	var parts := {"body": body, "body_painter": bp, "lift": 0.0}
 
-	# The head: a broad skull with a clear stop above the eyes, heavy brows, muscular cheeks, a
-	# tapering muzzle with a big nose pad, and a snarling open jaw full of teeth with the fire of
-	# its throat showing inside.
-	var hy := sh + 0.14; var hz := -0.62
-	var head := joint(root, "Head", Vector3(0, sh + 0.12, -0.58))
+## The head's sculpts at (hy, hz) and size hk: skull, jaw, throat fire and eyes.
+func head_sculpts(skin: Callable, hy: float, hz: float, hk: float) -> Dictionary:
 	var hs := Sculpt.new(); var hpn := hs.add_painter(skin)
 	var nose := hs.add_painter(func (p, n, v, w): return Color("#0c0a0a").lightened(clampf(n.y, 0.0, 1.0) * 0.25))
 	var fang := hs.add_painter(func (p, n, v, w): return Color("#efe4c8").darkened((1.0 - v) * 0.35))
@@ -141,8 +122,6 @@ func canid(skin: Callable, glow_paws: bool) -> Dictionary:
 		for k in range(4):
 			var at := tip.lerp(Vector3(0.05 * side * hk, hy - 0.06 * hk, hz - 0.05 * hk), 0.25 + k * 0.17) + Vector3(0.02 * side * hk, -0.03 * hk, 0)
 			hs.crystal(at, Vector3(0, -1, 0), 0.022 * hk, 0.008 * hk, fang, 4)
-	parts["head"] = head; parts["head_sculpt"] = hs; parts["head_painter"] = hpn
-	var jaw := joint(head, "Jaw", Vector3(0, hy - 0.055 * hk, hz - 0.02))
 	var js := Sculpt.new(); var jp := js.add_painter(skin)
 	var jf := js.add_painter(func (p, n, v, w): return Color("#efe4c8").darkened((1.0 - v) * 0.35))
 	var tongue := js.add_painter(func (p, n, v, w): return Color("#5a1a14").lerp(Color("#b04020"), v))
@@ -154,14 +133,42 @@ func canid(skin: Callable, glow_paws: bool) -> Dictionary:
 		for k in range(3):
 			var at := jtip.lerp(Vector3(0.04 * side * hk, hy - 0.07 * hk, hz - 0.03), 0.25 + k * 0.2) + Vector3(0.012 * side * hk, 0.025 * hk, 0)
 			js.crystal(at, Vector3(0, 1, 0), 0.02 * hk, 0.007 * hk, jf, 4)
-	parts["jaw"] = jaw; parts["jaw_sculpt"] = js
 	# The fire of its throat, glowing between the jaws.
 	var fs := Sculpt.new(); var fp := fs.add_painter(ember)
 	fs.blob(Vector3(0, hy - 0.05 * hk, (hz + tip.z) * 0.5 + 0.03), Vector3(0.035 * hk, 0.03 * hk, mz * 0.4), fp, {"lat": 5, "lon": 8})
-	part(head, "ThroatFire", fs, ember_mat)
 	var es := Sculpt.new(); var white := es.add_painter(func (p, n, v, w): return Color.WHITE)
 	for side: float in [-1.0, 1.0]:
 		es.blob(Vector3(0.057 * side * hk, hy + 0.02 * hk, hz - 0.093 * hk), Vector3(0.022, 0.011, 0.008) * hk, white, {"lat": 4, "lon": 7, "basis": Basis(Vector3.BACK, -0.3 * side)})
+	return {"hs": hs, "hpn": hpn, "js": js, "fs": fs, "es": es, "jaw_at": Vector3(0, hy - 0.055 * hk, hz - 0.02)}
+
+## Builds the dog on the jackal's rig parts (see _close in the jackal sculpt).
+func canid(skin: Callable, glow_paws: bool) -> Dictionary:
+	var sh: float = o.sh; var hp: float = o.hp; var hk: float = o.head; var bulk: float = o.bulk
+	var body := Sculpt.new(); var bp := body.add_painter(skin)
+	var zs := [-0.44, -0.26, 0.02, 0.26, 0.44]
+	var pts: Array = []; var rs: Array = []
+	for z in zs:
+		var b: Array = body_at(z)
+		pts.append(b[0]); rs.append(b[1])
+	body.tube(pts, rs, bp, {"sides": 24, "per": 6, "flat": 0.82, "lump": 0.04})
+	body.blob(Vector3(0, sh - 0.22, -0.3), Vector3(0.13, 0.19, 0.16) * bulk, bp, {"lat": 9, "lon": 12})
+	for side: float in [-1.0, 1.0]:
+		body.blob(Vector3(0.09 * side, sh - 0.12, -0.3), Vector3(0.08, 0.15, 0.13) * bulk, bp, {"lat": 7, "lon": 10})
+		body.blob(Vector3(0.08 * side, hp - 0.06, 0.34), Vector3(0.08, 0.13, 0.13) * (0.6 + 0.4 * bulk), bp, {"lat": 7, "lon": 10})
+	body.tube([Vector3(0, sh - 0.06, -0.38), Vector3(0, sh + 0.04, -0.5), Vector3(0, sh + 0.12, -0.58)], [float(o.neck) * 1.1, o.neck, float(o.neck) * 0.85], bp, {"sides": 13, "per": 3})
+	var parts := {"body": body, "body_painter": bp, "lift": 0.0}
+
+	# The head: a broad skull with a clear stop above the eyes, heavy brows, muscular cheeks, a
+	# tapering muzzle with a big nose pad, and a snarling open jaw full of teeth with the fire of
+	# its throat showing inside.
+	var hy := sh + 0.14; var hz := -0.62
+	var hd := head_sculpts(skin, hy, hz, hk)
+	var head := joint(root, "Head", Vector3(0, sh + 0.12, -0.58))
+	parts["head"] = head; parts["head_sculpt"] = hd.hs; parts["head_painter"] = hd.hpn
+	var jaw := joint(head, "Jaw", hd.jaw_at)
+	parts["jaw"] = jaw; parts["jaw_sculpt"] = hd.js
+	part(head, "ThroatFire", hd.fs, ember_mat)
+	var es: Sculpt = hd.es
 	parts["core_sculpt"] = es
 	var ears: Array = []; var ear_sculpts: Array = []
 	var er: float = o.ear
