@@ -59,6 +59,9 @@ func _antlion() -> Node3D:
 	var skin := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
 		var c := SAND.lerp(SAND_DARK, clampf(n.y * 0.3 + Sculpt.fbm(p * 4.0) * 0.6 + 0.1, 0.0, 1.0))
 		c = c.lerp(Color("#3e2a19"), smoothstep(0.32, 0.45, Sculpt.noise(p * 11.0)) * 0.75)
+		# Paired dark spots down the back of each abdominal segment, and a dark V on the head.
+		if p.z > 0.05: c = c.lerp(Color("#2e1f13"), smoothstep(0.5, 0.85, sin(p.z * 23.0)) * smoothstep(0.07, 0.03, absf(absf(p.x) - 0.14)) * smoothstep(0.2, 0.6, n.y) * 0.85)
+		if p.z < -0.38: c = c.lerp(Color("#2e1f13"), smoothstep(0.03, 0.012, absf(absf(p.x) - (p.z + 0.68) * 0.55)) * smoothstep(0.3, 0.7, n.y) * 0.8)
 		return c.lerp(SAND_PALE, smoothstep(-0.3, -0.8, n.y) * 0.5)
 	var bristle := func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#3a2817").lerp(Color("#c9a66d"), v)
 	var body := Sculpt.new(); var bp := body.add_painter(skin); var br := body.add_painter(bristle)
@@ -75,6 +78,16 @@ func _antlion() -> Node3D:
 		var r := 0.44 * sin(clampf(z / 1.0, 0.05, 0.95) * PI) * 0.98 + 0.03
 		var at := Vector3(sin(ang) * r * 1.2, 0.38 + cos(ang) * r, z)
 		thorn(ab, abr, at, Vector3(sin(ang) * 1.2, cos(ang), 0.7), 0.13 + 0.07 * absf(Sculpt.noise(at * 9.0)), 0.013)
+	# Rows of warty tubercles along the flanks, each sprouting a tuft of bristles.
+	for k in range(6):
+		var z := 0.14 + k * 0.14
+		var r := 0.42 * sin(clampf(z, 0.05, 0.95) * PI) + 0.02
+		for side in [-1.0, 1.0]:
+			var at := Vector3(side * r * 1.18, 0.33, z)
+			ab.blob(at, Vector3(0.05, 0.045, 0.05), ap, {"lat": 4, "lon": 7})
+			for b in range(4):
+				var a := b * 1.57 + k
+				thorn(ab, abr, at + Vector3(side * 0.03, 0, 0), Vector3(side, cos(a) * 0.6, sin(a) * 0.6 + 0.3), 0.12, 0.01)
 	var head := joint(root, "Head", Vector3(0, 0.29, -0.42))
 	var hs := Sculpt.new(); var hp := hs.add_painter(skin); var hb := hs.add_painter(bristle)
 	# A flat, square head.
@@ -86,10 +99,10 @@ func _antlion() -> Node3D:
 	for side in [-1.0, 1.0]:
 		# Little clusters of eyes on bumps at the front corners.
 		hs.blob(Vector3(0.19 * side, 0.33, -0.6), Vector3(0.045, 0.04, 0.045), hp, {"lat": 4, "lon": 7})
-		for e in [Vector3(0.2, 0.37, -0.62), Vector3(0.225, 0.345, -0.59), Vector3(0.18, 0.36, -0.575)]:
+		for e in [Vector3(0.2, 0.37, -0.62), Vector3(0.225, 0.345, -0.59), Vector3(0.18, 0.36, -0.575), Vector3(0.215, 0.375, -0.585), Vector3(0.19, 0.34, -0.635), Vector3(0.23, 0.36, -0.615)]:
 			eye_at.append(Vector3(e.x * side, e.y, e.z))
 	part(head, "Head", hs)
-	var core := _eyes(head, eye_at, 0.021)
+	var core := _eyes(head, eye_at, 0.017)
 	# The sickle jaws: long, curved, hollow mandibles with three sharp teeth on the inside.
 	var jaws: Array = []
 	for side in [-1.0, 1.0]:
@@ -102,6 +115,11 @@ func _antlion() -> Node3D:
 		for k in range(3):
 			var at: Vector3 = (path[k + 1] as Vector3).lerp(path[k + 2], 0.3)
 			js.crystal(at + Vector3(-0.02 * side, 0, 0), Vector3(-side, 0, -0.3), 0.08 - k * 0.012, 0.016, tp, 5)
+		# Stiff bristles along the outer edge of each jaw.
+		var bp2 := js.add_painter(bristle)
+		for k in range(5):
+			var at: Vector3 = (path[1] as Vector3).lerp(path[3], k / 4.0)
+			thorn(js, bp2, at + Vector3(0.03 * side, 0.01, 0), Vector3(side, 0.4, 0.3), 0.07, 0.007)
 		part(hinge, "Mandible", js)
 		jaws.append(hinge)
 	# Six short legs, the front ones reaching forward.
@@ -124,7 +142,7 @@ func _antlion() -> Node3D:
 			hips.append(hip); knees.append(knee)
 	part(root, "Body", body)
 	part(tail, "Abdomen", ab)
-	var node := _finish({"head": head, "core": core, "arms": [], "forearms": [], "feet": hips, "knees": knees, "leaves": [tail]}, 1.8)
+	var node := _finish({"head": head, "core": core, "arms": [], "forearms": [], "feet": hips, "knees": knees, "leaves": [tail]}, 1.9)
 	return _rig(node, head, hips, knees, null, [tail], jaws)
 
 
@@ -135,11 +153,14 @@ func _sandfish() -> Node3D:
 	# scale is picked out as a small diamond.
 	var scales := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
 		var c := Color("#dcb66a").lerp(Color("#b48a45"), clampf(n.y * 0.4 + Sculpt.fbm(p * 5.0) * 0.4, 0.0, 1.0))
-		var band := sin(p.z * 6.5 + Sculpt.fbm(p * 2.0) * 2.0)
+		var band := sin(p.z * 8.0 + Sculpt.fbm(p * 2.0) * 1.2)
 		c = c.lerp(Color("#4f331b"), smoothstep(0.45, 0.65, band) * smoothstep(-0.2, 0.3, n.y) * 0.9)
 		var d := absf(fposmod(p.z * 12.0 + p.x * 8.0, 1.0) - 0.5) + absf(fposmod(p.z * 12.0 - p.x * 8.0 + p.y * 6.0, 1.0) - 0.5)
 		c = c.darkened(smoothstep(0.7, 0.92, d) * 0.3)
+		# A dark lip line along the mouth.
+		if p.z < -0.6 and p.y < 0.43 and p.y > 0.35: c = c.lerp(Color("#3a2614"), smoothstep(0.42, 0.39, p.y) * smoothstep(0.35, 0.38, p.y) * absf(n.x))
 		return c.lerp(Color("#f3ead2"), smoothstep(-0.2, -0.6, n.y) * 0.8)
+	material.roughness = 0.55
 	var body := Sculpt.new(); var bp := body.add_painter(scales)
 	body.tube([Vector3(0, 0.46, -0.56), Vector3(0, 0.49, -0.22), Vector3(0, 0.47, 0.22), Vector3(0, 0.42, 0.58)], [0.27, 0.32, 0.32, 0.27], bp, {"sides": 18, "per": 3, "flat": 1.25})
 	var tails: Array = []
@@ -148,7 +169,7 @@ func _sandfish() -> Node3D:
 	var step := Vector3(0, -0.02, 0.32)
 	for k in range(6):
 		var node := joint(parent, "Tail" if k == 0 else "TailSegment", at)
-		var r0: float = lerpf(0.27, 0.03, float(k) / 6.0); var r1: float = lerpf(0.27, 0.03, float(k + 1) / 6.0)
+		var r0: float = lerpf(0.27, 0.03, pow(float(k) / 6.0, 0.8)); var r1: float = lerpf(0.27, 0.03, pow(float(k + 1) / 6.0, 0.8))
 		var ts := Sculpt.new(); var tp := ts.add_painter(scales)
 		var next := at + step
 		ts.tube([at - step * 0.15, at.lerp(next, 0.5), next + step * 0.12], [r0 * 1.02, (r0 + r1) * 0.5, r1], tp, {"sides": 14, "per": 2, "flat": 1.15, "cap1": k == 5})
@@ -159,16 +180,16 @@ func _sandfish() -> Node3D:
 	var head := joint(root, "Head", Vector3(0, 0.48, -0.6))
 	var hs := Sculpt.new(); var hp := hs.add_painter(scales); var dark := hs.add_painter(func (p, n, v, w): return Color("#1d1510"))
 	var tooth := hs.add_painter(func (p, n, v, w): return TOOTH)
-	hs.tube([Vector3(0, 0.5, -0.56), Vector3(0, 0.5, -0.8), Vector3(0, 0.45, -1.02), Vector3(0, 0.38, -1.18), Vector3(0, 0.35, -1.24)], [0.27, 0.24, 0.17, 0.08, 0.02], hp, {"sides": 16, "per": 3, "flat": 1.2, "square": 0.25, "cap1": false})
+	hs.tube([Vector3(0, 0.5, -0.56), Vector3(0, 0.5, -0.8), Vector3(0, 0.45, -1.02), Vector3(0, 0.38, -1.18), Vector3(0, 0.35, -1.24)], [0.29, 0.26, 0.18, 0.085, 0.02], hp, {"sides": 16, "per": 3, "flat": 1.2, "square": 0.25, "cap1": false})
 	for side in [-1.0, 1.0]:
 		hs.blob(Vector3(0.05 * side, 0.41, -1.15), Vector3(0.015, 0.008, 0.018), dark, {"lat": 3, "lon": 6})
 		hs.blob(Vector3(0.21 * side, 0.47, -0.7), Vector3(0.025, 0.03, 0.02), dark, {"lat": 3, "lon": 6})
 		for k in range(6):
-			hs.crystal(Vector3((0.2 - k * 0.025) * side, 0.36, -0.72 - k * 0.07), Vector3(0, -1, -0.15), 0.06, 0.013, tooth, 5)
+			hs.crystal(Vector3((0.2 - k * 0.025) * side, 0.37, -0.72 - k * 0.07), Vector3(0, -1, -0.15), 0.085, 0.016, tooth, 5)
 	for side in [-1.0, 1.0]:
 		hs.blob(Vector3(0.22 * side, 0.625, -0.85), Vector3(0.06, 0.028, 0.06), hp, {"lat": 4, "lon": 7})
 	part(head, "Head", hs)
-	var core := _eyes(head, [Vector3(-0.245, 0.58, -0.87), Vector3(0.245, 0.58, -0.87)], 0.034)
+	var core := _eyes(head, [Vector3(-0.255, 0.58, -0.87), Vector3(0.255, 0.58, -0.87)], 0.045)
 	var jaw := joint(head, "Jaw", Vector3(0, 0.36, -0.6))
 	var js := Sculpt.new(); var jp := js.add_painter(scales); var mouth := js.add_painter(func (p, n, v, w): return MOUTH)
 	var jt := js.add_painter(func (p, n, v, w): return TOOTH)
@@ -178,7 +199,7 @@ func _sandfish() -> Node3D:
 		for k in range(5):
 			js.crystal(Vector3((0.17 - k * 0.025) * side, 0.37, -0.75 - k * 0.07), Vector3(0, 1, -0.15), 0.05, 0.012, jt, 5)
 	# Built hanging a little open, so its teeth show even at rest.
-	part(jaw, "Jaw", js).rotation.x = -0.22
+	part(jaw, "Jaw", js).rotation.x = -0.32
 	# Short, sprawling legs; the toes are fringed with comb-like scales for running on sand.
 	var hips: Array = []; var knees: Array = []
 	for row in [["Front", -0.36, 0.42], ["Hind", 0.42, 0.38]]:
@@ -211,10 +232,16 @@ func _sandfish() -> Node3D:
 
 func _caecilian() -> Node3D:
 	# Smooth sand-coloured skin ringed by darker grooves (annuli), paler underneath.
-	var skin := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
-		var c := Color("#b8946c").lerp(Color("#5e4735"), clampf(n.y * 0.5 + Sculpt.fbm(p * 4.0) * 0.5 + 0.15, 0.0, 1.0))
-		c = c.lerp(Color("#3a2a1f"), smoothstep(0.3, 0.45, Sculpt.noise(p * 7.0)) * smoothstep(0.0, 0.5, n.y) * 0.6)
-		return c.lerp(Color("#ead9bd"), smoothstep(-0.2, -0.7, n.y) * 0.7)
+	var ringed := func (bands: float) -> Callable:
+		return func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+			var c := Color("#b8946c").lerp(Color("#5e4735"), clampf(n.y * 0.5 + Sculpt.fbm(p * 4.0) * 0.5 + 0.15, 0.0, 1.0))
+			c = c.lerp(Color("#3a2a1f"), smoothstep(0.3, 0.45, Sculpt.noise(p * 7.0)) * smoothstep(0.0, 0.5, n.y) * 0.6)
+			c = c.lerp(Color("#ead9bd"), smoothstep(-0.2, -0.7, n.y) * 0.7)
+			if bands <= 0.0: return c
+			var ring := fposmod(v * bands, 1.0)
+			c = c.darkened(smoothstep(0.1, 0.0, ring) * 0.45 + smoothstep(0.9, 1.0, ring) * 0.45)
+			return c.darkened(smoothstep(0.04, 0.0, absf(ring - 0.5)) * 0.25)
+	var skin: Callable = ringed.call(9.0)
 	var body := Sculpt.new(); var bp := body.add_painter(skin)
 	# The front of the body rears up a little behind the head.
 	body.tube([Vector3(0, 0.62, -0.5), Vector3(0, 0.55, -0.2), Vector3(0, 0.42, 0.15), Vector3(0, 0.36, 0.5)], [0.3, 0.33, 0.34, 0.33], bp, {"sides": 18, "per": 3, "flat": 1.05, "bands": 9, "band": 0.07})
@@ -225,7 +252,7 @@ func _caecilian() -> Node3D:
 		var step := Vector3(0.13 * sin(k * 0.9 + 0.4), -0.01, 0.4)
 		var node := joint(parent, "Tail" if k == 0 else "TailSegment", at)
 		var r0: float = lerpf(0.33, 0.14, float(k) / 8.0); var r1: float = lerpf(0.33, 0.14, float(k + 1) / 8.0)
-		var ts := Sculpt.new(); var tp := ts.add_painter(skin)
+		var ts := Sculpt.new(); var tp := ts.add_painter(ringed.call(3.0))
 		var next := at + step
 		ts.tube([at - step * 0.1, at.lerp(next, 0.5), next + step * 0.1], [r0 * 1.02, (r0 + r1) * 0.5, r1], tp, {"sides": 16, "per": 2, "flat": 1.05, "bands": 3, "band": 0.07, "cap1": k == 7, "cap_len": 0.6})
 		part(node, "Segment", ts)
@@ -233,7 +260,7 @@ func _caecilian() -> Node3D:
 	# A blunt bullet head of thick bone for ramming through sand, with tiny eyes under the skin
 	# and a sensory tentacle between eye and nostril.
 	var head := joint(root, "Head", Vector3(0, 0.64, -0.55))
-	var hs := Sculpt.new(); var hp := hs.add_painter(skin); var dark := hs.add_painter(func (p, n, v, w): return Color("#2b1c12"))
+	var hs := Sculpt.new(); var hp := hs.add_painter(ringed.call(0.0)); var dark := hs.add_painter(func (p, n, v, w): return Color("#2b1c12"))
 	var tooth := hs.add_painter(func (p, n, v, w): return TOOTH.darkened(v * 0.1))
 	hs.tube([Vector3(0, 0.66, -0.5), Vector3(0, 0.68, -0.78), Vector3(0, 0.64, -1.0), Vector3(0, 0.58, -1.12)], [0.29, 0.27, 0.2, 0.09], hp, {"sides": 16, "per": 3, "flat": 1.15, "cap_len": 0.7})
 	for side in [-1.0, 1.0]:
@@ -247,7 +274,7 @@ func _caecilian() -> Node3D:
 			hs.crystal(Vector3(x * 0.8, 0.53, z - 0.02), Vector3(0, -1, 0.3), 0.07, 0.012, tooth, 5)
 	hs.blob(Vector3(0, 0.53, -0.82), Vector3(0.22, 0.02, 0.24), hs.add_painter(func (p, n, v, w): return MOUTH), {"lat": 4, "lon": 10})
 	part(head, "Head", hs)
-	var core := _eyes(head, [Vector3(-0.2, 0.74, -0.94), Vector3(0.2, 0.74, -0.94)], 0.022)
+	var core := _eyes(head, [Vector3(-0.225, 0.74, -0.94), Vector3(0.225, 0.74, -0.94)], 0.024)
 	var jaw := joint(head, "Jaw", Vector3(0, 0.5, -0.55))
 	var js := Sculpt.new(); var jp := js.add_painter(skin); var jt := js.add_painter(func (p, n, v, w): return TOOTH)
 	var jm := js.add_painter(func (p, n, v, w): return MOUTH)

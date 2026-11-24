@@ -11563,6 +11563,22 @@
       "hook": "Huge sand-scaled burrower; a traveling sand ridge warns before it emerges."
     },
     {
+      "id": "pit_antlion",
+      "name": "Pitjaw Antlion",
+      "region": 12,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "Giant bristly antlion larva; lies buried in the sand with only its sickle jaws showing, then bursts out to seize."
+    },
+    {
+      "id": "sandswim_skink",
+      "name": "Sandswim Skink",
+      "region": 12,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "Huge glossy sandfish skink with a shovel snout; swims through the dunes and lunges with a gaping, toothy jaw."
+    },
+    {
       "id": "sunken_sentinel",
       "name": "Sunken Sentinel",
       "region": 12,

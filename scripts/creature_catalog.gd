@@ -12,7 +12,7 @@ const FORMS = {
 	"ember_salamander": "lizard", "ash_moth": "moth", "basalt_beetle": "beetle", "copperback_gecko": "lizard", "cinderfin_fish": "fish", "ventwing_swift": "bird",
 	"ashen_raven": "bird", "pallid_moth": "moth", "gravemoss_snail": "snail", "prismhart": "deer", "opaline_otter": "otter", "chimewing_manta": "manta", "geode_tortoise": "tortoise", "faceted_finch": "bird", "quartz_hare": "hare",
 	"cliffwarden": "golem", "stonejaw_wyrm": "wyrm", "fudge_golem": "golem", "cocoa_knight": "knight", "chocobar_croc": "crawler", "wrapper_mimic": "mimic", "pretzel_crawler": "crawler", "cola_sloshback": "frog", "sugarspike_wasp": "winged", "grand_confectioner": "knight",
-	"windwhistle_stalker": "cat", "thistle_jackal": "hound", "grassland_colossus": "golem", "kiteclaw_raptor": "winged", "stormhorn_matriarch": "boar", "storm_bison": "boar", "thunder_rhino": "boar", "stormcloud_muskox": "boar", "stormfrill": "boar", "thunderclub": "boar", "dune_maw": "wyrm", "sunken_sentinel": "knight", "sandwraith": "wraith", "obelisk_scorpion": "scorpion", "glass_anubid": "hound",
+	"windwhistle_stalker": "cat", "thistle_jackal": "hound", "grassland_colossus": "golem", "kiteclaw_raptor": "winged", "stormhorn_matriarch": "boar", "storm_bison": "boar", "thunder_rhino": "boar", "stormcloud_muskox": "boar", "stormfrill": "boar", "thunderclub": "boar", "dune_maw": "wyrm", "pit_antlion": "crawler", "sandswim_skink": "wyrm", "sunken_sentinel": "knight", "sandwraith": "wraith", "obelisk_scorpion": "scorpion", "glass_anubid": "hound",
 	"riftback": "armored", "furnace_hound": "hound", "slag_crawler": "crawler", "ash_harpy": "winged", "root_reaper": "reaper", "wraithhart": "deer", "hollow_hound": "hound", "grave_creeper": "crawler", "veil_moth": "winged", "thorn_widow": "spider", "mourning_knight": "knight", "pale_watcher": "wraith", "blackthorn_regent": "knight",
 	"shard_sentinel": "knight", "prismstalker": "cat", "geode_mimic": "mimic", "resonance_wyrm": "wyrm", "glasswing_reaver": "winged", "aurora_custodian": "wraith"}
 static var roster: Array = []
@@ -35,7 +35,7 @@ static func hostiles_for(region: int) -> Array:
 	return entries().filter(func (e): return e.region == region and e.kind == "hostile" and not e.boss).map(func (e): return enemy_id(e.id))
 ## Big storm beasts roam the plains but are a rare sight: each is picked this often compared
 ## with an ordinary hostile (1.0).
-const RARITY = {"storm_bison": 0.2, "thunder_rhino": 0.2, "stormcloud_muskox": 0.2, "stormfrill": 0.2, "thunderclub": 0.2}
+const RARITY = {"storm_bison": 0.2, "thunder_rhino": 0.2, "stormcloud_muskox": 0.2, "stormfrill": 0.2, "thunderclub": 0.2, "pit_antlion": 0.35, "sandswim_skink": 0.35}
 ## Picks one of `options` from `seed`, the same every time for the same seed, with rare
 ## species weighted down.
 static func pick_hostile(options: Array, seed: int) -> String:
@@ -69,10 +69,13 @@ const SIZES = {"cocoa_knight": {"radius": 0.6, "height": 2.6, "reach": 2.6}, "fu
 	"stormfrill": {"radius": 0.8, "height": 2.2, "reach": 2.9, "hp": 8},
 	"thunderclub": {"radius": 0.95, "height": 1.8, "reach": 2.9, "hp": 9},
 	"stormhorn_matriarch": {"radius": 1.0, "height": 4.2, "reach": 3.8, "hp": 30, "front_max": 2.4},
+	"dune_maw": {"radius": 0.7, "height": 1.5, "reach": 3.2, "hp": 7, "front_max": 2.0},
+	"pit_antlion": {"radius": 0.8, "height": 1.4, "reach": 3.3, "hp": 6, "front_max": 2.4},
+	"sandswim_skink": {"radius": 0.7, "height": 1.3, "reach": 3.4, "hp": 6, "front_max": 2.2},
 }
 ## Ambushers lie still, disguised (a rock, a chest), until Mr. Justice comes within `trigger`
 ## metres; then they rise `sink` metres out of the ground on their legs and fight.
-const AMBUSH = {"wrapper_mimic": {"sink": 0.95, "trigger": 3.6}, "chest_mimic": {"sink": 0.8, "trigger": 3.0}}
+const AMBUSH = {"wrapper_mimic": {"sink": 0.95, "trigger": 3.6}, "chest_mimic": {"sink": 0.8, "trigger": 3.0}, "pit_antlion": {"sink": 0.5, "trigger": 4.2}}
 ## Hostiles that are not tied to one region (placed by ecology and site interiors instead).
 const WANDERING_HOSTILES = [{"id": "chest_mimic", "name": "Chest Mimic", "region": 0, "kind": "hostile", "boss": false, "form": "mimic"}]
 
