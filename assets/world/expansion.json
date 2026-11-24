@@ -11712,7 +11712,15 @@
       "region": 13,
       "kind": "hostile",
       "boss": false,
-      "hook": "Heavy layered basalt plates and glowing joints; braces before breaking a narrow rock lane."
+      "hook": "A giant pangolin armoured in overlapping basalt scales with lava glowing beneath; braces on its great claws before breaking a narrow rock lane."
+    },
+    {
+      "id": "volcano_tortoise",
+      "name": "Volcano Tortoise",
+      "region": 13,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "A giant tortoise carrying a smoking volcano on its basalt shell, lava pouring down between the scutes; plants its spurred forelegs before it charges."
     },
     {
       "id": "furnace_hound",
