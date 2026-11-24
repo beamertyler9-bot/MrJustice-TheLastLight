@@ -12,7 +12,7 @@ const FORMS = {
 	"ember_salamander": "lizard", "ash_moth": "moth", "basalt_beetle": "beetle", "copperback_gecko": "lizard", "cinderfin_fish": "fish", "ventwing_swift": "bird",
 	"ashen_raven": "bird", "pallid_moth": "moth", "gravemoss_snail": "snail", "prismhart": "deer", "opaline_otter": "otter", "chimewing_manta": "manta", "geode_tortoise": "tortoise", "faceted_finch": "bird", "quartz_hare": "hare",
 	"cliffwarden": "golem", "stonejaw_wyrm": "wyrm", "fudge_golem": "golem", "cocoa_knight": "knight", "chocobar_croc": "crawler", "wrapper_mimic": "mimic", "pretzel_crawler": "crawler", "cola_sloshback": "frog", "sugarspike_wasp": "winged", "grand_confectioner": "knight",
-	"windwhistle_stalker": "cat", "thistle_jackal": "hound", "grassland_colossus": "golem", "kiteclaw_raptor": "winged", "stormhorn_matriarch": "boar", "storm_bison": "boar", "thunder_rhino": "boar", "stormcloud_muskox": "boar", "stormfrill": "boar", "thunderclub": "boar", "dune_maw": "wyrm", "pit_antlion": "crawler", "dune_monitor": "wyrm", "thorn_devil": "lizard", "sunken_sentinel": "knight", "pharaoh_guardian": "knight", "lion_warden": "knight", "sandwraith": "wraith", "dust_devil": "wraith", "linen_revenant": "wraith", "obelisk_scorpion": "scorpion", "glass_anubid": "hound",
+	"windwhistle_stalker": "cat", "thistle_jackal": "hound", "grassland_colossus": "golem", "kiteclaw_raptor": "winged", "stormhorn_matriarch": "boar", "storm_bison": "boar", "thunder_rhino": "boar", "stormcloud_muskox": "boar", "stormfrill": "boar", "thunderclub": "boar", "dune_maw": "wyrm", "pit_antlion": "crawler", "dune_monitor": "wyrm", "thorn_devil": "lizard", "sunken_sentinel": "knight", "pharaoh_guardian": "knight", "lion_warden": "knight", "sandwraith": "wraith", "dust_devil": "wraith", "linen_revenant": "wraith", "obelisk_scorpion": "scorpion", "glass_anubid": "knight",
 	"riftback": "armored", "furnace_hound": "hound", "slag_crawler": "crawler", "ash_harpy": "winged", "root_reaper": "reaper", "wraithhart": "deer", "hollow_hound": "hound", "grave_creeper": "crawler", "veil_moth": "winged", "thorn_widow": "spider", "mourning_knight": "knight", "pale_watcher": "wraith", "blackthorn_regent": "knight",
 	"shard_sentinel": "knight", "prismstalker": "cat", "geode_mimic": "mimic", "resonance_wyrm": "wyrm", "glasswing_reaver": "winged", "aurora_custodian": "wraith"}
 static var roster: Array = []
@@ -77,6 +77,7 @@ const SIZES = {"cocoa_knight": {"radius": 0.6, "height": 2.6, "reach": 2.6}, "fu
 	"pharaoh_guardian": {"radius": 0.45, "height": 2.6, "reach": 9.0, "hp": 7, "attack": "ranged", "beam": true, "windup": 1.0},
 	"lion_warden": {"radius": 0.45, "height": 2.6, "reach": 9.0, "hp": 7, "attack": "ranged", "beam": true, "windup": 1.0},
 	"sandwraith": {"radius": 0.5, "height": 2.4},
+	"glass_anubid": {"radius": 0.75, "height": 3.7, "reach": 11.0, "hp": 30, "attack": "ranged", "beam": true, "beam_fan": 3, "windup": 1.2, "front_max": 2.4},
 	"dust_devil": {"radius": 0.55, "height": 2.4},
 	"linen_revenant": {"radius": 0.45, "height": 2.4},
 }

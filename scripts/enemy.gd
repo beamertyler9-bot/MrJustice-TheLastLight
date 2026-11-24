@@ -336,7 +336,15 @@ func _same_region(player: Node3D) -> bool:
 	return true
 
 func _launch_projectile() -> void:
-	if projectiles.size() >= 3: return
+	# A boss can sweep a fan of beams (the Glass Anubid's prism splits its light three ways).
+	var fan: int = int(profile.get("beam_fan", 1))
+	if fan <= 1:
+		_launch_one(0.0)
+		return
+	for k in range(fan): _launch_one((k - (fan - 1) * 0.5) * 0.3)
+
+func _launch_one(spread: float) -> void:
+	if projectiles.size() >= 3 * int(profile.get("beam_fan", 1)): return
 	var ember = Node3D.new()
 	ember.name = "CinderBolt"
 	add_child(ember)
@@ -360,7 +368,9 @@ func _launch_projectile() -> void:
 		# A lance of gathered light from the gem in a temple guardian's head: long, bright and
 		# fast, with a white-hot core.
 		ember.name = "GemBeam"
-		B.facet(ember, Vector3(0, 0, 0.6), Vector3(0.14, 0.14, 1.7), B.mat("#5ff0e0", 0, 1.0))
+		var tint: String = profile.get("beam_color", "#5ff0e0")
+		if profile.has("beam_fan"): tint = ["#ff6fd8", "#ffe36f", "#6ff0ff"][int(round(spread / 0.3 + 1.0)) % 3]
+		B.facet(ember, Vector3(0, 0, 0.6), Vector3(0.14, 0.14, 1.7), B.mat(tint, 0, 1.0))
 		B.facet(ember, Vector3(0, 0, 0.6), Vector3(0.06, 0.06, 1.8), B.mat("#f2fffd", 0, 1.0))
 	else:
 		B.facet(ember, Vector3.ZERO, Vector3(0.23, 0.23, 0.4), B.mat("#ffb760", 0, 0.8))
@@ -369,6 +379,15 @@ func _launch_projectile() -> void:
 	# Keep the aim taken at wind-up (so it can still be sidestepped), but tilt the shot so it
 	# arrives at Mr. Justice's chest height however high it was thrown from.
 	var direction := Vector3(attack_direction.x, 0, attack_direction.z).normalized()
+	# Aim at the spot the wind-up was aimed at (not a line parallel to it), so a shot thrown
+	# from a hand or a staff held off to one side still flies at where Mr. Justice stood.
+	if game != null and is_instance_valid(game.player):
+		var dist := Vector2(game.player.global_position.x - global_position.x, game.player.global_position.z - global_position.z).length()
+		var aim := global_position + direction * dist
+		var flat := Vector3(aim.x - ember.global_position.x, 0, aim.z - ember.global_position.z)
+		if flat.length() > 0.5: direction = flat.normalized()
+	direction = direction.rotated(Vector3.UP, spread)
+	ember.rotation.y += spread
 	if game != null and is_instance_valid(game.player):
 		var target: Vector3 = game.player.global_position + Vector3.UP * 0.95
 		var across := Vector2(target.x - ember.global_position.x, target.z - ember.global_position.z).length()

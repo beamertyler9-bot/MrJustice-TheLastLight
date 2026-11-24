@@ -79,3 +79,8 @@ monster should stand clearly bigger than him.
 - Sandwraith: the face veil is modelled on the indigo tagelmust worn by desert travellers, wound so only an eye slit shows. The robe dissolves into a spinning column of sand, and it has a torn chest with a burning heart, gold cuffs and a brooch.
 - Dust Devil: in Arabian folklore a whirling dust devil (zawba'a) is a djinn passing by. Its heart is a fulgurite, the glassy tube that lightning leaves when it strikes sand.
 - Linen Revenant: a mummy in linen wrappings stained with resin. It has a gilded cartonnage funeral mask, a broad bead collar in gold, lapis and turquoise, and a heart scarab over the heart, as placed in real burials.
+
+## Glass Anubid (Sunspire Dunes boss)
+- Built as the god Anubis in humanoid form: a man's body with a jackal's head, as in Egyptian tomb paintings. It has the legs of the African golden wolf (the jackal the Egyptians drew Anubis from): long foot bones, a pointed heel and compact four-toed paws.
+- Dressed after the Anubis statue from Tutankhamun's tomb (black body, gold-leaf brows, eye rims and ear linings, gold collar with a band, silver claws) and the gods' regalia in tomb paintings: striped wig, broad collar, kilt, was-sceptre and ankh.
+- Sources: [Anubis Shrine (Wikipedia)](https://en.wikipedia.org/wiki/Anubis_Shrine), [Anubis Shrine of Tutankhamun](https://egypt-museum.com/anubis-shrine-of-tutankhamun)

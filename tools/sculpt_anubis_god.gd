@@ -259,14 +259,22 @@ func _anubis() -> Node3D:
 			# A jackal's hind leg: a long shin back to the raised heel, then up on the toes.
 			var hock := Vector3(0.13 * side, 0.28, 0.14)
 			ss.tube([knee_at, Vector3(0.13 * side, 0.4, 0.03), hock], [0.068, 0.058, 0.04], sp, {"sides": 14, "per": 3})
-			ss.blob(hock, Vector3(0.042, 0.045, 0.045), sp, {"lat": 5, "lon": 8})
-			ss.tube([hock, Vector3(0.13 * side, 0.12, 0.04), Vector3(0.13 * side, 0.045, -0.04)], [0.04, 0.036, 0.035], sp, {"sides": 12, "per": 3})
-			ss.tube([Vector3(0.13 * side, 0.2, 0.1), Vector3(0.13 * side, 0.17, 0.08)], [0.045, 0.043], sg, {"sides": 12, "per": 1, "cap_rings": 1})
-			ss.blob(Vector3(0.13 * side, 0.04, -0.07), Vector3(0.055, 0.035, 0.07), sp, {"lat": 6, "lon": 9})
+			# The point of the heel, as on a dog's hock.
+			ss.blob(hock, Vector3(0.044, 0.048, 0.05), sp, {"lat": 6, "lon": 8})
+			ss.tube([hock + Vector3(0, 0.01, 0.02), hock + Vector3(0, 0.025, 0.065)], [0.03, 0.006], sp, {"sides": 8, "per": 1, "cap_rings": 1})
+			# A long, nearly upright foot bone down to a compact paw, like a jackal's.
+			ss.tube([hock, Vector3(0.13 * side, 0.15, 0.07), Vector3(0.13 * side, 0.075, 0.0)], [0.042, 0.038, 0.04], sp, {"sides": 12, "per": 3})
+			var foot_mid := Vector3(0.13 * side, 0.15, 0.07)
+			ss.tube([hock.lerp(foot_mid, 0.3), hock.lerp(foot_mid, 0.6)], [0.05, 0.048], sg, {"sides": 12, "per": 1, "cap_rings": 1})
+			# The paw: a broad rounded pad with four thick toes in an arch, short claws
+			# curving down into the ground.
+			ss.blob(Vector3(0.13 * side, 0.05, -0.04), Vector3(0.062, 0.045, 0.075), sp, {"lat": 7, "lon": 10})
+			var cl := ss.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#b9bec4").darkened(clampf(0.3 - n.y * 0.3, 0.0, 0.5)).lerp(Color("#3a3d42"), (1.0 - v) * 0.6))
 			for t in range(4):
-				var toe := Vector3((0.13 + (t - 1.5) * 0.026) * side, 0.03, -0.13)
-				ss.blob(toe, Vector3(0.017, 0.022, 0.022), sp, {"lat": 3, "lon": 5})
-				ss.crystal(toe + Vector3(0, -0.005, -0.015), Vector3(0, -0.45, -1.0), 0.05, 0.009, ss.add_painter(func (p, n, v, w): return Color("#d4d8dc")), 5)
+				var off := t - 1.5
+				var toe := Vector3((0.13 + off * 0.03) * side, 0.032, -0.1 + absf(off) * 0.022)
+				ss.blob(toe, Vector3(0.022, 0.03, 0.03), sp, {"lat": 5, "lon": 7})
+				ss.tube([toe + Vector3(0, -0.002, -0.025), toe + Vector3(0, -0.012, -0.042), toe + Vector3(0, -0.03, -0.05)], [0.009, 0.006, 0.002], cl, {"sides": 5, "per": 2, "cap1": false, "cap_rings": 1})
 		part(knee, "Shin", ss)
 		hips.append(hip); knees.append(knee)
 	part(root, "PrismSeams", lights, prism_mat)
