@@ -115,3 +115,8 @@ monster should stand clearly bigger than him.
 - Hollow Hound: Black Shuck, the "church grim" of East Anglian folklore, a huge shaggy black dog with eyes like burning saucers; the barghest of northern England drags a chain. Its build follows the Irish wolfhound: very tall, long-legged and deep-chested, with a long head and a wiry coat that forms a beard and eyebrows.
 - Shadow Wolf: built on the grey wolf (long legs, deep narrow chest, pointed ears, a long bushy tail), made of shadow so its skull, ribs, spine and leg bones show inside.
 - Considered but not used: the thylacine (Tasmanian tiger), extinct since 1936. It had 13-21 dark bands across the back and rump, a stiff tail thick at the root, and jaws that could gape very wide.
+
+## Grave Creeper and Grave Mantis (Hollowmourn)
+- Grave Creeper: built on the assassin bugs (Reduviidae). Some, like Acanthaspis petax, pile the emptied husks of their prey and debris on their backs as camouflage. They have a narrow head with bulging eyes behind a long neck region, elbowed antennae, a curved three-part beak folded under the head, a flared abdomen edge (the connexivum), and often banded legs.
+- Grave Mantis: built on the praying mantis. The long prothorax forms the "neck"; the raptorial forelegs carry rows of spines on the femur and tibia and fold together; the leathery forewings (tegmina) cover the membranous hind wings. Details come from relatives: the broad pronotum of the shield mantises, the head crest of the conehead mantises (Empusa), and the leg and abdomen lobes of the ghost mantis.
+- Considered but not used: the Japanese spider crab (the longest legs of any arthropod), which, like decorator crabs, covers itself with things it finds.

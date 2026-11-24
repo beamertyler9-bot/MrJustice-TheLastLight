@@ -11856,7 +11856,15 @@
       "region": 14,
       "kind": "hostile",
       "boss": false,
-      "hook": "Long folded limbs and stone-crusted back; gravestones scrape before it unfolds."
+      "hook": "A giant assassin bug that carries a heap of broken headstones, bones and grave moss on its back, a lantern of ghost-light swinging from an iron cross; gravestones scrape before it unfolds its banded legs."
+    },
+    {
+      "id": "grave_mantis",
+      "name": "Grave Mantis",
+      "region": 14,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "A praying mantis whose folded wings are slabs of lichened grave stone, a carved cross on its shoulders and a stone crest on its head; gravestones scrape before it unfolds its spiked forelegs."
     },
     {
       "id": "veil_moth",

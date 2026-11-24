@@ -297,7 +297,7 @@ func _mantis() -> Node3D:
 	var eye_at: Array = []
 	for side: float in [-1.0, 1.0]:
 		hs.blob(Vector3(0.1 * side, 1.06, -0.62), Vector3(0.06, 0.065, 0.06), hd, {"lat": 7, "lon": 10})
-		eye_at.append(Vector3(0.108 * side, 1.065, -0.628))
+		eye_at.append(Vector3(0.1 * side, 1.06, -0.622))
 		antenna(hs, hp, Vector3(0.025 * side, 1.08, -0.66), Vector3(0.3 * side, 1.0, -0.6), 0.45, 0.006, 0.4)
 		hs.crystal(Vector3(0.02 * side, 0.92, -0.67), Vector3(-0.3 * side, -1, -0.2), 0.04, 0.012, hp, 4)
 	# A tall crest of stone rising from the crown, like a conehead mantis's, forked at the tip.
@@ -305,7 +305,7 @@ func _mantis() -> Node3D:
 	hs.tube([Vector3(0, 1.08, -0.6), Vector3(0, 1.2, -0.56), Vector3(0, 1.3, -0.5)], [0.04, 0.03, 0.018], hst, {"sides": 7, "per": 2, "flat": 0.5, "side": Vector3.RIGHT, "lump": 0.2})
 	for side: float in [-1.0, 1.0]: hs.crystal(Vector3(0, 1.3, -0.5), Vector3(0.5 * side, 1.0, 0.3), 0.07, 0.016, hst, 4)
 	part(head, "Head", hs)
-	var core := _eyes(head, eye_at, 0.056)
+	var core := _eyes(head, eye_at, 0.064)
 	# The raptorial forelegs folded under the head, spiked, on their own joints so they unfold.
 	var hips: Array = []; var knees: Array = []; var pincers: Array = []
 	for side: float in [-1.0, 1.0]:

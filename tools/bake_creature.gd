@@ -58,6 +58,8 @@ const DESIGNS := {
 	"wraithhart": ["res://tools/sculpt_wraithhart.gd", "skull"],
 	"hollow_hound": ["res://tools/sculpt_hollow_hound.gd", "shuck"],
 	"shadow_wolf": ["res://tools/sculpt_hollow_hound.gd", "shadow"],
+	"grave_creeper": ["res://tools/sculpt_grave_creeper.gd", "assassin"],
+	"grave_mantis": ["res://tools/sculpt_grave_creeper.gd", "mantis"],
 	"dust_devil": ["res://tools/sculpt_sandwraith.gd", "dustdevil"],
 	"linen_revenant": ["res://tools/sculpt_sandwraith.gd", "mummy"],
 }
