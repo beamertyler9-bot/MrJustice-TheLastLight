@@ -410,7 +410,8 @@ func _front() -> float:
 	for m in model.find_children("*", "MeshInstance3D", true, false):
 		var b: AABB = (to_model * m.global_transform) * m.get_aabb()
 		front = maxf(front, -b.position.z * rest_scale.z)
-	front = minf(front, 1.6)
+	# Long-necked giants (the Stormhorn Matriarch) may reach further forward than most.
+	front = minf(front, float(profile.get("front_max", 1.6)))
 	_front_cache[species_id] = front
 	return front
 

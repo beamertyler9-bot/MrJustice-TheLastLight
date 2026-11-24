@@ -11475,12 +11475,28 @@
       "hook": "Musk ox with a stone brow boss and a skirt of rain-cloud wool; lowers its hooked horns and rams."
     },
     {
+      "id": "stormfrill",
+      "name": "Stormfrill",
+      "region": 11,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "Horned frill-beast with a lightning-veined slate frill and bolt-shaped brow horns; lowers its frill and charges."
+    },
+    {
+      "id": "thunderclub",
+      "name": "Thunderclub",
+      "region": 11,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "Low armoured beast banded with slate plates and crackling seams; swings its lightning tail club."
+    },
+    {
       "id": "stormhorn_matriarch",
       "name": "Stormhorn Matriarch",
       "region": 11,
       "kind": "hostile",
       "boss": true,
-      "hook": "Huge plated herbivore with storm-shaped horns; stamps a clear charge lane."
+      "hook": "Towering giant elk with slate-armoured shoulders and lightning-crowned antlers; stamps a clear charge lane."
     },
     {
       "id": "mistrunner_fox",

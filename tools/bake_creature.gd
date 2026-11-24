@@ -31,6 +31,9 @@ const DESIGNS := {
 	"storm_bison": ["res://tools/sculpt_stormhorn_matriarch.gd", "bison"],
 	"thunder_rhino": ["res://tools/sculpt_stormhorn_matriarch.gd", "rhino"],
 	"stormcloud_muskox": ["res://tools/sculpt_stormhorn_matriarch.gd", "muskox"],
+	"stormfrill": ["res://tools/sculpt_stormhorn_boss.gd", "frill"],
+	"thunderclub": ["res://tools/sculpt_stormhorn_boss.gd", "club"],
+	"stormhorn_matriarch": ["res://tools/sculpt_stormhorn_boss.gd", "elk"],
 }
 
 

@@ -67,6 +67,8 @@ const DATA = {
 	"grassland_colossus": ["lumber", "earth_rise", "stomp", 3.9, 0.22, 1.0, Vector3(0.19, 0.12, 0.08), Vector3(0.04, 0.06, 0), 0.07],
 	"kiteclaw_raptor": ["flight", "shadow_sight", "dive", 7.7, 0.4, 0.34, Vector3(0.25, 0.18, 0.07), Vector3(0.11, 0.25, 0.07), -0.18],
 	"stormhorn_matriarch": ["pace", "lane_stamp", "stamp", 5.4, 0.32, 0.96, Vector3(0.28, 0.15, 0.1), Vector3(0.12, 0.19, 0.05), 0.16],
+	"stormfrill": ["pace", "lane_stamp", "stamp", 5.4, 0.32, 0.96, Vector3(0.28, 0.15, 0.1), Vector3(0.12, 0.19, 0.05), 0.16],
+	"thunderclub": ["pace", "lane_stamp", "stamp", 5.4, 0.32, 0.96, Vector3(0.28, 0.15, 0.1), Vector3(0.12, 0.19, 0.05), 0.16],
 	"storm_bison": ["pace", "lane_stamp", "stamp", 5.4, 0.32, 0.96, Vector3(0.28, 0.15, 0.1), Vector3(0.12, 0.19, 0.05), 0.16],
 	"thunder_rhino": ["pace", "lane_stamp", "stamp", 5.4, 0.32, 0.96, Vector3(0.28, 0.15, 0.1), Vector3(0.12, 0.19, 0.05), 0.16],
 	"stormcloud_muskox": ["pace", "lane_stamp", "stamp", 5.4, 0.32, 0.96, Vector3(0.28, 0.15, 0.1), Vector3(0.12, 0.19, 0.05), 0.16],

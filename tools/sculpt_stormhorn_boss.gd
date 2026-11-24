@@ -1,7 +1,6 @@
 extends "res://tools/sculpt_stormhorn_matriarch.gd"
-## The Stormhorn Matriarch, boss of the Windbell Plains, sculpted by hand: a colossal plated
-## grazer with storm-shaped horns that stamps out a charge lane. Three designs, each far bigger
-## than the storm beasts that roam the plains:
+## Three giants of the Windbell Plains, sculpted by hand. The elk is the Stormhorn Matriarch,
+## the region's boss; the frill and the club roam the plains as hostile storm beasts:
 ##   frill  - a horned frill-dinosaur: a great slate frill veined with lightning and fringed
 ##            with spikes, two long bolt-shaped brow horns and a beak
 ##   club   - a low, broad armoured dinosaur covered in bands of slate plates with lightning
@@ -57,6 +56,7 @@ func _frill() -> Node3D:
 		var c := Color("#66716a").lerp(Color("#343d39"), clampf(n.y * 0.5 + 0.25 + Sculpt.fbm(p * 5.0) * 0.5, 0.0, 1.0))
 		var band := sin(p.z * 16.0 + Sculpt.fbm(p * 2.0) * 3.0)
 		c = c.lerp(Color("#28302d"), smoothstep(0.55, 0.8, band) * smoothstep(0.1, 0.6, n.y) * 0.7)
+		c = c.darkened(smoothstep(0.3, 0.5, Sculpt.noise(p * 28.0)) * 0.14)
 		return c.lerp(Color("#a9a58d"), smoothstep(-0.3, -0.8, n.y) * 0.6)
 	var spine := [Vector3(0, 0.84, 0.78), Vector3(0, 0.96, 0.42), Vector3(0, 0.94, 0.05), Vector3(0, 0.87, -0.3), Vector3(0, 0.78, -0.5)]
 	var radii := [0.3, 0.44, 0.46, 0.42, 0.33]
@@ -99,13 +99,15 @@ func _frill() -> Node3D:
 	var fc := Vector3(0, 1.05, -0.56)
 	hs.blob(fc, Vector3(0.62, 0.5, 0.045), fp, {"lat": 12, "lon": 22, "basis": fb})
 	var face := fb * Vector3(0, 0, -1)
-	# Spikes round the rim, with two tall storm-bolt spikes at the top.
+	# Small knobs round the rim and, like a Styracosaurus, four long spikes from the top that
+	# sweep back - here jagged storm bolts.
 	for k in range(15):
 		var a := lerpf(-1.75, 1.75, k / 14.0)
 		var out := fb * Vector3(sin(a), cos(a), 0)
 		var rim := fc + fb * Vector3(sin(a) * 0.6, cos(a) * 0.48, 0)
-		if k == 5 or k == 9:
-			bolt_horn(hs, horn, head, rim - out * 0.04, out + Vector3(0, 0.3, 0), 0.42, 0.05, 0.03, face, Vector3(0, 0, 0.05))
+		if k in [5, 6, 8, 9]:
+			var inner := k == 6 or k == 8
+			bolt_horn(hs, horn, head, rim - out * 0.05, out + Vector3(0, 0.15, 0.45), 0.52 if inner else 0.44, 0.055, 0.03, face, Vector3(0, 0, 0.06))
 		else:
 			hs.crystal(rim - out * 0.03, out, 0.15 + 0.05 * cos(a * 2.0), 0.035, horn, 5)
 	# Lightning veins branching across the face of the frill.
@@ -116,7 +118,7 @@ func _frill() -> Node3D:
 	# Two long brow horns that sweep forward and break into bolts; a short nose horn.
 	for side in [-1.0, 1.0]:
 		bolt_horn(hs, horn, head, Vector3(0.1 * side, 0.9, -0.8), Vector3(0.12 * side, 0.4, -1.0), 0.62, 0.065, 0.03, Vector3.UP, Vector3(0, 0.08, 0), 7)
-	bolt_horn(hs, horn, head, Vector3(0, 0.72, -1.0), Vector3(0, 1.0, -0.4), 0.16, 0.045, 0.012, Vector3(0, 0, 1), Vector3.ZERO, 4)
+	bolt_horn(hs, horn, head, Vector3(0, 0.71, -1.0), Vector3(0, 1.0, -0.45), 0.26, 0.055, 0.016, Vector3(0, 0, 1), Vector3.ZERO, 5)
 	var jaw := joint(head, "Jaw", Vector3(0, 0.6, -0.82))
 	var js := Sculpt.new(); var jp := js.add_painter(skin); var jb := js.add_painter(func (p, n, v, w): return Color("#2a2622"))
 	js.tube([Vector3(0, 0.6, -0.8), Vector3(0, 0.53, -1.0)], [0.12, 0.08], jp, {"sides": 10, "per": 2, "flat": 0.75, "cap1": false})
@@ -130,7 +132,7 @@ func _frill() -> Node3D:
 	var tts := Sculpt.new(); var ttp := tts.add_painter(skin)
 	tts.tube([Vector3(0, 0.7, 1.14), Vector3(0, 0.6, 1.4), Vector3(0, 0.52, 1.62)], [0.11, 0.065, 0.015], ttp, {"sides": 10, "per": 3, "flat": 0.85, "cap0": false})
 	return _close({"body": body, "head": head, "head_sculpt": hs, "jaw": jaw, "jaw_sculpt": js, "eye_sculpt": eye_sculpt, "ears": [], "ear_sculpts": [],
-		"hips": leg_rig.hips, "knees": leg_rig.knees, "tails": [tail, tip], "tail_sculpts": [ts, tts], "fronds": [], "frond_sculpts": []}, 2.0)
+		"hips": leg_rig.hips, "knees": leg_rig.knees, "tails": [tail, tip], "tail_sculpts": [ts, tts], "fronds": [], "frond_sculpts": []}, 1.45)
 
 
 # ------------------------------------------------------------------ B: storm club
@@ -161,11 +163,11 @@ func _club() -> Node3D:
 			body.rock(c, Vector3(size, 0.04, size * 0.85), plate, {"lat": 4, "lon": 6, "lump": 0.2, "basis": Basis.looking_at(outward, Vector3.FORWARD) * Basis(Vector3.RIGHT, PI * 0.5)})
 		for side in [-1.0, 1.0]:
 			var base := Vector3(side * r * wide * 0.97, at.x + 0.02, z)
-			var big := k < 3
-			if big and k != 1:
+			if k == 0 or k == 2:
 				bolt_horn(body, horn, root, base, Vector3(side, 0.35, 0.35), 0.4 - k * 0.06, 0.06, 0.025, Vector3.UP, Vector3(0, 0, 0.06), 5)
-			else:
-				body.crystal(base, Vector3(side, 0.2, 0.5), 0.2 - absf(z) * 0.06, 0.04, horn, 5)
+			elif z > 0.3:
+				# Pointed triangular plates on the flanks of the hips.
+				body.crystal(base + Vector3(0, -0.04, 0), Vector3(side, 0.1, 0.6), 0.13, 0.04, horn, 4)
 		if k % 3 == 1:
 			var seam := z + 0.065
 			var s2 := along(spine, radii, seam)
@@ -173,6 +175,14 @@ func _club() -> Node3D:
 				var a0 := Vector3(0, s2.x + s2.y + 0.07, seam)
 				var a1 := Vector3(side * sin(1.15) * s2.y * wide * 1.04, s2.x + cos(1.15) * s2.y + 0.06, seam)
 				spark(root, a0, a1, 5, 0.035, Vector3(0, 0, 1), 0.017)
+	# Two half-rings of keeled plates yoke the top of the neck, lightning between them.
+	for ring in [[-0.56, 0.29, 0.655], [-0.66, 0.26, 0.61]]:
+		var z: float = ring[0]; var r: float = ring[1]; var cy: float = ring[2]
+		for j in range(6):
+			var ang := lerpf(-1.25, 1.25, j / 5.0)
+			var outward := Vector3(sin(ang) * 1.3, cos(ang), 0).normalized()
+			body.rock(Vector3(sin(ang) * r * 1.3, cy + cos(ang) * r, z), Vector3(0.065, 0.05, 0.05), plate, {"lat": 4, "lon": 5, "lump": 0.25, "basis": Basis.looking_at(outward, Vector3.FORWARD) * Basis(Vector3.RIGHT, PI * 0.5)})
+	spark(root, Vector3(-0.3, 0.86, -0.61), Vector3(0.3, 0.86, -0.61), 6, 0.025, Vector3(0, 0, 1), 0.013)
 	var head := joint(root, "Head", Vector3(0, 0.6, -0.7))
 	var hs := Sculpt.new(); var hp := hs.add_painter(skin); var hplate := hs.add_painter(slate); var hhorn := hs.add_painter(horn_paint)
 	var beak := hs.add_painter(func (p, n, v, w): return Color("#2a2622"))
@@ -204,87 +214,167 @@ func _club() -> Node3D:
 	var tip := joint(tail, "TailTip", Vector3(0, 0.52, 1.3))
 	var tts := Sculpt.new(); var ttp := tts.add_painter(skin); var club := tts.add_painter(slate)
 	tts.tube([Vector3(0, 0.52, 1.28), Vector3(0, 0.48, 1.56)], [0.09, 0.07], ttp, {"sides": 10, "per": 2, "cap0": false})
+	# The club: two great lobes either side, a row of small knobs down the middle and two at
+	# the tip - semicircular seen from above.
 	for side in [-1.0, 1.0]:
-		tts.rock(Vector3(0.1 * side, 0.47, 1.66), Vector3(0.13, 0.1, 0.16), club, {"lat": 6, "lon": 9, "lump": 0.18})
-	tts.rock(Vector3(0, 0.47, 1.72), Vector3(0.09, 0.09, 0.1), club, {"lat": 5, "lon": 8, "lump": 0.18})
+		tts.rock(Vector3(0.11 * side, 0.47, 1.66), Vector3(0.15, 0.09, 0.17), club, {"lat": 6, "lon": 9, "lump": 0.16})
+		tts.rock(Vector3(0.05 * side, 0.47, 1.79), Vector3(0.05, 0.05, 0.05), club, {"lat": 4, "lon": 6, "lump": 0.2})
+	for k in range(3):
+		tts.rock(Vector3(0, 0.54, 1.58 + k * 0.08), Vector3(0.05, 0.04, 0.045), club, {"lat": 4, "lon": 6, "lump": 0.2})
 	for a in [0.0, 1.6, 3.2, 4.7]:
 		spark(tip, Vector3(0, 0.47, 1.66) + Vector3(cos(a) * 0.12, sin(a) * 0.1, -0.12), Vector3(0, 0.47, 1.66) + Vector3(cos(a) * 0.2, sin(a) * 0.12, 0.12), 3, 0.025, Vector3(-sin(a), cos(a), 0), 0.011)
 	return _close({"body": body, "head": head, "head_sculpt": hs, "jaw": jaw, "jaw_sculpt": js, "eye_sculpt": eye_sculpt, "ears": [], "ear_sculpts": [],
-		"hips": leg_rig.hips, "knees": leg_rig.knees, "tails": [tail, tip], "tail_sculpts": [ts, tts], "fronds": [], "frond_sculpts": []}, 2.1)
+		"hips": leg_rig.hips, "knees": leg_rig.knees, "tails": [tail, tip], "tail_sculpts": [ts, tts], "fronds": [], "frond_sculpts": []}, 1.5)
 
 
-# ------------------------------------------------------------------ C: storm elk
+# ------------------------------------------------------------------ C: storm elk (the boss)
 
+## A closed glowing ring round a point, lying flat (a band of storm light round an ankle).
+func glow_ring(parent: Node3D, center: Vector3, radius: float, thickness: float) -> void:
+	var v := vein(parent)
+	var pts: Array = []; var radii: Array = []
+	for k in range(11):
+		var a := TAU * k / 10.0
+		pts.append(center + Vector3(cos(a) * radius, sin(a * 3.0) * 0.008, sin(a) * radius))
+		radii.append(thickness)
+	(v[0] as Sculpt).tube(pts, radii, v[1], {"sides": 5, "per": 2, "cap_rings": 1})
+
+
+## Built from the Irish elk, Megaloceros: the most long-legged, open-country deer, with a tall
+## rounded shoulder hump, a throat lump, a dark collar and a dark stripe from shoulder to
+## groin on a paler coat (as cave artists drew it), and antlers that sweep out sideways into
+## huge dished palms. The Matriarch's are crowned with lightning: every tine is a bolt, sparks
+## leap between them and a great arc of lightning spans the palms above her head.
 func _elk() -> Node3D:
+	var ink := Color("#2a221c")
 	var coat := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
-		var c := Color("#76604a").lerp(Color("#4c3b2b"), clampf(n.y * 0.4 + Sculpt.fbm(p * 7.0) * 0.5 + 0.2, 0.0, 1.0))
-		c = c.lerp(Color("#3a2c20"), smoothstep(-0.35, -0.6, p.z) * smoothstep(1.1, 1.3, p.y) * 0.8)
-		c = c.lerp(Color("#d9cdb4"), smoothstep(0.45, 0.62, p.z) * smoothstep(0.9, 1.05, p.y) * smoothstep(0.3, 0.0, absf(p.x)) * 0.8)
-		return c.darkened(smoothstep(0.7, 0.3, p.y) * 0.35)
+		var c := Color("#8a7b68").lerp(Color("#574a3d"), clampf(n.y * 0.45 + Sculpt.fbm(p * 7.0) * 0.45 + 0.2, 0.0, 1.0))
+		c = c.lerp(Color("#c9bea6"), smoothstep(-0.25, -0.7, n.y) * 0.6)
+		# Dark collar round the neck, a stripe behind the hump and one from shoulder to groin.
+		var dark := 0.0
+		var neck_t := clampf((p.z + 0.45) / -0.27, 0.0, 1.0)
+		if p.y > 1.2: dark = maxf(dark, smoothstep(0.05, 0.02, absf(p.z + 0.585 - (p.y - 1.4) * 0.35)))
+		if p.y > 0.95 and absf(p.x) > 0.06: dark = maxf(dark, smoothstep(0.045, 0.02, absf(p.z + 0.16 - (1.42 - p.y) * 0.18)))
+		var q := Vector2(p.z, p.y); var a := Vector2(-0.26, 1.32); var b := Vector2(0.32, 0.95)
+		var t := clampf((q - a).dot(b - a) / (b - a).length_squared(), 0.0, 1.0)
+		if absf(p.x) > 0.08: dark = maxf(dark, smoothstep(0.05, 0.025, q.distance_to(a.lerp(b, t))))
+		# A dark hump, dark lower legs and a dark muzzle.
+		dark = maxf(dark, smoothstep(1.4, 1.5, p.y) * smoothstep(-0.05, -0.15, p.z) * smoothstep(-0.55, -0.45, p.z))
+		dark = maxf(dark, smoothstep(0.7, 0.45, p.y) * 0.85)
+		dark = maxf(dark, smoothstep(-0.98, -1.06, p.z) * smoothstep(1.4, 1.5, p.y) * 0.9)
+		c = c.lerp(ink, dark * 0.9)
+		return c.lerp(Color("#e8e0cc"), smoothstep(0.48, 0.62, p.z) * smoothstep(0.85, 1.0, p.y) * smoothstep(0.2, 0.0, absf(p.x)) * 0.7)
 	var mane := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
-		return Color("#2b2018").lerp(Color("#5a4430"), clampf(Sculpt.noise(p * 12.0) * 0.4 + 0.3 + (1.0 - v) * 0.2, 0.0, 1.0))
+		return Color("#1f1c1d").lerp(Color("#5a5458"), clampf(Sculpt.noise(p * 12.0) * 0.4 + 0.25 + v * 0.35, 0.0, 1.0))
 	var body := Sculpt.new(); var bp := body.add_painter(coat); var mp := body.add_painter(mane); var plate := body.add_painter(slate_dark)
-	body.tube([Vector3(0, 1.1, 0.6), Vector3(0, 1.14, 0.35), Vector3(0, 1.12, 0.0), Vector3(0, 1.2, -0.3), Vector3(0, 1.24, -0.45)], [0.24, 0.3, 0.31, 0.33, 0.28], bp, {"sides": 16, "per": 3, "flat": 0.75, "lump": 0.03})
-	body.blob(Vector3(0, 1.4, -0.3), Vector3(0.18, 0.16, 0.25), bp, {"lat": 7, "lon": 10})
-	body.blob(Vector3(0, 1.04, -0.44), Vector3(0.2, 0.24, 0.2), bp, {"lat": 7, "lon": 10})
+	# A deep chest, a lean waist and a tall rounded shoulder hump.
+	body.tube([Vector3(0, 1.1, 0.6), Vector3(0, 1.14, 0.35), Vector3(0, 1.1, 0.0), Vector3(0, 1.2, -0.3), Vector3(0, 1.24, -0.45)], [0.25, 0.3, 0.29, 0.34, 0.29], bp, {"sides": 18, "per": 3, "flat": 0.74, "lump": 0.03})
+	body.blob(Vector3(0, 1.44, -0.3), Vector3(0.19, 0.2, 0.27), bp, {"lat": 8, "lon": 12})
+	body.blob(Vector3(0, 1.02, -0.42), Vector3(0.2, 0.26, 0.21), bp, {"lat": 7, "lon": 11})
 	for side in [-1.0, 1.0]:
-		body.blob(Vector3(0.12 * side, 1.12, 0.45), Vector3(0.12, 0.2, 0.2), bp, {"lat": 6, "lon": 9})
+		body.blob(Vector3(0.13 * side, 1.13, 0.45), Vector3(0.12, 0.22, 0.21), bp, {"lat": 7, "lon": 10})
+		body.blob(Vector3(0.14 * side, 1.2, -0.33), Vector3(0.13, 0.2, 0.17), bp, {"lat": 6, "lon": 9})
 	body.tube([Vector3(0, 1.28, -0.45), Vector3(0, 1.46, -0.62), Vector3(0, 1.62, -0.72)], [0.26, 0.18, 0.14], bp, {"sides": 14, "per": 3, "flat": 0.8})
-	# A shaggy dark mane down the throat.
-	for k in range(14):
-		var t := k / 13.0
-		var at := Vector3(0, lerpf(1.52, 1.12, t), lerpf(-0.74, -0.52, t))
+	body.blob(Vector3(0, 1.43, -0.68), Vector3(0.065, 0.08, 0.07), bp, {"lat": 5, "lon": 8})
+	# A shaggy storm-dark mane under the throat.
+	for k in range(16):
+		var t := k / 15.0
+		var at := Vector3(0, lerpf(1.5, 1.08, t), lerpf(-0.74, -0.52, t))
 		for side in [-1.0, 1.0]:
-			lock(body, mp, at + Vector3(0.06 * side, -0.05, -0.08), Vector3(side * 0.3, -1.0, -0.2), 0.2 + 0.08 * sin(t * PI), 0.045, Vector3(side, 0, 0), 0.05, 5, 1)
-	# Slate armour plates over the shoulders and down the top of the neck.
-	for k in range(6):
-		var t := k / 5.0
+			lock(body, mp, at + Vector3(0.045 * side, -0.05, -0.08), Vector3(side * 0.15, -1.0, -0.25), 0.22 + 0.1 * sin(t * PI), 0.034, Vector3(side, 0, 0), 0.05, 5, 1)
+	# The hackle tuft: dark hair bristling up along the hump, with sparks running through it.
+	for k in range(12):
+		var t := k / 11.0
+		var z := lerpf(-0.5, -0.12, t)
+		var top := 1.62 - absf(z + 0.3) * 0.5
+		for side in [-1.0, 0.0, 1.0]:
+			var dir := Vector3(side * 0.35, 1.0, 0.45)
+			lock(body, mp, Vector3(side * 0.05, top - 0.04, z + side * 0.02), dir, 0.16 + 0.08 * sin(t * PI) - absf(side) * 0.04, 0.035, Vector3(1, 0, 0) if side == 0.0 else Vector3(0, 0, 1), -0.05, 5, 1)
+	for z in [-0.42, -0.26]:
+		spark(root, Vector3(0, 1.64, z), Vector3(0.02, 1.86, z + 0.1), 3, 0.025, Vector3.RIGHT, 0.01)
+	# A mantle of slate plates over the withers and down the neck, edged with storm light.
+	for k in range(7):
+		var t := k / 6.0
 		var at := Vector3(0, lerpf(1.8, 1.58, t), lerpf(-0.7, -0.4, t))
-		body.rock(at + Vector3(0, 0.02, 0), Vector3(0.1 - t * 0.02, 0.035, 0.08), plate, {"lat": 4, "lon": 6, "lump": 0.15, "basis": Basis(Vector3.RIGHT, -0.7 + t * 0.4)})
+		body.rock(at, Vector3(0.1 - t * 0.02, 0.035, 0.08), plate, {"lat": 4, "lon": 6, "lump": 0.15, "basis": Basis(Vector3.RIGHT, -0.7 + t * 0.4)})
 	for side in [-1.0, 1.0]:
 		for k in range(2):
-			body.rock(Vector3(0.13 * side + 0.07 * k * side, 1.53 - k * 0.07, -0.32 + k * 0.02), Vector3(0.1, 0.035, 0.12), plate, {"lat": 4, "lon": 6, "lump": 0.15, "basis": Basis.from_euler(Vector3(0, 0, -side * (0.35 + k * 0.35)))})
+			var at := Vector3((0.12 + k * 0.08) * side, 1.6 - k * 0.1, -0.32 + k * 0.02)
+			body.rock(at, Vector3(0.09, 0.03, 0.11), plate, {"lat": 4, "lon": 7, "lump": 0.15, "basis": Basis.from_euler(Vector3(0, 0, -side * (0.4 + k * 0.32)))})
+		spark(root, Vector3(0.16 * side, 1.6, -0.43), Vector3(0.33 * side, 1.36, -0.18), 3, 0.025, Vector3(0, 0, 1), 0.011)
+		# The shoulder-to-groin stripe is a lightning mark, glowing faintly.
+		spark(root, Vector3(0.255 * side, 1.28, -0.25), Vector3(0.235 * side, 0.98, 0.28), 6, 0.025, Vector3(0, 1, 0.4), 0.012)
 	var head := joint(root, "Head", Vector3(0, 1.62, -0.74))
 	var hs := Sculpt.new(); var hp := hs.add_painter(coat); var horn := hs.add_painter(antler); var nose := hs.add_painter(func (p, n, v, w): return NOSE.lightened(clampf(n.y, 0.0, 1.0) * 0.15))
-	var hm := hs.add_painter(mane)
-	hs.blob(Vector3(0, 1.67, -0.8), Vector3(0.12, 0.12, 0.14), hp, {"lat": 8, "lon": 11})
-	hs.tube([Vector3(0, 1.65, -0.86), Vector3(0, 1.57, -1.0), Vector3(0, 1.51, -1.08)], [0.1, 0.08, 0.065], hp, {"sides": 11, "per": 3, "square": 0.3, "flat": 0.9, "cap_rings": 2, "cap_len": 0.5})
-	hs.blob(Vector3(0, 1.5, -1.12), Vector3(0.06, 0.045, 0.03), nose, {"lat": 4, "lon": 8})
+	var hm := hs.add_painter(mane); var black := hs.add_painter(func (p, n, v, w): return Color("#080706"))
+	# A long deer head: broad brow, long face, a dark gland before each eye.
+	hs.blob(Vector3(0, 1.68, -0.8), Vector3(0.13, 0.13, 0.15), hp, {"lat": 9, "lon": 12})
+	hs.tube([Vector3(0, 1.66, -0.86), Vector3(0, 1.58, -1.0), Vector3(0, 1.51, -1.09)], [0.105, 0.082, 0.066], hp, {"sides": 12, "per": 3, "square": 0.3, "flat": 0.88, "cap_rings": 2, "cap_len": 0.5})
+	hs.blob(Vector3(0, 1.5, -1.13), Vector3(0.062, 0.046, 0.032), nose, {"lat": 4, "lon": 8})
 	for side in [-1.0, 1.0]:
-		hs.blob(Vector3(0.025 * side, 1.505, -1.145), Vector3(0.012, 0.016, 0.006), hs.add_painter(func (p, n, v, w): return Color("#080706")), {"lat": 3, "lon": 6})
-		hs.blob(Vector3(0.1 * side, 1.72, -0.86), Vector3(0.04, 0.02, 0.03), hp, {"lat": 4, "lon": 6})
-	for k in range(6):
-		lock(hs, hm, Vector3((k - 2.5) * 0.02, 1.52, -0.9 + absf(k - 2.5) * 0.01), Vector3(0, -1, 0.2), 0.14, 0.03, Vector3.RIGHT, 0.05, 5, 1)
-	# The antlers: thick beams sweeping out and back to broad palms, every tine a jagged
-	# lightning bolt with a glowing tip.
+		hs.blob(Vector3(0.025 * side, 1.505, -1.155), Vector3(0.012, 0.016, 0.006), black, {"lat": 3, "lon": 6})
+		hs.blob(Vector3(0.105 * side, 1.735, -0.87), Vector3(0.045, 0.022, 0.032), hp, {"lat": 4, "lon": 6})
+		hs.blob(Vector3(0.088 * side, 1.64, -0.95), Vector3(0.012, 0.022, 0.03), black, {"lat": 3, "lon": 6})
+	for k in range(7):
+		lock(hs, hm, Vector3((k - 3) * 0.02, 1.53, -0.9 + absf(k - 3) * 0.01), Vector3(0, -1, 0.2), 0.16, 0.03, Vector3.RIGHT, 0.05, 5, 1)
+	# The antlers. Each beam sweeps out sideways and a little back from the top of the skull:
+	# a palmate brow tine reaches forward over the face, a bez tine rises from the beam, and
+	# the beam opens into a huge dished palm fringed with tines along its back edge. Every
+	# tine is a jagged bolt tipped with storm light.
+	var tips := {-1.0: [], 1.0: []}
 	for side in [-1.0, 1.0]:
-		var beam := [Vector3(0.07 * side, 1.77, -0.76), Vector3(0.25 * side, 1.84, -0.74), Vector3(0.48 * side, 1.9, -0.66), Vector3(0.7 * side, 1.98, -0.56)]
-		hs.tube(beam, [0.06, 0.052, 0.046, 0.04], horn, {"sides": 9, "per": 3, "lump": 0.08})
-		hs.blob(Vector3(0.88 * side, 2.02, -0.46), Vector3(0.3, 0.05, 0.21), horn, {"lat": 6, "lon": 10, "basis": Basis(Vector3.FORWARD, -side * 0.35) * Basis(Vector3.UP, side * 0.3)})
-		# The brow tine juts forward over the face.
-		bolt_horn(hs, horn, head, Vector3(0.14 * side, 1.82, -0.76), Vector3(0.15 * side, 0.4, -1.0), 0.26, 0.028, 0.018, Vector3.UP, Vector3.ZERO, 5)
-		bolt_horn(hs, horn, head, Vector3(0.36 * side, 1.86, -0.71), Vector3(0.1 * side, 1.0, -0.5), 0.3, 0.03, 0.022, Vector3(0, 0, 1), Vector3.ZERO, 5)
-		for k in range(5):
-			var a := lerpf(-0.9, 0.9, k / 4.0)
-			var edge := Vector3(0.88 * side, 2.02, -0.46) + Basis(Vector3.UP, side * 0.3) * Vector3(side * 0.24 * cos(a), 0.06 + 0.1 * cos(a), sin(a) * 0.19)
-			var up := Vector3(side * 0.45 * cos(a), 1.0, sin(a) * 0.5 - 0.15)
-			bolt_horn(hs, horn, head, edge, up, 0.26 + 0.08 * cos(a), 0.026, 0.02, Vector3(0, 0, 1), Vector3.ZERO, 5)
+		var beam := [Vector3(0.07 * side, 1.78, -0.76), Vector3(0.3 * side, 1.85, -0.73), Vector3(0.56 * side, 1.93, -0.66), Vector3(0.8 * side, 2.0, -0.57)]
+		hs.tube(beam, [0.068, 0.058, 0.05, 0.046], horn, {"sides": 10, "per": 3, "lump": 0.08})
+		hs.blob(Vector3(0.07 * side, 1.77, -0.76), Vector3(0.05, 0.03, 0.05), horn, {"lat": 4, "lon": 8, "lump": 0.4})
+		hs.blob(Vector3(0.22 * side, 1.86, -0.88), Vector3(0.07, 0.022, 0.1), horn, {"lat": 5, "lon": 8, "basis": Basis(Vector3.RIGHT, 0.4)})
+		for f in [-0.5, 0.6]:
+			bolt_horn(hs, horn, head, Vector3((0.22 + f * 0.05) * side, 1.87, -0.95), Vector3(f * 0.3 * side, 0.6, -1.0), 0.2, 0.024, 0.016, Vector3.UP, Vector3.ZERO, 5)
+		bolt_horn(hs, horn, head, Vector3(0.42 * side, 1.9, -0.71), Vector3(0.1 * side, 1.0, -0.55), 0.32, 0.032, 0.022, Vector3(0, 0, 1), Vector3.ZERO, 5)
+		var palm := Vector3(1.04 * side, 2.08, -0.5)
+		var pb := Basis(Vector3.UP, side * 0.35) * Basis(Vector3.FORWARD, -side * 0.28) * Basis(Vector3.RIGHT, -0.2)
+		hs.blob(palm, Vector3(0.36, 0.05, 0.25), horn, {"lat": 7, "lon": 14, "basis": pb, "lump": 0.1})
+		hs.blob(palm + pb * Vector3(-0.2 * side, 0.0, 0.05), Vector3(0.18, 0.06, 0.14), horn, {"lat": 5, "lon": 10, "basis": pb})
+		for k in range(7):
+			var a := lerpf(-1.45, 1.25, k / 6.0)
+			var edge := palm + pb * Vector3(side * cos(a) * 0.34, 0.02, sin(a) * 0.23)
+			var dir := (pb * Vector3(side * cos(a) * 0.55, 1.0, sin(a) * 0.6)).normalized()
+			var length := 0.3 + 0.1 * cos(a * 0.8)
+			bolt_horn(hs, horn, head, edge, dir, length, 0.034, 0.026, pb * Vector3(-sin(a) * side, 0, cos(a)), Vector3.ZERO, 5)
+			(tips[side] as Array).append(edge + dir * length)
+	# Sparks leap between neighbouring tines, and one great arc spans the palms over her head.
+	for side in [-1.0, 1.0]:
+		var list: Array = tips[side]
+		for k in range(list.size() - 1):
+			if k % 2 == 0: spark(head, list[k], list[k + 1], 2, 0.03, Vector3.UP, 0.007)
+	spark(head, Vector3(-0.72, 2.06, -0.56), Vector3(0.72, 2.06, -0.56), 9, 0.07, Vector3(0, 0.6, 1.0), 0.014)
+	spark(head, Vector3(-0.5, 2.0, -0.62), Vector3(0.5, 2.0, -0.62), 6, 0.05, Vector3(0, 1.0, 0.3), 0.009)
 	var jaw := joint(head, "Jaw", Vector3(0, 1.55, -0.88))
 	var js := Sculpt.new(); var jp := js.add_painter(coat)
-	js.tube([Vector3(0, 1.55, -0.86), Vector3(0, 1.49, -1.04)], [0.06, 0.042], jp, {"sides": 9, "per": 2, "flat": 1.0, "cap_rings": 2})
-	var eye_sculpt := eyes([Vector3(-0.113, 1.68, -0.86), Vector3(0.113, 1.68, -0.86)], Vector3(0.022, 0.018, 0.02))
+	js.tube([Vector3(0, 1.55, -0.86), Vector3(0, 1.49, -1.04)], [0.062, 0.044], jp, {"sides": 9, "per": 2, "flat": 1.0, "cap_rings": 2})
+	var eye_sculpt := eyes([Vector3(-0.118, 1.68, -0.86), Vector3(0.118, 1.68, -0.86)], Vector3(0.028, 0.022, 0.026))
 	var ears: Array = []; var ear_sculpts: Array = []
 	for side in [-1.0, 1.0]:
-		var ear := joint(head, "EarLeft" if side < 0 else "EarRight", Vector3(0.1 * side, 1.73, -0.74))
-		var xs := Sculpt.new(); var xp := xs.add_painter(coat)
-		xs.tube([Vector3(0.1 * side, 1.73, -0.74), Vector3(0.18 * side, 1.77, -0.72), Vector3(0.24 * side, 1.78, -0.7)], [0.035, 0.04, 0.012], xp, {"sides": 7, "per": 2, "flat": 0.4, "side": Vector3(0, 1, 0.3), "cap_rings": 1})
+		var ear := joint(head, "EarLeft" if side < 0 else "EarRight", Vector3(0.1 * side, 1.73, -0.73))
+		var xs := Sculpt.new(); var xp := xs.add_painter(coat); var xi := xs.add_painter(func (p, n, v, w): return ink)
+		xs.tube([Vector3(0.1 * side, 1.73, -0.73), Vector3(0.18 * side, 1.77, -0.71), Vector3(0.25 * side, 1.78, -0.69)], [0.035, 0.042, 0.012], xp, {"sides": 7, "per": 2, "flat": 0.4, "side": Vector3(0, 1, 0.3), "cap_rings": 1})
+		xs.blob(Vector3(0.25 * side, 1.78, -0.69), Vector3(0.02, 0.012, 0.012), xi, {"lat": 3, "lon": 5})
 		ears.append(ear); ear_sculpts.append(xs)
-	var leg_rig := legs(coat, 0.15, -0.36, 0.48, 1.1, 0.78, Callable(), 2, 1.65)
+	var leg_rig := legs(coat, 0.15, -0.36, 0.48, 1.1, 0.8, Callable(), 2, 1.65)
+	# Bands of storm light round each fetlock, like lightning crackling at every step.
+	for k in range(4):
+		var front := k < 2
+		var x := 0.15 * (-1.0 if k % 2 == 0 else 1.0)
+		glow_ring(leg_rig.knees[k], Vector3(x, 0.16, -0.395 if front else 0.455), 0.058, 0.012)
 	var tail := joint(root, "Tail", Vector3(0, 1.16, 0.62))
 	var ts := Sculpt.new(); var tp := ts.add_painter(coat)
 	ts.tube([Vector3(0, 1.16, 0.6), Vector3(0, 1.1, 0.68), Vector3(0, 1.02, 0.7)], [0.045, 0.04, 0.03], tp, {"sides": 7, "per": 2, "cap1": false})
 	var tip := joint(tail, "TailTip", Vector3(0, 1.02, 0.7))
-	var tts := Sculpt.new(); var ttp := tts.add_painter(coat)
-	tts.tube([Vector3(0, 1.02, 0.69), Vector3(0, 0.96, 0.71)], [0.03, 0.01], ttp, {"sides": 7, "per": 2, "cap0": false})
+	var tts := Sculpt.new(); var ttp := tts.add_painter(func (p, n, v, w): return ink)
+	tts.tube([Vector3(0, 1.02, 0.69), Vector3(0, 0.95, 0.71)], [0.032, 0.01], ttp, {"sides": 7, "per": 2, "cap0": false})
+	# Storm light glows round the antlers and flickers as lightning arcs between them.
+	var light := OmniLight3D.new(); light.name = "StormLight"
+	light.light_color = STORM; light.light_energy = 1.3; light.omni_range = 3.2; light.shadow_enabled = false
+	light.set_script(load("res://scripts/storm_flicker.gd"))
+	head.add_child(light); light.position = Vector3(0, 2.1, -0.6) - Vector3(0, 1.62, -0.74)
 	return _close({"body": body, "head": head, "head_sculpt": hs, "jaw": jaw, "jaw_sculpt": js, "eye_sculpt": eye_sculpt, "ears": ears, "ear_sculpts": ear_sculpts,
-		"hips": leg_rig.hips, "knees": leg_rig.knees, "tails": [tail, tip], "tail_sculpts": [ts, tts], "fronds": [], "frond_sculpts": []}, 1.6)
+		"hips": leg_rig.hips, "knees": leg_rig.knees, "tails": [tail, tip], "tail_sculpts": [ts, tts], "fronds": [], "frond_sculpts": []}, 2.0)
