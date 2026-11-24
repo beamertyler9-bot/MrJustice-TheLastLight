@@ -47,7 +47,7 @@ func build(variant: String) -> Node3D:
 			crystal_mat.emission = Color("#8a7a5a"); crystal_mat.emission_energy_multiplier = 0.45; crystal_mat.roughness = 0.18; crystal_mat.rim = 0.8
 		_: return null
 	glow.emission_energy_multiplier = 2.2
-	return _sentinel()
+	return _naica() if variant == "selenite" else _sentinel()
 
 
 # ------------------------------------------------------------------ painters
@@ -373,6 +373,186 @@ func _sentinel() -> Node3D:
 		hips.append(hip); knees.append(knee)
 
 	var node := _finish({"head": head, "core": core, "arms": arms, "forearms": forearms, "feet": hips, "knees": knees, "leaves": []}, 1.6)
+	var rig: Dictionary = node.get_meta("rig_bindings")
+	rig["visual_rig"] = {"head": node.get_path_to(head), "wings": [], "wing_meshes": [], "legs": [], "knees": [], "ears": [], "tails": [], "features": {}}
+	node.set_meta("rig_bindings", rig)
+	return node
+
+
+# ------------------------------------------------------------------ the selenite colossus
+
+## A chain of angular rocks from `a` to `b`, thick to thin: a limb hewn from stone.
+func rock_limb(s: Sculpt, p: int, a: Vector3, b: Vector3, r0: float, r1: float, n: int, seed: float) -> void:
+	for k in range(n):
+		var t := k / float(maxi(n - 1, 1))
+		var r := lerpf(r0, r1, t)
+		s.rock(a.lerp(b, t), Vector3(r, r * 1.1, r) * (0.95 + 0.1 * sin(seed + k)), p, {"seed": int(seed * 10.0) + k})
+
+
+## A glowing crack across the stone: a jagged line from `a` to `b` lying on the surface.
+func crack(s: Sculpt, p: int, a: Vector3, b: Vector3, out: Vector3, jag: float, seed: float) -> void:
+	var pts: Array = []; var rr: Array = []
+	var side := (b - a).cross(out).normalized()
+	for k in range(7):
+		var t := k / 6.0
+		pts.append(a.lerp(b, t) + side * jag * sin(seed + k * 2.7) * (1.0 - absf(t - 0.5) * 1.4) + out * 0.004)
+		rr.append(lerpf(0.012, 0.003, absf(t - 0.4)))
+	s.tube(pts, rr, p, {"sides": 4, "per": 1})
+
+
+## The selenite colossus: a hunched giant of dark Naica rock, its shoulders and back grown with
+## great selenite beams standing up like a ridge of standing stones, its head a split geode with
+## a crystal-lined hollow for a face and one cold light burning in it.
+func _naica() -> Node3D:
+	var stone: Callable = naica_rock
+	var strata := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+		var c := naica_rock(p, n, v, w)
+		return c.darkened(smoothstep(0.82, 0.95, fposmod(p.y * 11.0 + Sculpt.noise(p * 3.0) * 0.8, 1.0)) * 0.35)
+	var glow_w := func (p, n, v, w): return Color.WHITE
+
+	# ---- torso: hunched, heavy-shouldered, a hump of rock over the back
+	var body := Sculpt.new(); var sp := body.add_painter(strata)
+	body.rock(Vector3(0, 0.8, 0.02), Vector3(0.2, 0.12, 0.16), sp, {"seed": 1})
+	body.rock(Vector3(0, 0.95, 0.0), Vector3(0.17, 0.12, 0.14), sp, {"seed": 2})
+	body.rock(Vector3(0, 1.17, -0.04), Vector3(0.3, 0.2, 0.21), sp, {"seed": 3})
+	body.rock(Vector3(0, 1.32, 0.07), Vector3(0.3, 0.15, 0.21), sp, {"seed": 4})
+	for side: float in [-1.0, 1.0]:
+		body.rock(Vector3(0.18 * side, 1.08, -0.12), Vector3(0.12, 0.1, 0.08), sp, {"seed": 5 + int(side)})
+		body.rock(Vector3(0.12 * side, 0.83, -0.06), Vector3(0.1, 0.09, 0.08), sp, {"seed": 8 + int(side)})
+	steel_part(root, "Core", body)
+	# Light leaking from cracks across the chest, running out from the heart.
+	var cg := Sculpt.new(); var cgp := cg.add_painter(glow_w)
+	var heart := Vector3(0.02, 1.16, -0.245)
+	for k in range(5):
+		var a := TAU * k / 5.0 + 0.4
+		crack(cg, cgp, heart, heart + Vector3(cos(a) * 0.2, sin(a) * 0.14, 0.06 * absf(cos(a))), Vector3(0, 0, -1), 0.02, k * 1.3)
+	cg.crystal(heart + Vector3(0, -0.04, 0.02), Vector3(0, 1, -0.3), 0.12, 0.035, cgp, 4, PI * 0.25)
+	var core := part(root, "Heart", cg, glow); core.material_override = glow
+	# Selenite: great beams standing up from the back like a ridge of standing stones, smaller
+	# plates lying over the chest, beams thrusting from the hips.
+	var cs := Sculpt.new(); var cp := cs.add_painter(selenite)
+	for k in range(5):
+		var x := (k - 2) * 0.1
+		beam(cs, cp, Vector3(x, 1.3, 0.16), Vector3(x * 1.6, 1.0, 0.55 + 0.1 * absf(k - 2)), 0.95 - absf(k - 2) * 0.2, 0.17 - absf(k - 2) * 0.02, 0.12, k * 0.7)
+	for side: float in [-1.0, 1.0]:
+		beam(cs, cp, Vector3(0.17 * side, 1.02, -0.2), Vector3(0.35 * side, 1.0, -0.35), 0.3, 0.13, 0.06, side)
+		beam(cs, cp, Vector3(0.24 * side, 1.18, -0.17), Vector3(0.6 * side, 1.0, -0.25), 0.24, 0.1, 0.05, side * 2.0)
+		beam(cs, cp, Vector3(0.2 * side, 0.82, -0.04), Vector3(side, -0.2, -0.25), 0.26, 0.09, 0.07, side * 3.0)
+	part(root, "Selenite", cs, crystal_mat)
+
+	# ---- head: a split geode sunk low between the shoulders, a crystal-lined hollow for a face
+	var H := Vector3(0, 1.43, -0.2)
+	var head := joint(root, "Head", H)
+	var hs := Sculpt.new(); var hp := hs.add_painter(strata); var hk := hs.add_painter(func (p, n, v, w): return Color("#060404"))
+	hs.rock(H + Vector3(0, 0.01, 0.03), Vector3(0.14, 0.13, 0.14), hp, {"seed": 31})
+	# The brow juts out in a heavy ledge over the hollow; the jaw is a second slab of rock.
+	hs.rock(H + Vector3(0, 0.08, -0.09), Vector3(0.13, 0.05, 0.07), hp, {"seed": 32})
+	hs.rock(H + Vector3(0, -0.1, -0.08), Vector3(0.11, 0.05, 0.07), hp, {"seed": 33})
+	hs.blob(H + Vector3(0, -0.01, -0.12), Vector3(0.095, 0.075, 0.05), hk, {"lat": 6, "lon": 9})
+	steel_part(head, "Geode", hs)
+	# Crystals lining the hollow, all pointing inward to the light at its heart.
+	var hc := Sculpt.new(); var hcp := hc.add_painter(selenite)
+	for k in range(9):
+		var a := TAU * k / 9.0
+		var rim := H + Vector3(cos(a) * 0.09, sin(a) * 0.07 - 0.01, -0.15)
+		beam(hc, hcp, rim, (H + Vector3(0, -0.01, -0.1) - rim).normalized() + Vector3(0, 0, -0.4), 0.06, 0.03, 0.02, a)
+	# A crest of beams swept back from the crown.
+	for k in range(3):
+		var x := (k - 1) * 0.06
+		beam(hc, hcp, H + Vector3(x, 0.1, 0.0), Vector3(x * 3.0, 0.7, 1.0), 0.4 - absf(k - 1) * 0.1, 0.08, 0.055, k)
+	part(head, "Crystals", hc, crystal_mat)
+	var eg := Sculpt.new(); var egp := eg.add_painter(glow_w)
+	eg.blob(H + Vector3(0, -0.01, -0.16), Vector3(0.032, 0.032, 0.015), egp, {"lat": 5, "lon": 8})
+	part(head, "Eye", eg, glow).material_override = glow
+	var el := OmniLight3D.new(); el.name = "EyeLight"; el.light_color = Color("#fff0c8"); el.light_energy = 0.6; el.omni_range = 0.8
+	head.add_child(el); el.position = Vector3(0, -0.01, -0.2)
+
+	# ---- arms: long and heavy, the forearms swelling to great fists; both hands on the maul
+	var lh := Vector3(-0.12, 0.86, -0.4); var rh := Vector3(0.2, 1.2, -0.38)
+	var hd_dir := (rh - lh).normalized()
+	var arms: Array = []; var forearms: Array = []
+	for side: float in [-1.0, 1.0]:
+		var label := "Left" if side < 0 else "Right"
+		var sh_at := Vector3(0.36 * side, 1.34, 0.0)
+		var elbow_at := Vector3(0.44 * side, 1.02, -0.06)
+		var fc: Vector3 = rh if side > 0 else lh
+		var shoulder := joint(root, label + "Shoulder", sh_at)
+		var us := Sculpt.new(); var up := us.add_painter(strata)
+		us.rock(sh_at, Vector3(0.16, 0.14, 0.16), up, {"seed": 40 + int(side)})
+		rock_limb(us, up, sh_at + Vector3(0.02 * side, -0.1, 0), elbow_at, 0.1, 0.085, 3, 41.0 + side)
+		steel_part(shoulder, "UpperArm", us)
+		# Pauldrons of three great beams standing up and out from each shoulder.
+		var pc := Sculpt.new(); var pcp := pc.add_painter(selenite)
+		beam(pc, pcp, sh_at + Vector3(0.06 * side, 0.08, 0.0), Vector3(0.45 * side, 1.0, 0.2), 0.62, 0.15, 0.1, side)
+		beam(pc, pcp, sh_at + Vector3(0.12 * side, 0.04, -0.06), Vector3(0.95 * side, 0.65, -0.1), 0.45, 0.12, 0.08, side * 1.7)
+		beam(pc, pcp, sh_at + Vector3(0.08 * side, 0.05, 0.08), Vector3(0.5 * side, 0.8, 0.8), 0.48, 0.12, 0.08, side * 2.3)
+		beam(pc, pcp, sh_at.lerp(elbow_at, 0.5) + Vector3(0.08 * side, 0, 0), Vector3(side, 0.5, 0.1), 0.2, 0.08, 0.05, side * 3.1)
+		part(shoulder, "Pauldron", pc, crystal_mat)
+		var elbow := joint(shoulder, "Forearm", elbow_at)
+		var fs := Sculpt.new(); var fp := fs.add_painter(strata)
+		var fa := (fc - elbow_at).normalized()
+		var wrist := fc - fa * 0.09
+		rock_limb(fs, fp, elbow_at, wrist, 0.09, 0.115, 4, 51.0 + side)
+		var bh := fa.cross(hd_dir).normalized() if side > 0.0 else hd_dir.cross(fa).normalized()
+		fist(fs, fp, fc, hd_dir, fa, bh, 0.03)
+		fs.rock(fc + bh * 0.05 - fa * 0.02, Vector3(0.06, 0.06, 0.07), fp, {"seed": 55 + int(side)})
+		steel_part(elbow, "Forearm", fs)
+		var fcs := Sculpt.new(); var fcp := fcs.add_painter(selenite)
+		var outv := Vector3(side, 0.2, 0.3).normalized()
+		for q in range(3): beam(fcs, fcp, elbow_at.lerp(wrist, 0.2 + q * 0.28) + outv * 0.08, (outv * 0.5 - fa * 0.7 + Vector3(0, 0.3, 0)).normalized(), 0.26 - q * 0.04, 0.08, 0.055, q + side)
+		part(elbow, "Shards", fcs, crystal_mat)
+		var gj := Sculpt.new(); var gjp := gj.add_painter(glow_w)
+		crack(gj, gjp, elbow_at + Vector3(-0.07, 0.02, -0.07), elbow_at + Vector3(0.07, -0.02, -0.07), Vector3(0, 0, -1), 0.015, side)
+		crack(gj, gjp, elbow_at + Vector3(0.08 * side, 0.06, 0.0), elbow_at + Vector3(0.08 * side, -0.06, 0.03), Vector3(side, 0, 0), 0.015, side + 2.0)
+		part(elbow, "JointGlow", gj, glow).material_override = glow
+		if side > 0.0:
+			# The maul: a haft of stone bound in iron, and through its head one great beam.
+			var ms := Sculpt.new(); var mh := ms.add_painter(stone); var mi := ms.add_painter(black_steel)
+			var butt := lh - hd_dir * 0.24
+			var top := rh + hd_dir * 0.5
+			ms.tube([butt, top], [0.032, 0.032], mh, {"sides": 8, "per": 3, "lump": 0.1})
+			for q in range(4): ms.tube([butt.lerp(top, 0.05 + q * 0.3), butt.lerp(top, 0.08 + q * 0.3)], [0.038, 0.038], mi, {"sides": 8, "per": 1})
+			var hc2 := top + hd_dir * 0.1
+			# The head's beam lies across the haft in the plane of the swing, so it strikes face-on.
+			var across := (Vector3(0, 0, -1) - hd_dir * hd_dir.dot(Vector3(0, 0, -1))).normalized()
+			ms.rock(hc2, Vector3(0.17, 0.16, 0.16), mh, {"seed": 61, "basis": Basis(across, hd_dir, across.cross(hd_dir))})
+			for sgn: float in [-1.0, 1.0]: ms.tube([hc2 + across * 0.15 * sgn, hc2 + across * 0.19 * sgn], [0.1, 0.1], mi, {"sides": 8, "per": 1})
+			steel_part(elbow, "Maul", ms)
+			var mc := Sculpt.new(); var mcp := mc.add_painter(selenite)
+			beam(mc, mcp, hc2 - across * 0.48, across, 0.96, 0.22, 0.17, 0.0)
+			part(elbow, "MaulHead", mc, crystal_mat)
+		if side > 0.0:
+			arms.push_front(shoulder); forearms.push_front(elbow)
+		else:
+			arms.append(shoulder); forearms.append(elbow)
+
+	# ---- legs: short, thick columns of rock; beams guarding the knees
+	var hips: Array = []; var knees: Array = []
+	for side: float in [-1.0, 1.0]:
+		var label := "Left" if side < 0 else "Right"
+		var hip_at := Vector3(0.16 * side, 0.76, 0.02)
+		var knee_at := Vector3(0.19 * side, 0.43, -0.04)
+		var hip := joint(root, label + "Hip", hip_at)
+		var ts := Sculpt.new(); var tp := ts.add_painter(strata)
+		rock_limb(ts, tp, hip_at, knee_at + Vector3(0, 0.05, 0), 0.13, 0.11, 3, 71.0 + side)
+		steel_part(hip, "Thigh", ts)
+		var knee := joint(hip, "Knee", knee_at)
+		var ls := Sculpt.new(); var lp := ls.add_painter(strata)
+		var ankle := Vector3(0.19 * side, 0.12, -0.01)
+		rock_limb(ls, lp, knee_at, ankle, 0.1, 0.11, 3, 81.0 + side)
+		ls.rock(Vector3(0.19 * side, 0.06, -0.06), Vector3(0.13, 0.07, 0.17), lp, {"seed": 85 + int(side)})
+		for q in range(3): ls.rock(Vector3((0.19 + (q - 1) * 0.06) * side, 0.04, -0.2), Vector3(0.04, 0.04, 0.05), lp, {"seed": 87 + q})
+		steel_part(knee, "Shin", ls)
+		var kc := Sculpt.new(); var kcp := kc.add_painter(selenite)
+		beam(kc, kcp, knee_at + Vector3(0, 0.02, -0.08), Vector3(0.2 * side, 0.9, -0.6), 0.28, 0.11, 0.07, side)
+		beam(kc, kcp, knee_at + Vector3(0.08 * side, 0.0, -0.03), Vector3(side, 0.6, -0.3), 0.2, 0.08, 0.05, side * 2.0)
+		part(knee, "Shards", kc, crystal_mat)
+		var gk := Sculpt.new(); var gkp := gk.add_painter(glow_w)
+		crack(gk, gkp, knee_at + Vector3(-0.08, 0.0, -0.08), knee_at + Vector3(0.08, -0.03, -0.08), Vector3(0, 0, -1), 0.015, side + 4.0)
+		part(knee, "JointGlow", gk, glow).material_override = glow
+		hips.append(hip); knees.append(knee)
+
+	var node := _finish({"head": head, "core": core, "arms": arms, "forearms": forearms, "feet": hips, "knees": knees, "leaves": []}, 1.75)
 	var rig: Dictionary = node.get_meta("rig_bindings")
 	rig["visual_rig"] = {"head": node.get_path_to(head), "wings": [], "wing_meshes": [], "legs": [], "knees": [], "ears": [], "tails": [], "features": {}}
 	node.set_meta("rig_bindings", rig)
