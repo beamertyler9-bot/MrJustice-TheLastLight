@@ -46,19 +46,24 @@ static func grave_stone(p: Vector3, n: Vector3, _v: float, w: float) -> Color:
 	var c := GRANITE.lerp(GRANITE_LIGHT, clampf(n.y * 0.25 + 0.35 + Sculpt.fbm(p * 6.0) * 0.45, 0.0, 1.0))
 	c = c.darkened(smoothstep(0.55, 0.7, Sculpt.noise(p * 40.0)) * 0.25)
 	c = c.darkened(clampf(-w, 0.0, 1.0) * 0.3)
-	c = c.lerp(LICHEN, smoothstep(0.58, 0.72, Sculpt.noise(p * 13.0 + Vector3(4, 1, 7))) * 0.75)
+	c = c.lerp(LICHEN, smoothstep(0.6, 0.72, Sculpt.noise(p * 13.0 + Vector3(4, 1, 7))) * 0.45)
 	return c.lerp(grave_moss(p, n, 0.0, 0.0), smoothstep(0.55, 0.9, n.y + Sculpt.fbm(p * 4.0) * 0.6) * 0.45)
 
 
 ## Grave moss: dull dark green going grey, not the bright moss of the forest.
 static func grave_moss(p: Vector3, n: Vector3, _v: float, _w: float) -> Color:
-	return moss_color(p).darkened(0.3).lerp(Color("#4a5040"), 0.45).darkened(clampf(-n.y, 0.0, 1.0) * 0.3)
+	return Color("#262c22").lerp(Color("#59624a"), clampf(Sculpt.fbm(p * 12.0) * 0.9 + 0.45, 0.0, 1.0)).darkened(clampf(-n.y, 0.0, 1.0) * 0.3)
 
 
 ## Chitin: dark earthy brown-grey, a little paler on top, with faint pale bands.
 static func chitin(p: Vector3, n: Vector3, v: float, _w: float) -> Color:
 	var c := Color("#221e1c").lerp(Color("#554c44"), clampf(n.y * 0.3 + 0.3 + Sculpt.fbm(p * 9.0) * 0.35, 0.0, 1.0))
 	return c.lerp(Color("#8a7e6c"), smoothstep(0.82, 0.95, sin(v * 18.0)) * 0.3)
+
+
+## Chitin banded pale and dark along a leg, like many real assassin bugs.
+static func banded(p: Vector3, n: Vector3, v: float, w: float) -> Color:
+	return chitin(p, n, v, w).lerp(Color("#a89a7c"), smoothstep(0.55, 0.8, sin(v * 13.0 + 1.0)) * 0.55)
 
 
 static func bone(p: Vector3, n: Vector3, _v: float, _w: float) -> Color:
@@ -95,6 +100,17 @@ func headstone(s: Sculpt, painter: int, cut: int, c: Vector3, size: Vector3, b: 
 	var face := c + b * Vector3(0, size.y * 0.1, -size.z * 0.52)
 	s.tube([face + b * Vector3(0, size.y * 0.25, 0), face + b * Vector3(0, -size.y * 0.25, 0)], [size.x * 0.05, size.x * 0.05], cut, {"sides": 4, "per": 1})
 	s.tube([face + b * Vector3(-size.x * 0.18, size.y * 0.1, 0), face + b * Vector3(size.x * 0.18, size.y * 0.1, 0)], [size.x * 0.05, size.x * 0.05], cut, {"sides": 4, "per": 1})
+
+
+## A carved stone angel's wing broken off a grave monument: a fan of long feathers.
+func stone_wing(s: Sculpt, painter: int, root_at: Vector3, b: Basis, size: float) -> void:
+	s.blob(root_at, Vector3(0.09, 0.05, 0.07) * size, painter, {"lat": 5, "lon": 8, "basis": b})
+	for k in range(6):
+		var a := lerpf(-0.3, 1.0, k / 5.0)
+		var l := (0.42 - k * 0.04) * size
+		var d := b * Vector3(cos(a), sin(a) * 0.6, 0.0)
+		var tip := root_at + d * l
+		s.tube([root_at, root_at.lerp(tip, 0.5) + b * Vector3(0, 0.02 * size, 0), tip], [0.045 * size, 0.04 * size, 0.008], painter, {"sides": 6, "per": 2, "flat": 0.4, "side": b * Vector3(0, 0, 1), "cap1": false})
 
 
 ## A small skull lying at `c`, facing `fwd`.
@@ -146,7 +162,29 @@ func _assassin() -> Node3D:
 		pile.tube([a, b], [0.016, 0.016], bn, {"sides": 5, "per": 1})
 		pile.blob(a, Vector3.ONE * 0.024, bn, {"lat": 3, "lon": 5}); pile.blob(b, Vector3.ONE * 0.024, bn, {"lat": 3, "lon": 5})
 	moss_collar(pile, mo, Vector3(0, 0.7, 0.22), 0.36, 12, 0.08)
+	stone_wing(pile, sp, Vector3(-0.26, 0.82, 0.46), Basis(Vector3.UP, 2.4) * Basis(Vector3.BACK, 0.5), 1.0)
+	var drips: Array = []
+	for k in range(14):
+		var a := TAU * k / 14.0
+		drips.append(Vector3(sin(a) * 0.4, 0.6, 0.22 + cos(a) * 0.52))
+	hanging(pile, mo, drips, 0.16, 0.02, Vector3.ZERO)
+	# A little iron grave lantern hanging from the cross on a chain, a ghost-light candle in it.
+	var arm_end := Vector3(0.38, 1.05, 0.56)
+	pile.tube([arm_end, arm_end + Vector3(0, -0.1, 0)], [0.006, 0.006], rust, {"sides": 4, "per": 1})
+	var lc := arm_end + Vector3(0, -0.17, 0)
+	for k in range(4):
+		var a := TAU * k / 4.0 + 0.4
+		pile.tube([lc + Vector3(cos(a) * 0.04, 0.06, sin(a) * 0.04), lc + Vector3(cos(a) * 0.04, -0.06, sin(a) * 0.04)], [0.006, 0.006], rust, {"sides": 4, "per": 1})
+	pile.blob(lc + Vector3(0, 0.07, 0), Vector3(0.055, 0.02, 0.055), rust, {"lat": 4, "lon": 8})
+	pile.crystal(lc + Vector3(0, 0.08, 0), Vector3.UP, 0.04, 0.05, rust, 4)
+	pile.blob(lc + Vector3(0, -0.065, 0), Vector3(0.05, 0.012, 0.05), rust, {"lat": 3, "lon": 8})
 	part(root, "Heap", pile)
+	var flame := Sculpt.new(); var fl := flame.add_painter(func (p, n, v, w): return Color.WHITE)
+	flame.blob(lc + Vector3(0, -0.02, 0), Vector3(0.018, 0.04, 0.018), fl, {"lat": 4, "lon": 6})
+	flame.crystal(lc + Vector3(0, 0.01, 0), Vector3.UP, 0.035, 0.014, fl, 5)
+	part(root, "GraveLight", flame, glow).material_override = glow
+	var lamp := OmniLight3D.new(); lamp.name = "GraveLantern"; lamp.light_color = Color("#b8ffc0"); lamp.light_energy = 0.9; lamp.omni_range = 2.0
+	root.add_child(lamp); lamp.position = lc
 	# The head: narrow and long on a neck, bulging eyes, elbowed antennae, a curved beak.
 	var head := joint(root, "Head", Vector3(0, 0.56, -0.5))
 	var hs := Sculpt.new(); var hp := hs.add_painter(chitin)
@@ -154,12 +192,13 @@ func _assassin() -> Node3D:
 	var eye_at: Array = []
 	for side: float in [-1.0, 1.0]:
 		hs.blob(Vector3(0.065 * side, 0.6, -0.66), Vector3(0.04, 0.045, 0.045), hs.add_painter(func (p, n, v, w): return Color("#120e0c")), {"lat": 5, "lon": 8})
-		eye_at.append(Vector3(0.09 * side, 0.61, -0.68))
+		eye_at.append(Vector3(0.075 * side, 0.605, -0.665))
+		hs.blob(Vector3(0.045 * side, 0.585, -0.57), Vector3(0.04, 0.045, 0.05), hp, {"lat": 5, "lon": 8})
 		var ab := Vector3(0.03 * side, 0.6, -0.78)
 		hs.tube([ab, ab + Vector3(0.03 * side, 0.12, -0.1), ab + Vector3(0.06 * side, 0.22, -0.2)], [0.012, 0.01, 0.009], hp, {"sides": 5, "per": 2})
 		antenna(hs, hp, ab + Vector3(0.06 * side, 0.22, -0.2), Vector3(0.4 * side, -0.1, -1.0), 0.4, 0.008, 0.25)
 	part(head, "Head", hs)
-	var core := _eyes(head, eye_at, 0.018)
+	var core := _eyes(head, eye_at, 0.038)
 	var beak := joint(head, "Beak", Vector3(0, 0.55, -0.78))
 	var ks := Sculpt.new(); var kp := ks.add_painter(chitin)
 	ks.tube([Vector3(0, 0.55, -0.78), Vector3(0, 0.5, -0.84), Vector3(0, 0.44, -0.8), Vector3(0, 0.42, -0.72)], [0.022, 0.018, 0.014, 0.004], kp, {"sides": 6, "per": 3, "cap1": false})
@@ -169,16 +208,26 @@ func _assassin() -> Node3D:
 	var rows := [[-0.36, -0.9, 0.8, 0.05], [-0.2, -0.1, 0.78, 0.042], [0.05, 0.7, 0.88, 0.042]]
 	for r: Array in rows:
 		for side: float in [-1.0, 1.0]:
+			var front: bool = r[0] < -0.3
 			var at := Vector3(0.14 * side, 0.48, r[0])
 			var o := Vector3(side, 0, float(r[1]) * 0.6).normalized()
 			var reach: float = r[2]
-			var kn := at + o * reach * 0.42 + Vector3(0, 0.22, 0)
-			var ft := at + o * reach + Vector3(0, -0.47, 0)
-			var mid := kn.lerp(ft, 0.6) + o * 0.05
 			var th: float = r[3]
-			var leg := jleg(root, "Leg%d" % hips.size(), [at, kn, mid, ft], [th, th * 0.9, th * 0.7, th * 0.4], chitin)
+			var kn := at + o * reach * 0.42 + Vector3(0, 0.22, 0)
+			var ankle := at + o * reach * 0.92 + Vector3(0, -0.42, 0)
+			var toe := ankle + o * 0.12 + Vector3(0, -0.05, 0)
+			if front:
+				# Held up and forward, ready to seize.
+				kn = at + Vector3(0.22 * side, 0.18, -0.18)
+				ankle = kn + Vector3(0.04 * side, -0.32, -0.22)
+				toe = ankle + Vector3(-0.02 * side, 0.02, -0.12)
+			var leg := jleg(root, "Leg%d" % hips.size(), [at, kn, ankle, toe], [th * 1.2, th * 1.1, th * 0.6, th * 0.35], banded)
 			hips.append(leg[0]); knees.append(leg[1])
-			if r[0] < -0.3: pincers.append(leg[1])
+			if front:
+				var fs := Sculpt.new(); var fpp := fs.add_painter(chitin)
+				for q in range(5): fs.crystal(at.lerp(kn, 0.2 + q * 0.16) + Vector3(0, -0.03, -0.02), Vector3(0, -0.6, -1.0), 0.05, 0.01, fpp, 4)
+				part(leg[0], "Spines", fs)
+				pincers.append(leg[1])
 	var node := _finish({"head": head, "core": core, "arms": [], "forearms": [], "feet": hips, "knees": knees, "leaves": []}, 1.6)
 	return _rig(node, head, hips, knees, beak, [], pincers)
 
@@ -200,7 +249,22 @@ func _mantis() -> Node3D:
 	# A ridge of stone knobs along the neck, as if it too were carved.
 	for k in range(5): body.rock(Vector3(0, 0.62 + k * 0.08, -0.3 - k * 0.055), Vector3(0.035, 0.025, 0.03), body.add_painter(grave_stone), {"seed": k})
 	body.blob(Vector3(0, 0.66, -0.33), Vector3(0.1, 0.05, 0.08), bp, {"lat": 5, "lon": 8})
+	# Ragged lobes down the sides of the abdomen, like a ghost mantis's.
+	for k in range(6):
+		var t := (k + 0.5) / 6.0
+		var c: Vector3 = ab[0].lerp(ab[6], t)
+		for side: float in [-1.0, 1.0]:
+			body.blob(c + Vector3((0.15 * sin(PI * (0.2 + 0.7 * t)) * 1.3 + 0.02) * side, -0.04, 0), Vector3(0.05, 0.012, 0.06), bp, {"lat": 3, "lon": 7, "basis": Basis(Vector3.BACK, 0.4 * side), "lump": 0.4})
 	part(root, "Body", body)
+	# A broad shield of carved stone over the shoulders (the pronotum), like a shield mantis's.
+	var shield := Sculpt.new(); var shp := shield.add_painter(grave_stone); var shc := shield.add_painter(func (p, n, v, w): return Color("#33332f"))
+	var sb := Basis(Vector3.RIGHT, 0.9)
+	var sc := Vector3(0, 0.81, -0.35)
+	shield.blob(sc, Vector3(0.15, 0.025, 0.2), shp, {"lat": 6, "lon": 12, "basis": sb, "lump": 0.15})
+	shield.tube([sc + sb * Vector3(0, 0.026, -0.15), sc + sb * Vector3(0, 0.026, 0.15)], [0.008, 0.008], shc, {"sides": 4, "per": 1})
+	shield.tube([sc + sb * Vector3(-0.07, 0.024, -0.06), sc + sb * Vector3(0.07, 0.024, -0.06)], [0.008, 0.008], shc, {"sides": 4, "per": 1})
+	for side: float in [-1.0, 1.0]: shield.crystal(sc + sb * Vector3(0.14 * side, 0.0, 0.02), sb * Vector3(side, 0.2, 0.1), 0.06, 0.018, shp, 4)
+	part(root, "Shield", shield)
 	# The wing-cases: two long slabs of grave stone folded over the back, overlapping.
 	var wings := Sculpt.new(); var wp := wings.add_painter(grave_stone); var cut := wings.add_painter(func (p, n, v, w): return Color("#33332f"))
 	for side: float in [-1.0, 1.0]:
@@ -212,6 +276,18 @@ func _mantis() -> Node3D:
 			var z := 0.05 + k * 0.22
 			wings.tube([Vector3(0.03 * side, 0.705, z), Vector3(0.13 * side, 0.66, z + 0.14)], [0.008, 0.006], cut, {"sides": 4, "per": 1})
 	moss_clump(wings, wings.add_painter(grave_moss), Vector3(0.0, 0.72, 0.5), 0.08, 5)
+	var drips: Array = []
+	for k in range(8): drips.append(Vector3((0.18 + 0.02 * (k % 2)) * (-1.0 if k % 2 == 0 else 1.0), 0.64, 0.05 + k * 0.1))
+	hanging(wings, wings.add_painter(grave_moss), drips, 0.14, 0.016, Vector3.ZERO)
+	# Torn hind wings, dark as a shroud, fanned half out from under the stone.
+	var hw := Sculpt.new(); var hwp := hw.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#1c1a22").lerp(Color("#4a4458"), clampf(Sculpt.fbm(p * 8.0) * 0.6 + 0.3, 0.0, 1.0)))
+	for side: float in [-1.0, 1.0]:
+		for k in range(4):
+			var a := 0.35 + k * 0.22
+			var d := Vector3(sin(a) * side, 0.15, cos(a)).normalized()
+			var b0 := Vector3(0.1 * side, 0.66, 0.0)
+			hw.tube([b0, b0 + d * 0.3 + Vector3(0, 0.02, 0), b0 + d * 0.55 + Vector3(0, -0.04, 0)], [0.07, 0.06, 0.004], hwp, {"sides": 5, "per": 2, "flat": 0.12, "side": Vector3.UP, "cap1": false, "lump": 0.4})
+	part(root, "HindWings", hw)
 	part(root, "WingCases", wings)
 	# The triangle head with huge eyes, mandibles and two thin antennae.
 	var head := joint(root, "Head", Vector3(0, 1.0, -0.58))
@@ -224,6 +300,10 @@ func _mantis() -> Node3D:
 		eye_at.append(Vector3(0.108 * side, 1.065, -0.628))
 		antenna(hs, hp, Vector3(0.025 * side, 1.08, -0.66), Vector3(0.3 * side, 1.0, -0.6), 0.45, 0.006, 0.4)
 		hs.crystal(Vector3(0.02 * side, 0.92, -0.67), Vector3(-0.3 * side, -1, -0.2), 0.04, 0.012, hp, 4)
+	# A tall crest of stone rising from the crown, like a conehead mantis's, forked at the tip.
+	var hst := hs.add_painter(grave_stone)
+	hs.tube([Vector3(0, 1.08, -0.6), Vector3(0, 1.2, -0.56), Vector3(0, 1.3, -0.5)], [0.04, 0.03, 0.018], hst, {"sides": 7, "per": 2, "flat": 0.5, "side": Vector3.RIGHT, "lump": 0.2})
+	for side: float in [-1.0, 1.0]: hs.crystal(Vector3(0, 1.3, -0.5), Vector3(0.5 * side, 1.0, 0.3), 0.07, 0.016, hst, 4)
 	part(head, "Head", hs)
 	var core := _eyes(head, eye_at, 0.056)
 	# The raptorial forelegs folded under the head, spiked, on their own joints so they unfold.
@@ -249,15 +329,19 @@ func _mantis() -> Node3D:
 		part(hinge, "Tibia", ts)
 		pincers.append(hinge)
 	# Four long thin walking legs.
-	for r: Array in [[-0.12, -0.2, 0.8], [0.02, 0.8, 0.95]]:
+	for r: Array in [[-0.12, -0.2, 0.72], [0.02, 0.8, 0.86]]:
 		for side: float in [-1.0, 1.0]:
 			var at := Vector3(0.08 * side, 0.5, r[0])
 			var o := Vector3(side, 0, float(r[1])).normalized()
 			var reach: float = r[2]
 			var kn := at + o * reach * 0.42 + Vector3(0, 0.25, 0)
 			var ft := at + o * reach + Vector3(0, -0.49, 0)
-			var leg := jleg(root, "Leg%d" % hips.size(), [at, kn, kn.lerp(ft, 0.7), ft], [0.034, 0.03, 0.02, 0.01], chitin)
+			var leg := jleg(root, "Leg%d" % hips.size(), [at, kn, kn.lerp(ft, 0.7), ft], [0.045, 0.04, 0.026, 0.012], chitin)
 			hips.append(leg[0]); knees.append(leg[1])
+			# Flat lobes of stone on the thighs.
+			var lf := Sculpt.new(); var lfp := lf.add_painter(grave_stone)
+			lf.blob(at.lerp(kn, 0.55) + Vector3(0, 0.03, 0), Vector3(0.05, 0.012, 0.09), lfp, {"lat": 4, "lon": 7, "basis": Basis.looking_at((kn - at).normalized(), Vector3.UP), "lump": 0.4})
+			part(leg[0], "Lobe", lf)
 	var node := _finish({"head": head, "core": core, "arms": [], "forearms": [], "feet": hips, "knees": knees, "leaves": []}, 1.8)
 	return _rig(node, head, hips, knees, null, [], pincers)
 
