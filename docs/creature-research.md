@@ -110,3 +110,8 @@ monster should stand clearly bigger than him.
 - Deer have no upper front teeth; the cheek teeth (premolars and molars) sit in rows along the back of the jaw.
 - The withers are high because the vertebrae over the shoulders have tall spines. The pelvis wings and the shoulder blades show through a starving animal's hide.
 - The antlers follow a "royal" red-deer head (brow, bez and trez tines, then a crown). Stags shed the velvet in late summer and it peels off in long, bloody strips.
+
+## Hollow Hound and Shadow Wolf (Hollowmourn)
+- Hollow Hound: Black Shuck, the "church grim" of East Anglian folklore, a huge shaggy black dog with eyes like burning saucers; the barghest of northern England drags a chain. Its build follows the Irish wolfhound: very tall, long-legged and deep-chested, with a long head and a wiry coat that forms a beard and eyebrows.
+- Shadow Wolf: built on the grey wolf (long legs, deep narrow chest, pointed ears, a long bushy tail), made of shadow so its skull, ribs, spine and leg bones show inside.
+- Considered but not used: the thylacine (Tasmanian tiger), extinct since 1936. It had 13-21 dark bands across the back and rump, a stiff tail thick at the root, and jaws that could gape very wide.

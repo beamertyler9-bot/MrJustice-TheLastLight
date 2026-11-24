@@ -11840,7 +11840,15 @@
       "region": 14,
       "kind": "hostile",
       "boss": false,
-      "hook": "Ribbed shadow silhouette and smoky paws; breath fog and a low growl reveal its approach."
+      "hook": "Black Shuck, a huge shaggy black hound with glowing saucer eyes and a broken chain hanging from its iron collar; smoky paws, breath fog and a low growl reveal its approach."
+    },
+    {
+      "id": "shadow_wolf",
+      "name": "Shadow Wolf",
+      "region": 14,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "A wolf made of shadow and smoke, its skull, ribs and spine showing dimly inside it; smoky paws, breath fog and a low growl reveal its approach."
     },
     {
       "id": "grave_creeper",
