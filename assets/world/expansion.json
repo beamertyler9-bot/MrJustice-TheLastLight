@@ -11571,12 +11571,20 @@
       "hook": "Giant bristly antlion larva; lies buried in the sand with only its sickle jaws showing, then bursts out to seize."
     },
     {
-      "id": "sandswim_skink",
-      "name": "Sandswim Skink",
+      "id": "dune_monitor",
+      "name": "Dune Monitor",
       "region": 12,
       "kind": "hostile",
       "boss": false,
-      "hook": "Huge glossy sandfish skink with a shovel snout; swims through the dunes and lunges with a gaping, toothy jaw."
+      "hook": "Giant desert monitor lizard with a long neck, heavy claws and a forked tongue; tastes the air, then lunges."
+    },
+    {
+      "id": "thorn_devil",
+      "name": "Thorn Devil",
+      "region": 12,
+      "kind": "wildlife",
+      "boss": false,
+      "hook": "Broad, flat, peaceful lizard armoured in thorns, with a crown of horns and a spiked false head; ambles between thorn shrubs licking up ants."
     },
     {
       "id": "sunken_sentinel",

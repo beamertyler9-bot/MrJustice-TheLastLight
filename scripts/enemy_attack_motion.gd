@@ -91,7 +91,7 @@ const DATA = {
 	"dune_maw": [0.74, 0.12,
 		[Vector3(-0.45, 0, -0.17), Vector3(-0.48, -0.35, 0.15), Vector3(0.25, -0.6, -0.4), Vector3(0.75, 0.2, 0.3), Vector3(-0.55, -0.25, 0), Vector3(0, -0.065, 0.07), Vector3(-0.1, -0.1, 0)],
 		[Vector3(0.38, 0, 0.18), Vector3(0.65, 0.28, -0.12), Vector3(0.9, 0.35, -0.15), Vector3(0.35, -0.5, 0.4), Vector3(-0.15, -0.5, 0), Vector3(0, 0.09, -0.13), Vector3(0.1, 0.1, 0)]],
-	"sandswim_skink": [0.56, 0.04,
+	"dune_monitor": [0.56, 0.04,
 		[Vector3(0.05, 0, 0), Vector3(0.22, 0, 0), Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3(0, 0, 0.1), Vector3(0.1, -0.1, 0)],
 		[Vector3(-0.06, 0, 0), Vector3(-0.12, 0, 0), Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3(0, -0.02, -0.3), Vector3(-0.15, 0.15, 0)]],
 	"sunken_sentinel": [0.7, 0.11,
