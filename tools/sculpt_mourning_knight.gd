@@ -418,10 +418,13 @@ func _knight() -> Node3D:
 		var hn := Sculpt.new(); var hnp := hn.add_painter(horn); var tn := hn.add_painter(black_steel)
 		for side: float in [-1.0, 1.0]:
 			var pts: Array = []; var rr: Array = []
-			for k in range(10):
-				var t := k / 9.0
-				pts.append(Vector3((0.1 + 0.13 * t - 0.04 * t * t) * side, hy + 0.06 + 0.34 * t - 0.1 * t * t, -0.01 + 0.08 * t + 0.32 * t * t))
-				rr.append(lerpf(0.036, 0.003, pow(t, 0.8)))
+			# A ram's curl: back from the temple, round and down, the tip turning forward by the cheek.
+			for k in range(14):
+				var t := k / 13.0
+				var ang := lerpf(PI * 0.55, PI * 1.85, t)
+				var r := lerpf(0.1, 0.045, t)
+				pts.append(Vector3((0.105 + 0.1 * t) * side, hy - 0.01 + r * sin(ang), 0.05 - r * cos(ang)))
+				rr.append(lerpf(0.034, 0.006, pow(t, 0.9)))
 			hn.tube(pts, rr, hnp, {"sides": 8, "per": 2, "cap1": false, "ridges": 0})
 		for k in range(13):
 			var a := TAU * k / 13.0
@@ -670,7 +673,12 @@ func _knight() -> Node3D:
 			var a := TAU * k / 14.0
 			var at := Vector3(sin(a) * 0.22, 0.02, cos(a) * 0.2 - 0.04)
 			gf.tube([at, at + Vector3(0.02 * sin(k), 0.12, 0.02 * cos(k)), at + Vector3(0.04 * sin(k * 1.7), 0.22 + 0.06 * (k % 3), 0.0)], [0.045, 0.03, 0.002], gfp, {"sides": 6, "per": 2, "cap1": false})
-		for at: Vector3 in [Vector3(0, 1.52, 0.0), Vector3(0.24, 1.36, 0.0), Vector3(-0.24, 1.36, 0.0), Vector3(0, 0.95, 0.0)]:
+		for sh: Node3D in arms:
+			var sf := Sculpt.new(); var sfp := sf.add_painter(ghost_fire)
+			var at := _world(sh) + Vector3(0, -0.06, 0)
+			for k in range(3): sf.tube([at, at + Vector3(0.03 * (k - 1), 0.1, 0.02), at + Vector3(0.05 * (k - 1), 0.18, 0.05)], [0.03, 0.02, 0.002], sfp, {"sides": 6, "per": 2, "cap1": false})
+			part(sh, "GhostFire", sf, fire_mat)
+		for at: Vector3 in [Vector3(0, 1.52, 0.0), Vector3(0, 0.95, 0.0)]:
 			for k in range(3): gf.tube([at, at + Vector3(0.03 * (k - 1), 0.1, 0.02), at + Vector3(0.05 * (k - 1), 0.18, 0.05)], [0.03, 0.02, 0.002], gfp, {"sides": 6, "per": 2, "cap1": false})
 		part(root, "GhostFire", gf, fire_mat)
 	var scale := 1.42 if not black else 1.55
