@@ -38,6 +38,7 @@ const DESIGNS := {
 	"pit_antlion": ["res://tools/sculpt_dune_maw.gd", "antlion"],
 	"dune_monitor": ["res://tools/sculpt_sand_lizard.gd", "monitor"],
 	"thorn_devil": ["res://tools/sculpt_sand_lizard.gd", "devil_wild", "wild"],
+	"obelisk_scorpion": ["res://tools/sculpt_obelisk_scorpion.gd", "fattail"],
 }
 
 

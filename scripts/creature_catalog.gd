@@ -72,6 +72,7 @@ const SIZES = {"cocoa_knight": {"radius": 0.6, "height": 2.6, "reach": 2.6}, "fu
 	"dune_maw": {"radius": 0.7, "height": 1.5, "reach": 3.2, "hp": 7, "front_max": 2.0},
 	"pit_antlion": {"radius": 0.8, "height": 1.4, "reach": 3.3, "hp": 6, "front_max": 2.4},
 	"dune_monitor": {"radius": 0.7, "height": 1.5, "reach": 3.4, "hp": 6, "front_max": 2.3},
+	"obelisk_scorpion": {"radius": 0.75, "height": 1.8, "reach": 3.0, "hp": 6, "front_max": 2.1},
 }
 ## Ambushers lie still, disguised (a rock, a chest), until Mr. Justice comes within `trigger`
 ## metres; then they rise `sink` metres out of the ground on their legs and fight.
