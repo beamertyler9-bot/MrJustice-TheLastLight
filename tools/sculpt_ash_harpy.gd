@@ -25,6 +25,8 @@ func _init() -> void:
 	smoke_mat.vertex_color_use_as_albedo = true
 	smoke_mat.roughness = 1.0
 	feather_mat.vertex_color_is_srgb = true
+	material.albedo_texture = load("res://assets/cast/stone_detail_soft.png")
+	material.uv1_scale = Vector3(4.0, 4.0, 4.0)
 	feather_mat.albedo_color = Color(0.55, 0.55, 0.55)
 
 
@@ -57,8 +59,9 @@ func ember_feather(base: Color, bar: Color, bars: float, ember := 0.85) -> Calla
 ## Bare skin, charred black and cracked, with coals glowing in the cracks.
 static func charred_skin(p: Vector3, n: Vector3, _v: float, _w: float) -> Color:
 	var c := Color("#191312").lerp(Color("#3e2c28"), clampf(n.y * 0.3 + 0.3 + Sculpt.fbm(p * 18.0) * 0.4, 0.0, 1.0))
-	var crack := absf(Sculpt.noise(p * Vector3(28.0, 18.0, 28.0)))
-	return c.lerp(Color("#ff6a1a"), smoothstep(0.06, 0.015, crack))
+	var crack := absf(Sculpt.noise(p * Vector3(22.0, 14.0, 22.0)))
+	c = c.lerp(Color("#7a1e08"), smoothstep(0.12, 0.05, crack))
+	return c.lerp(Color("#ff8a2a"), smoothstep(0.045, 0.01, crack))
 
 
 static func wisp(p: Vector3, n: Vector3, v: float, _w: float) -> Color:
@@ -83,6 +86,37 @@ func bird_body(paint: Callable, feather_paint: Callable, length: float, girth: f
 			var base := Vector3(0, y0, z) + Vector3(radial.x * radius * 0.85, radial.y * radius, 0)
 			feather(body, cp, base, radial * 0.25 + Vector3(0, 0, 1.0), 0.17, 0.06, radial, 0.06, 1)
 	return body
+
+
+## A vulture's wing: long and broad, the primaries at the tip spread apart like fingers and
+## curling up, the trailing edge ragged where feathers have burnt away; ember tips glowing.
+func finger_wing(side: float, shoulder: Vector3, span: float, chord: float, arm_paint: Callable, primary: Callable, secondary: Callable, covert: Callable) -> Node3D:
+	var node := joint(root, "%sWing" % ("Left" if side < 0 else "Right"), shoulder)
+	var s := Sculpt.new()
+	var ap := s.add_painter(arm_paint); var pp := s.add_painter(primary); var sp := s.add_painter(secondary); var cp := s.add_painter(covert)
+	var up := Vector3.UP
+	var elbow := shoulder + Vector3(side * span * 0.3, 0.03, 0.05)
+	var wrist := shoulder + Vector3(side * span * 0.6, 0.02, -0.02)
+	var hand := shoulder + Vector3(side * span * 0.72, 0.01, 0.0)
+	s.tube([shoulder, elbow, wrist, hand], [0.08, 0.06, 0.045, 0.03], ap, {"sides": 7, "per": 3, "flat": 0.6, "side": up})
+	# Seven "fingers": long primaries fanned wide with gaps between them, tips curling up.
+	for k in range(7):
+		var t := k / 6.0
+		var base := wrist.lerp(hand, t)
+		var dir := Vector3(side * (1.0 - t * 0.7), 0.04, -0.05 + t * 0.95)
+		feather(s, pp, base, dir, chord * (1.05 + sin(t * PI) * 0.25), chord * 0.13, up, 0.12)
+	# Secondaries along the forearm, some burnt short and ragged.
+	for k in range(12):
+		var t := k / 11.0
+		var base := shoulder.lerp(wrist, 0.1 + t * 0.9) + Vector3(0, 0.005, 0)
+		var burnt := 0.65 if (k * 7) % 5 == 0 else 1.0
+		feather(s, sp, base, Vector3(side * 0.1, -0.02, 1.0), chord * (0.95 - t * 0.12) * burnt, chord * 0.2, up, -0.03)
+	for k in range(12):
+		var t := k / 11.0
+		var base := shoulder.lerp(hand, 0.06 + t * 0.9) + Vector3(0, 0.02, -0.02)
+		feather(s, cp, base, Vector3(side * (0.2 + t * 0.35), -0.04, 1.0), chord * 0.45, chord * 0.2, up, -0.02)
+	part(node, "Wing", s, feather_mat)
+	return node
 
 
 ## A broad tail fan of `count` feathers.
@@ -175,14 +209,17 @@ func _eagle() -> Node3D:
 
 func _harpy() -> Node3D:
 	_eyes(Color("#ff5a1a"))
-	var skin := func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#3e3734").lerp(Color("#77695f"), clampf(n.y * 0.4 + 0.4 + Sculpt.fbm(p * 14.0) * 0.3, 0.0, 1.0)).darkened(smoothstep(0.6, 0.75, Sculpt.noise(p * 40.0)) * 0.25)
+	var skin := func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#4a4642").lerp(Color("#9c958c"), clampf(n.y * 0.45 + 0.45 + Sculpt.fbm(p * 14.0) * 0.3, 0.0, 1.0)).darkened(smoothstep(0.55, 0.75, Sculpt.noise(p * 40.0)) * 0.3).lerp(Color("#1a1412"), smoothstep(0.1, 0.5, Sculpt.fbm(p * 5.0 + Vector3(2, 9, 4))) * 0.35)
 	var body := bird_body(soot, ember_feather(Color("#2a2726"), Color("#4e4a48"), 0.0, 1.2), 1.0, 1.1, Vector3(0, 1.32, -0.56))
 	# A gaunt bare chest and collarbones where the feathers stop, the ribs showing.
 	var bs := body.add_painter(skin)
-	body.blob(Vector3(0, 1.12, -0.42), Vector3(0.17, 0.14, 0.12), bs, {"lat": 8, "lon": 12})
-	for k in range(4):
-		var y := 1.17 - k * 0.04
-		body.tube([Vector3(-0.15, y, -0.4), Vector3(0, y - 0.02, -0.53), Vector3(0.15, y, -0.4)], [0.01, 0.012, 0.01], bs, {"sides": 5, "per": 2, "cap_rings": 1})
+	# A bony neck with the collarbones standing out, and a ragged ruff where the feathers start.
+	body.tube([Vector3(0, 1.22, -0.44), Vector3(0, 1.28, -0.52), Vector3(0, 1.32, -0.56)], [0.075, 0.06, 0.055], bs, {"sides": 10, "per": 2, "bands": 4, "band": 0.15})
+	var rf := body.add_painter(ember_feather(Color("#1e1b1a"), Color("#3a3634"), 0.0, 0.86))
+	for k in range(16):
+		var a := TAU * k / 16.0
+		var out := Vector3(cos(a), sin(a) * 0.9, 0.0)
+		feather(body, rf, Vector3(0, 1.17, -0.4) + out * 0.15, out * 0.7 + Vector3(0, 0, 0.7), 0.17 + 0.05 * (k % 3), 0.045, Vector3(0, 0, 1).cross(out).normalized(), 0.15)
 	part(root, "Body", body)
 	var head := joint(root, "Head", Vector3(0, 1.32, -0.56))
 	var hs := Sculpt.new(); var hp := hs.add_painter(skin)
@@ -212,7 +249,10 @@ func _harpy() -> Node3D:
 		var at := Vector3(sin(a) * 0.1, 1.52 + cos(a) * 0.05 - absf(a) * 0.03, -0.64 + fposmod(k * 0.29, 1.0) * 0.12)
 		var l := 0.28 + 0.25 * fposmod(k * 0.37, 1.0)
 		var wob := 0.04 * sin(k * 2.3)
-		hs.tube([at, at + Vector3(sin(a) * 0.09 + wob, 0.05, l * 0.35), at + Vector3(sin(a) * 0.15 - wob, -0.04, l * 0.7), at + Vector3(sin(a) * 0.2 + wob, -0.18, l)], [0.03, 0.024, 0.014, 0.002], hair, {"sides": 5, "per": 2, "cap1": false, "flat": 0.5, "lump": 0.4})
+		hs.tube([at, at + Vector3(sin(a) * 0.09 + wob, 0.05, l * 0.35), at + Vector3(sin(a) * 0.15 - wob, -0.04, l * 0.7), at + Vector3(sin(a) * 0.2 + wob, -0.18, l)], [0.026, 0.02, 0.012, 0.002], hair, {"sides": 5, "per": 2, "cap1": false, "flat": 0.3, "side": Vector3(cos(a), sin(a) * 0.3, 0).normalized(), "lump": 0.5})
+	for side: float in [-1.0, 1.0]:
+		# Long pointed ears swept back, ragged at the edge.
+		hs.tube([Vector3(0.095 * side, 1.44, -0.6), Vector3(0.14 * side, 1.48, -0.54), Vector3(0.18 * side, 1.53, -0.46)], [0.03, 0.02, 0.002], hp, {"sides": 6, "per": 2, "flat": 0.35, "side": Vector3(0.3, -1, 0.2).normalized(), "cap1": false})
 	part(head, "Head", hs)
 	var es := Sculpt.new(); var white := es.add_painter(func (p, n, v, w): return Color.WHITE)
 	for side: float in [-1.0, 1.0]: es.blob(Vector3(0.038 * side, 1.44, -0.703), Vector3(0.012, 0.009, 0.005), white, {"lat": 4, "lon": 7})
@@ -225,9 +265,9 @@ func _harpy() -> Node3D:
 	var wings: Array = []
 	for side: float in [-1.0, 1.0]:
 		var sh := Vector3(0.17 * side, 1.15, -0.32)
-		var w := feathered_wing(side, sh, 2.1, 0.85, soot, ember_feather(Color("#1e1c1c"), Color("#3a3634"), 0.0), ember_feather(Color("#2a2726"), Color("#4e4a48"), 0.0), ember_feather(Color("#3a3634"), Color("#5e5955"), 0.0, 1.2), 9, 0.1)
+		var w := finger_wing(side, sh, 2.3, 0.85, soot, ember_feather(Color("#141212"), Color("#2e2a2a"), 0.0, 0.8), ember_feather(Color("#221f1e"), Color("#3e3a38"), 0.0, 0.86), ember_feather(Color("#3a3634"), Color("#5e5955"), 0.0, 1.2))
 		var cs := Sculpt.new(); var cp := cs.add_painter(skin); var cl := cs.add_painter(func (p, n, v, w2): return Color("#1a1210"))
-		var wrist := sh + Vector3(side * 2.1 * 0.62, -0.03, -0.02)
+		var wrist := sh + Vector3(side * 2.3 * 0.6, 0.02, -0.02)
 		for f in range(3):
 			var dir := Vector3(side * 0.3, -0.2, -1.0).rotated(Vector3.UP, (f - 1) * 0.35 * side)
 			var mid := wrist + dir.normalized() * 0.09
@@ -247,15 +287,15 @@ func _vulture() -> Node3D:
 	var body := bird_body(soot, ember_feather(Color("#2a2523"), Color("#4a4240"), 0.0, 1.2), 1.0, 1.2, Vector3(0, 1.26, -0.6))
 	part(root, "Body", body)
 	# The ruff: a collar of long ash-grey feathers round the base of the bare neck.
-	var rs := Sculpt.new(); var rp := rs.add_painter(ember_feather(Color("#8a847e"), Color("#c4beb6"), 0.0, 0.9))
-	for k in range(18):
-		var a := TAU * k / 18.0
+	var rs := Sculpt.new(); var rp := rs.add_painter(ember_feather(Color("#6e6964"), Color("#a8a29c"), 0.0, 0.84))
+	for k in range(26):
+		var a := TAU * k / 26.0
 		var out := Vector3(cos(a), sin(a) * 0.9, 0.0)
-		feather(rs, rp, Vector3(0, 1.18, -0.42) + out * 0.13, out * 0.8 + Vector3(0, 0, 0.6), 0.16, 0.05, Vector3(0, 0, -1).cross(out).cross(out).normalized() * -1.0, 0.1)
+		feather(rs, rp, Vector3(0, 1.18, -0.42 + 0.03 * (k % 2)) + out * 0.13, out * 0.8 + Vector3(0, 0, 0.6), 0.15 + 0.05 * (k % 3), 0.045, Vector3(0, 0, -1).cross(out).cross(out).normalized() * -1.0, 0.1)
 	part(root, "Ruff", rs, feather_mat)
 	var head := joint(root, "Head", Vector3(0, 1.26, -0.6))
 	var hs := Sculpt.new(); var hp := hs.add_painter(charred_skin)
-	var beak := hs.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#8e8270").lerp(Color("#1e1915"), smoothstep(0.3, 0.9, v)))
+	var beak := hs.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#9a8460").lerp(Color("#3a2e22"), smoothstep(0.35, 0.95, v)).darkened(clampf(-n.y * 0.3, 0.0, 0.3)))
 	var dark := hs.add_painter(func (p, n, v, w): return Color("#0b0706"))
 	# A bare, wrinkled head and neck, with folds of skin (the lappets) hanging on the cheeks.
 	hs.tube([Vector3(0, 1.2, -0.48), Vector3(0, 1.25, -0.56), Vector3(0, 1.3, -0.62)], [0.07, 0.06, 0.07], hp, {"sides": 10, "per": 3, "bands": 6, "band": 0.12})
@@ -265,20 +305,20 @@ func _vulture() -> Node3D:
 		hs.blob(Vector3(0.055 * side, 1.36, -0.72), Vector3(0.024, 0.02, 0.016), dark, {"lat": 4, "lon": 7})
 		hs.blob(Vector3(0.05 * side, 1.385, -0.72), Vector3(0.036, 0.012, 0.03), hp, {"lat": 4, "lon": 7, "basis": Basis(Vector3.BACK, 0.35 * side)})
 	# A huge deep hooked beak.
-	hs.tube([Vector3(0, 1.34, -0.74), Vector3(0, 1.34, -0.84), Vector3(0, 1.31, -0.9), Vector3(0, 1.25, -0.9)], [0.055, 0.045, 0.025, 0.003], beak, {"sides": 8, "per": 3, "flat": 0.6, "side": Vector3.RIGHT, "cap_rings": 1})
+	hs.tube([Vector3(0, 1.34, -0.74), Vector3(0, 1.338, -0.82), Vector3(0, 1.31, -0.87), Vector3(0, 1.26, -0.865)], [0.048, 0.038, 0.022, 0.003], beak, {"sides": 8, "per": 3, "flat": 0.6, "side": Vector3.RIGHT, "cap_rings": 1})
 	part(head, "Head", hs)
 	var es := Sculpt.new(); var white := es.add_painter(func (p, n, v, w): return Color.WHITE)
-	for side: float in [-1.0, 1.0]: es.blob(Vector3(0.06 * side, 1.36, -0.732), Vector3(0.016, 0.014, 0.01), white, {"lat": 4, "lon": 7})
+	for side: float in [-1.0, 1.0]: es.blob(Vector3(0.06 * side, 1.36, -0.735), Vector3(0.019, 0.016, 0.01), white, {"lat": 4, "lon": 7})
 	var core := part(head, "GlowingEyes", es, glow); core.material_override = glow
 	var jaw := joint(head, "Jaw", Vector3(0, 1.3, -0.76))
-	var js := Sculpt.new(); var jb := js.add_painter(func (p, n, v, w): return Color("#bfb292"))
-	js.tube([Vector3(0, 1.3, -0.76), Vector3(0, 1.29, -0.86)], [0.035, 0.012], jb, {"sides": 7, "per": 2, "flat": 0.6, "side": Vector3.RIGHT, "cap_rings": 1})
+	var js := Sculpt.new(); var jb := js.add_painter(func (p, n, v, w): return Color("#8a7656"))
+	js.tube([Vector3(0, 1.3, -0.76), Vector3(0, 1.29, -0.84)], [0.032, 0.012], jb, {"sides": 7, "per": 2, "flat": 0.6, "side": Vector3.RIGHT, "cap_rings": 1})
 	part(jaw, "Jaw", js)
 	# Very long broad wings with spread "fingers" at the tips, burnt ragged and smoking.
 	var wings: Array = []
 	for side: float in [-1.0, 1.0]:
 		var sh := Vector3(0.18 * side, 1.13, -0.22)
-		var w := feathered_wing(side, sh, 2.5, 0.9, soot, ember_feather(Color("#1c1918"), Color("#2e2a28"), 0.0, 0.8), ember_feather(Color("#2a2523"), Color("#4a4240"), 0.0, 0.88), ember_feather(Color("#3a3432"), Color("#5a5250"), 0.0, 1.2), 8, 0.05)
+		var w := finger_wing(side, sh, 2.8, 0.95, soot, ember_feather(Color("#1c1918"), Color("#2e2a28"), 0.0, 0.8), ember_feather(Color("#2a2523"), Color("#4a4240"), 0.0, 0.86), ember_feather(Color("#3a3432"), Color("#5a5250"), 0.0, 1.2))
 		wings.append(w)
 	var legs := hanging_legs(soot, func (p, n, v, w): return Color("#8e8a84").lerp(Color("#5e5a54"), Sculpt.noise(p * 30.0) * 0.5 + 0.3), 0.95, 0.15, 0.7, false)
 	var tail := tail_fan(ember_feather(Color("#1c1918"), Color("#2e2a28"), 0.0, 0.85), 12, 0.42, 0.55, Vector3(0, 1.0, 0.42))
