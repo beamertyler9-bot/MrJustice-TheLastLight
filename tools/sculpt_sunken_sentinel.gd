@@ -2,13 +2,15 @@ extends "res://tools/creature_kit.gd"
 ## Temple guardians of the Sunspire Dunes, sculpted by hand: carved sandstone statues of an
 ## ancient desert temple, woken again. They carry no weapons. Each has a great gem set in its
 ## head that gathers light and fires it as a beam, and their joints glow as the light builds.
-## Built like real temple statues: an idealised body, a pleated kilt with a stiff apron and a
+## Built like real temple statues, which were painted: red-ochre skin and white linen, worn
+## back to bare stone in patches, with a pillar carved with signs down the back, an idealised body, a pleated kilt with a stiff apron and a
 ## carved belt, a broad beaded collar, gilded armbands and sandals, gilding worn through in
 ## patches. Three designs:
 ##   pharaoh - the Pharaoh Guardian: a royal face with kohl-lined eyes under a crisply striped
 ##             headdress with lappets, a false beard, and the gem set in a cobra on the brow
-##   lion    - the Lion Warden: a lion-headed statue (like the lioness goddesses of the temple
-##             walls) with a heavy carved ruff of mane, wearing a gilded sun disc with the gem
+##   lion    - the Lion Warden: a lion-headed statue in polished black granite, like the
+##             temple statues of the lioness goddess, with a carved ruff and mane lappets,
+##             gold-rimmed eyes and a gilded sun disc holding the gem
 ##   sunken  - the Sunken Sentinel: the oldest, scoured almost faceless by sand, cracked from
 ##             head to foot with light pouring out of the cracks, a shoulder broken away, rags
 ##             of linen hanging from it and the gem burning in its brow
@@ -43,12 +45,39 @@ func build(variant: String) -> Node3D:
 ## The sunken guardian is paler, scoured and pitted.
 func stone() -> Callable:
 	var worn := style == "sunken"
+	if style == "lion":
+		# Polished black granite flecked with grey and white crystals.
+		return func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+			var c := Color("#35353c").lerp(Color("#5a5a64"), clampf(Sculpt.fbm(p * 10.0) * 0.4 + 0.2 + n.y * 0.2, 0.0, 1.0))
+			c = c.lightened(smoothstep(0.55, 0.62, Sculpt.noise(p * 70.0)) * 0.35)
+			return c.lightened(smoothstep(0.7, 1.0, n.y) * 0.08)
 	return func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
 		var c := SANDSTONE.lerp(SANDSTONE_DARK, clampf(Sculpt.fbm(p * 12.0) * 0.25 + 0.15 - n.y * 0.2, 0.0, 1.0))
 		if worn:
 			c = c.lerp(Color("#e6d6b2"), smoothstep(0.2, 0.5, Sculpt.noise(p * 6.0)) * 0.4)
 			c = c.darkened(smoothstep(0.45, 0.6, Sculpt.noise(p * 40.0)) * 0.2)
 		return c
+
+
+## The statue's skin: red-ochre paint worn back to stone in patches (the sunken guardian keeps
+## only faint traces); the granite lion is left unpainted.
+func skin() -> Callable:
+	var base := stone()
+	if style == "lion": return base
+	var keep := 0.1 if style == "sunken" else 0.72
+	return func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+		var paint := Color("#a65a33").lerp(Color("#743a1f"), clampf(-n.y * 0.4 + Sculpt.fbm(p * 9.0) * 0.3 + 0.2, 0.0, 1.0)).lightened(smoothstep(0.6, 1.0, n.y) * 0.1)
+		return paint.lerp(base.call(p, n, v, w), smoothstep(keep - 0.06, keep + 0.04, Sculpt.fbm(p * 5.0 + Vector3(7, 1, 3)) + 0.5))
+
+
+## White linen paint for the kilt, worn through in places.
+func linen() -> Callable:
+	var base := stone()
+	if style == "lion": return base
+	var keep := 0.15 if style == "sunken" else 0.75
+	return func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+		var paint := Color("#ece4cf").darkened(clampf(-n.y * 0.3 + 0.05, 0.0, 0.3))
+		return paint.lerp(base.call(p, n, v, w), smoothstep(keep - 0.06, keep + 0.04, Sculpt.fbm(p * 5.0 + Vector3(2, 9, 4)) + 0.5))
 
 
 ## Gilding, rubbed through to the stone in patches.
@@ -132,14 +161,16 @@ func _guardian() -> Node3D:
 	var st := stone(); var gp := gilt()
 	var worn := style == "sunken"
 	lights = Sculpt.new(); lights_paint = lights.add_painter(func (p, n, v, w): return Color.WHITE)
-	var body := Sculpt.new(); var bp := body.add_painter(st); var bg := body.add_painter(gp)
+	var sk := skin()
+	var body := Sculpt.new(); var bp := body.add_painter(sk); var bg := body.add_painter(gp); var bst := body.add_painter(st)
+	var kilt := body.add_painter(linen())
 	var collar := body.add_painter(collar_rings(22.0))
 	var dark := body.add_painter(func (p, n, v, w): return SANDSTONE_DARK.darkened(0.25))
 	# The idealised body of a temple statue: broad shoulders, a deep chest and a narrow waist,
 	# carved chest and stomach muscles and the sweep of the back.
 	body.tube([Vector3(0, 0.98, 0.0), Vector3(0, 1.12, -0.01), Vector3(0, 1.3, 0.0), Vector3(0, 1.46, 0.01)], [0.105, 0.11, 0.135, 0.125], bp, {"sides": 18, "per": 3, "flat": 1.65})
 	for side in [-1.0, 1.0]:
-		body.blob(Vector3(0.085 * side, 1.34, -0.085), Vector3(0.095, 0.065, 0.055), bp, {"lat": 6, "lon": 9})
+		body.blob(Vector3(0.08 * side, 1.335, -0.09), Vector3(0.1, 0.055, 0.04), bp, {"lat": 6, "lon": 9})
 		body.blob(Vector3(0.16 * side, 1.3, 0.02), Vector3(0.07, 0.13, 0.09), bp, {"lat": 6, "lon": 9})
 		body.blob(Vector3(0.24 * side, 1.45, 0.0), Vector3(0.085, 0.075, 0.085), bp, {"lat": 6, "lon": 9})
 	for row in range(3):
@@ -151,11 +182,27 @@ func _guardian() -> Node3D:
 	# A carved belt with a gilded buckle panel, a pleated kilt and its stiff triangular apron.
 	body.tube([Vector3(0, 0.96, 0.0), Vector3(0, 1.0, 0.0)], [0.115, 0.115], bg, {"sides": 18, "per": 1, "flat": 1.6, "cap_rings": 1})
 	slab(body, bg, Vector3(0, 0.98, -0.11), Vector3(0.09, 0.06, 0.02), Basis.IDENTITY, 0.4, 0.0)
-	body.lathe(Vector3(0, 0.96, 0.0), [Vector2(0.16, 0.02), Vector2(0.19, -0.1), Vector2(0.235, -0.28), Vector2(0.24, -0.3), Vector2(0.0, -0.29)], bp, {"sides": 26, "basis": Basis.from_scale(Vector3(1.15, 1, 0.72))})
+	body.lathe(Vector3(0, 0.96, 0.0), [Vector2(0.16, 0.02), Vector2(0.19, -0.1), Vector2(0.235, -0.28), Vector2(0.24, -0.3), Vector2(0.0, -0.29)], kilt, {"sides": 26, "basis": Basis.from_scale(Vector3(1.15, 1, 0.72))})
 	for k in range(15):
 		var a := lerpf(-1.25, 1.25, k / 14.0)
 		body.tube([Vector3(sin(a) * 0.185, 0.94, -cos(a) * 0.12), Vector3(sin(a) * 0.272, 0.68, -cos(a) * 0.172)], [0.008, 0.008], dark, {"sides": 4, "per": 1, "cap_rings": 1})
 	body.tube([Vector3(0, 0.94, -0.15), Vector3(0, 0.7, -0.185)], [0.08, 0.02], bg, {"sides": 8, "per": 1, "flat": 0.2, "side": Vector3(0, 0, 1), "cap_rings": 1})
+	if style != "lion":
+		# The back pillar that temple statues are carved against, cut with columns of signs
+		# (glowing on the sunken guardian, painted blue on the pharaoh).
+		slab(body, bst, Vector3(0, 1.1, 0.135), Vector3(0.14, 0.7, 0.07), Basis.IDENTITY, 0.12, 0.0)
+		var glyph_paint := body.add_painter(func (p, n, v, w): return LAPIS.darkened(0.1))
+		for k in range(7):
+			var y := 1.38 - k * 0.085
+			for col in [-1.0, 1.0]:
+				var at := Vector3(0.032 * col, y, 0.172)
+				var kind := (k * 2 + int(col > 0.0)) % 3
+				var target: Sculpt = lights if worn else body
+				var paint := lights_paint if worn else glyph_paint
+				match kind:
+					0: target.blob(at, Vector3(0.016, 0.022, 0.004), paint, {"lat": 3, "lon": 6})
+					1: target.tube([at - Vector3(0.016, 0, 0), at + Vector3(0.016, 0, 0)], [0.004, 0.004], paint, {"sides": 4, "per": 1, "cap_rings": 1})
+					2: target.tube([at + Vector3(-0.014, 0.014, 0), at, at + Vector3(0.014, 0.014, 0)], [0.004, 0.004, 0.004], paint, {"sides": 4, "per": 1, "cap_rings": 1})
 	# The light inside: a seam down the chest.
 	lights.tube([Vector3(0, 1.27, -0.125), Vector3(0, 1.08, -0.115)], [0.009, 0.007], lights_paint, {"sides": 5, "per": 1, "cap_rings": 1})
 	if worn:
@@ -173,12 +220,13 @@ func _guardian() -> Node3D:
 		# The left shoulder has broken away, leaving a jagged edge.
 		for k in range(6):
 			var a := k * 1.05
-			body.crystal(Vector3(-0.25, 1.48, 0.0) + Vector3(0, cos(a), sin(a)) * 0.05, Vector3(-0.3, cos(a), sin(a)), 0.05, 0.02, bp, 4)
+			body.crystal(Vector3(-0.25, 1.48, 0.0) + Vector3(0, cos(a), sin(a)) * 0.05, Vector3(-0.3, cos(a), sin(a)), 0.05, 0.02, bst, 4)
 	part(root, "Body", body)
 
 	# ---- head and the gem
 	var head := joint(root, "Head", Vector3(0, 1.62, 0.0))
-	var hs := Sculpt.new(); var hp := hs.add_painter(st); var hg := hs.add_painter(gp)
+	var hs := Sculpt.new(); var hp := hs.add_painter(sk); var hg := hs.add_painter(gp); var hst := hs.add_painter(st)
+	var white := hs.add_painter(func (p, n, v, w): return Color("#efe9da"))
 	var hstripe := hs.add_painter(stripes(40.0, Vector3(0, 1, 0)))
 	var kohl := hs.add_painter(func (p, n, v, w): return KOHL)
 	var gem_at: Vector3
@@ -192,9 +240,10 @@ func _guardian() -> Node3D:
 			hs.blob(Vector3(0, 1.67, -0.093), Vector3(0.034, 0.011, 0.012), hs.add_painter(func (p, n, v, w): return Color("#9a6448")), {"lat": 3, "lon": 7})
 			for side in [-1.0, 1.0]:
 				hs.blob(Vector3(0.038 * side, 1.758, -0.088), Vector3(0.026, 0.009, 0.01), kohl, {"lat": 3, "lon": 7})
+				hs.blob(Vector3(0.038 * side, 1.758, -0.093), Vector3(0.021, 0.0065, 0.008), white, {"lat": 3, "lon": 7})
+				hs.blob(Vector3(0.038 * side, 1.758, -0.1), Vector3(0.007, 0.0062, 0.004), kohl, {"lat": 3, "lon": 6})
 				hs.tube([Vector3(0.06 * side, 1.756, -0.08), Vector3(0.085 * side, 1.75, -0.065)], [0.004, 0.002], kohl, {"sides": 4, "per": 1, "cap_rings": 1})
 				hs.blob(Vector3(0.038 * side, 1.778, -0.09), Vector3(0.028, 0.006, 0.01), kohl, {"lat": 3, "lon": 6})
-			eyes = [Vector3(-0.038, 1.758, -0.094), Vector3(0.038, 1.758, -0.094)]
 			# The striped headdress with lappets hanging in front of the shoulders, and its
 			# tail gathered at the back; a long plaited false beard.
 			# The cap of the headdress over the crown, then its stiff striped wings flaring out
@@ -213,33 +262,33 @@ func _guardian() -> Node3D:
 			hs.blob(Vector3(0, 1.89, -0.112), Vector3(0.04, 0.045, 0.014), hg, {"lat": 5, "lon": 9})
 			gem_at = Vector3(0, 1.89, -0.128); gem_size = 0.032
 		"lion":
-			# A lion's head: a broad skull and brow, a deep muzzle with whisker pads, a broad
-			# nose and rounded ears, set in a heavy carved ruff of mane.
-			hs.blob(Vector3(0, 1.76, 0.0), Vector3(0.12, 0.125, 0.12), hp, {"lat": 9, "lon": 12})
-			hs.tube([Vector3(0, 1.74, -0.09), Vector3(0, 1.71, -0.17)], [0.075, 0.062], hp, {"sides": 12, "per": 2, "square": 0.35, "cap_len": 0.55})
+			# A lioness's head in polished granite: a broad brow, a long muzzle with whisker pads
+			# and chin, a broad nose, gold-rimmed eyes, rounded ears, framed by a carved ruff,
+			# with a heavy mane falling in two lappets over the chest.
+			var gold_eye := hs.add_painter(func (p, n, v, w): return GOLD.lightened(0.1))
+			hs.blob(Vector3(0, 1.76, 0.0), Vector3(0.11, 0.12, 0.115), hst, {"lat": 9, "lon": 12})
+			hs.tube([Vector3(0, 1.75, -0.07), Vector3(0, 1.72, -0.165)], [0.08, 0.068], hst, {"sides": 14, "per": 3, "square": 0.45, "flat": 1.15, "cap_len": 0.45})
+			hs.blob(Vector3(0, 1.74, -0.2), Vector3(0.036, 0.022, 0.016), hs.add_painter(func (p, n, v, w): return Color("#1a1a1e")), {"lat": 4, "lon": 7})
+			hs.blob(Vector3(0, 1.66, -0.14), Vector3(0.04, 0.024, 0.03), hst, {"lat": 4, "lon": 7})
 			for side in [-1.0, 1.0]:
-				hs.blob(Vector3(0.035 * side, 1.69, -0.19), Vector3(0.04, 0.035, 0.035), hp, {"lat": 5, "lon": 8})
-				hs.blob(Vector3(0.05 * side, 1.8, -0.105), Vector3(0.045, 0.018, 0.035), hp, {"lat": 4, "lon": 7, "basis": Basis(Vector3.FORWARD, side * 0.25)})
-				hs.blob(Vector3(0.048 * side, 1.784, -0.11), Vector3(0.022, 0.012, 0.01), kohl, {"lat": 3, "lon": 6})
-				hs.blob(Vector3(0.1 * side, 1.86, 0.01), Vector3(0.04, 0.035, 0.02), hp, {"lat": 4, "lon": 7})
-			hs.blob(Vector3(0, 1.735, -0.225), Vector3(0.03, 0.02, 0.016), hs.add_painter(func (p, n, v, w): return SANDSTONE_DARK.darkened(0.45)), {"lat": 4, "lon": 7})
-			hs.blob(Vector3(0, 1.66, -0.16), Vector3(0.04, 0.025, 0.03), hp, {"lat": 4, "lon": 7})
-			eyes = [Vector3(-0.048, 1.784, -0.117), Vector3(0.048, 1.784, -0.117)]
-			# The mass of the mane behind and under the head, and a ruff under the chin.
-			hs.blob(Vector3(0, 1.72, 0.06), Vector3(0.19, 0.19, 0.13), hp, {"lat": 8, "lon": 14, "lump": 0.25})
-			hs.blob(Vector3(0, 1.62, -0.04), Vector3(0.13, 0.07, 0.09), hp, {"lat": 6, "lon": 10, "lump": 0.3})
-			# The ruff: three tiers of broad, flattened locks lying down over the shoulders,
-			# carved in the formal style of temple lions, gilded at the edges.
-			for tier in range(3):
-				var count := 14 + tier * 4
-				for k in range(count):
-					var a := TAU * (k + tier * 0.5) / count
-					if absf(a - PI * 1.5) < 0.5 and tier < 2: continue
-					var radial := Vector3(cos(a), sin(a) * 0.85, 0.0)
-					var base := Vector3(0, 1.76 - tier * 0.05, 0.03 + tier * 0.03) + radial * (0.145 + tier * 0.035)
-					var down := (radial * 0.3 + Vector3(0, -1.0, 0.3)).normalized()
-					var base2 := base - radial * 0.02
-					hs.tube([base2, base2 + down * 0.07 + radial * 0.02, base2 + down * 0.13 + radial * 0.025], [0.045, 0.04, 0.012], hg if tier == 2 else hp, {"sides": 6, "per": 2, "flat": 0.3, "side": radial, "cap1": false})
+				hs.blob(Vector3(0.036 * side, 1.695, -0.172), Vector3(0.04, 0.032, 0.03), hst, {"lat": 5, "lon": 8})
+				hs.blob(Vector3(0.05 * side, 1.81, -0.1), Vector3(0.048, 0.018, 0.035), hst, {"lat": 4, "lon": 7, "basis": Basis(Vector3.FORWARD, side * 0.25)})
+				hs.blob(Vector3(0.048 * side, 1.786, -0.105), Vector3(0.026, 0.012, 0.01), gold_eye, {"lat": 3, "lon": 7})
+				hs.blob(Vector3(0.048 * side, 1.786, -0.112), Vector3(0.005, 0.011, 0.005), kohl, {"lat": 3, "lon": 5})
+				hs.tube([Vector3(0.072 * side, 1.784, -0.1), Vector3(0.1 * side, 1.778, -0.08)], [0.004, 0.002], gold_eye, {"sides": 4, "per": 1, "cap_rings": 1})
+				hs.blob(Vector3(0.085 * side, 1.865, 0.0), Vector3(0.036, 0.042, 0.018), hst, {"lat": 4, "lon": 7})
+				# The mane lappets falling in front of the shoulders, ending in gold bands.
+				hs.tube([Vector3(0.13 * side, 1.66, 0.0), Vector3(0.155 * side, 1.56, -0.04), Vector3(0.15 * side, 1.45, -0.07)], [0.07, 0.075, 0.07], hst, {"sides": 8, "per": 4, "flat": 0.3, "side": Vector3(side, 0, 0.3).normalized(), "bands": 6, "band": 0.15})
+				hs.tube([Vector3(0.15 * side, 1.465, -0.068), Vector3(0.15 * side, 1.44, -0.074)], [0.072, 0.068], hg, {"sides": 8, "per": 1, "flat": 0.32, "side": Vector3(side, 0, 0.3).normalized(), "cap_rings": 1})
+			# The ruff framing the face, carved in ridged locks, and the mass of mane behind.
+			var ruff: Array = []; var rr2: Array = []
+			for k in range(17):
+				var a := lerpf(-2.6, 2.6, k / 16.0)
+				ruff.append(Vector3(sin(a) * 0.165, 1.75 + cos(a) * 0.16, 0.0 + absf(sin(a)) * 0.02)); rr2.append(0.05)
+			hs.tube(ruff, rr2, hst, {"sides": 8, "per": 3, "lump": 0.3, "bands": 16, "band": 0.3})
+			hs.blob(Vector3(0, 1.72, 0.06), Vector3(0.18, 0.2, 0.13), hst, {"lat": 8, "lon": 14})
+			# A gold band binding the mane at the back of the neck.
+			hs.tube([Vector3(-0.16, 1.58, 0.1), Vector3(0, 1.57, 0.17), Vector3(0.16, 1.58, 0.1)], [0.02, 0.022, 0.02], hg, {"sides": 6, "per": 3, "cap_rings": 1})
 			# The sun disc on its head, with a cobra, holding the gem.
 			hs.lathe(Vector3(0, 2.0, 0.03), [Vector2(0.0, 0.012), Vector2(0.1, 0.012), Vector2(0.11, 0.0), Vector2(0.1, -0.012), Vector2(0.0, -0.012)], hg, {"sides": 24, "basis": Basis(Vector3.RIGHT, PI * 0.5)})
 			hs.tube([Vector3(0, 1.87, 0.02), Vector3(0, 1.9, 0.03)], [0.04, 0.035], hg, {"sides": 8, "per": 1})
@@ -279,7 +328,7 @@ func _guardian() -> Node3D:
 	for side in [-1.0, 1.0]:
 		var label := "Left" if side < 0 else "Right"
 		var shoulder := joint(root, label + "Shoulder", Vector3(0.26 * side, 1.43, 0))
-		var us := Sculpt.new(); var up := us.add_painter(st); var ug := us.add_painter(gp)
+		var us := Sculpt.new(); var up := us.add_painter(sk); var ug := us.add_painter(gp)
 		var broken: bool = worn and side < 0.0
 		if not broken: us.blob(Vector3(0.265 * side, 1.43, 0.0), Vector3(0.075, 0.075, 0.075), up, {"lat": 6, "lon": 9})
 		us.tube([Vector3(0.285 * side, 1.4, 0.0), Vector3(0.31 * side, 1.25, 0.0), Vector3(0.33 * side, 1.13, 0.015)], [0.064, 0.058, 0.048], up, {"sides": 12, "per": 3})
@@ -292,7 +341,7 @@ func _guardian() -> Node3D:
 			crack(cs, cw, Vector3(0.3, 1.4, -0.06), Vector3(0.33, 1.15, -0.045), 0.01, Vector3(0, 0, 1))
 			part(shoulder, "Crack", cs, glow).material_override = glow
 		var elbow := joint(shoulder, "Forearm", Vector3(0.33 * side, 1.11, 0.015))
-		var fs := Sculpt.new(); var fp := fs.add_painter(st); var fg := fs.add_painter(gp)
+		var fs := Sculpt.new(); var fp := fs.add_painter(sk); var fg := fs.add_painter(gp)
 		fs.tube([Vector3(0.33 * side, 1.1, 0.01), Vector3(0.345 * side, 0.97, -0.02), Vector3(0.355 * side, 0.86, -0.04)], [0.05, 0.046, 0.034], fp, {"sides": 12, "per": 3})
 		fs.tube([Vector3(0.345 * side, 0.96, -0.022), Vector3(0.353 * side, 0.88, -0.038)], [0.05, 0.044], fg, {"sides": 12, "per": 1, "cap_rings": 1, "bands": 2, "band": 0.12})
 		hand(fs, fp, Vector3(0.355 * side, 0.86, -0.04), side)
@@ -307,20 +356,20 @@ func _guardian() -> Node3D:
 	for side in [-1.0, 1.0]:
 		var label := "Left" if side < 0 else "Right"
 		var hip := joint(root, label + "Hip", Vector3(0.11 * side, 0.9, 0.0))
-		var ts := Sculpt.new(); var tp := ts.add_painter(st)
-		ts.tube([Vector3(0.11 * side, 0.92, 0.0), Vector3(0.12 * side, 0.7, -0.01), Vector3(0.12 * side, 0.52, 0.0)], [0.085, 0.075, 0.058], tp, {"sides": 12, "per": 3})
+		var ts := Sculpt.new(); var tp := ts.add_painter(sk)
+		ts.tube([Vector3(0.11 * side, 0.92, 0.0), Vector3(0.12 * side, 0.7, -0.01), Vector3(0.12 * side, 0.52, 0.0)], [0.094, 0.082, 0.062], tp, {"sides": 12, "per": 3})
 		part(hip, "Thigh", ts)
 		glow_ring(Vector3(0.12 * side, 0.5, 0.0), Vector3(0, 1, 0), 0.062, 0.011, hip)
 		var knee := joint(hip, "Knee", Vector3(0.12 * side, 0.5, 0.0))
-		var ss := Sculpt.new(); var sp := ss.add_painter(st); var sg := ss.add_painter(gp)
-		ss.tube([Vector3(0.12 * side, 0.5, 0.0), Vector3(0.12 * side, 0.36, 0.015), Vector3(0.12 * side, 0.18, 0.005), Vector3(0.12 * side, 0.08, 0.0)], [0.056, 0.058, 0.044, 0.036], sp, {"sides": 12, "per": 3})
+		var ss := Sculpt.new(); var sp := ss.add_painter(sk); var sg := ss.add_painter(gp)
+		ss.tube([Vector3(0.12 * side, 0.5, 0.0), Vector3(0.12 * side, 0.36, 0.015), Vector3(0.12 * side, 0.18, 0.005), Vector3(0.12 * side, 0.08, 0.0)], [0.06, 0.064, 0.046, 0.037], sp, {"sides": 12, "per": 3})
 		ss.blob(Vector3(0.12 * side, 0.04, -0.05), Vector3(0.048, 0.035, 0.1), sp, {"lat": 5, "lon": 8})
 		for t in range(5): ss.blob(Vector3((0.12 + (t - 2) * 0.017) * side, 0.025, -0.14 + absf(t - 1.5) * 0.008), Vector3(0.011, 0.014, 0.016), sp, {"lat": 3, "lon": 5})
 		slab(ss, sg, Vector3(0.12 * side, 0.008, -0.055), Vector3(0.11, 0.018, 0.25), Basis.IDENTITY, 0.4, 0.0)
 		ss.tube([Vector3(0.08 * side, 0.03, -0.11), Vector3(0.12 * side, 0.06, -0.06), Vector3(0.16 * side, 0.03, -0.11)], [0.008, 0.008, 0.008], sg, {"sides": 5, "per": 2, "cap_rings": 1})
 		if worn:
 			var sand := ss.add_painter(func (p, n, v, w): return Color("#d8bf8a").darkened(Sculpt.noise(p * 10.0) * 0.1))
-			ss.blob(Vector3(0.12 * side, 0.05, -0.02), Vector3(0.13, 0.08, 0.17), sand, {"lat": 6, "lon": 10, "lump": 0.25})
+			ss.blob(Vector3(0.12 * side, 0.02, -0.02), Vector3(0.17, 0.05, 0.2), sand, {"lat": 6, "lon": 10, "lump": 0.25})
 		part(knee, "Shin", ss)
 		if worn:
 			var cs := Sculpt.new(); var cw := cs.add_painter(func (p, n, v, w): return Color.WHITE)
