@@ -120,3 +120,9 @@ monster should stand clearly bigger than him.
 - Grave Creeper: built on the assassin bugs (Reduviidae). Some, like Acanthaspis petax, pile the emptied husks of their prey and debris on their backs as camouflage. They have a narrow head with bulging eyes behind a long neck region, elbowed antennae, a curved three-part beak folded under the head, a flared abdomen edge (the connexivum), and often banded legs.
 - Grave Mantis: built on the praying mantis. The long prothorax forms the "neck"; the raptorial forelegs carry rows of spines on the femur and tibia and fold together; the leathery forewings (tegmina) cover the membranous hind wings. Details come from relatives: the broad pronotum of the shield mantises, the head crest of the conehead mantises (Empusa), and the leg and abdomen lobes of the ghost mantis.
 - Considered but not used: the Japanese spider crab (the longest legs of any arthropod), which, like decorator crabs, covers itself with things it finds.
+
+## Veil Moth, Death's-head Moth and Ghost Moon Moth (Hollowmourn)
+- Death's-head hawkmoth (Acherontia atropos): a skull-like pale pattern on the thorax, narrow dark mottled forewings, yellow hindwings with black bands, and a yellow-and-black banded abdomen with a blue-grey stripe down the back. It squeaks when disturbed and raids beehives for honey.
+- Giant silk moths (the polyphemus moth, Automeris io and the owl moths) flash big eyespots on their hindwings to startle predators. The rings run black, gold and pale blue around a dark pupil with a pale highlight. The males have broad feathery (bipectinate) antennae.
+- Moon moths (the luna moth Actias luna and the comet moth Argema mittrei) are pale green with long twisting hindwing tails, which confuse bats' echolocation, and small eyespot "windows". The luna moth has a dusky purple-brown leading edge on each forewing.
+- Veil Moth: all three combined.

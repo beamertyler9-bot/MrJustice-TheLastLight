@@ -101,6 +101,8 @@ const DATA = {
 	"grave_creeper": ["six", "stone_unfold", "unfold", 6.7, 0.37, 0.57, Vector3(0.21, 0.18, 0.15), Vector3(0.07, 0.13, 0), 0.26],
 	"grave_mantis": ["six", "stone_unfold", "unfold", 6.7, 0.37, 0.57, Vector3(0.21, 0.18, 0.15), Vector3(0.07, 0.13, 0), 0.26],
 	"veil_moth": ["flutter", "eye_fold", "fold", 8.5, 0.52, 0.09, Vector3(0.17, 0.22, 0.18), Vector3(0.13, 0.2, 0.02), -0.25],
+	"deathshead_moth": ["flutter", "eye_fold", "fold", 8.5, 0.52, 0.09, Vector3(0.17, 0.22, 0.18), Vector3(0.13, 0.2, 0.02), -0.25],
+	"ghost_moon_moth": ["flutter", "eye_fold", "fold", 8.5, 0.52, 0.09, Vector3(0.17, 0.22, 0.18), Vector3(0.13, 0.2, 0.02), -0.25],
 	"thorn_widow": ["eight", "web_listen", "web_pounce", 9.0, 0.34, 0.32, Vector3(0.12, 0.26, 0.115), Vector3(0.08, 0.15, 0.04), 0.12],
 	"mourning_knight": ["march", "mourning_guard", "guard_cut", 4.7, 0.27, 0.8, Vector3(0.2, 0.13, 0.075), Vector3(0.04, 0.12, 0), -0.17],
 	"cocoa_knight": ["march", "mourning_guard", "guard_cut", 4.7, 0.27, 0.8, Vector3(0.2, 0.13, 0.075), Vector3(0.04, 0.12, 0), -0.17],

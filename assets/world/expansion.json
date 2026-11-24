@@ -11872,7 +11872,23 @@
       "region": 14,
       "kind": "hostile",
       "boss": false,
-      "hook": "Large ragged shroud wings with unsettling eye marks; folds wings before a disorienting gust."
+      "hook": "A moth as wide as a cart with a skull on its back, staring eyespots on its wings and hindwings that fade into a ghostly veil trailing long tails; folds its wings before a disorienting gust."
+    },
+    {
+      "id": "deathshead_moth",
+      "name": "Death's-head Moth",
+      "region": 14,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "A giant death's-head hawkmoth, a pale skull on its furry back, dark torn forewings and yellow hindwings banded black; folds its wings before a disorienting gust."
+    },
+    {
+      "id": "ghost_moon_moth",
+      "name": "Ghost Moon Moth",
+      "region": 14,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "The pale, see-through ghost of a moon moth, glowing spots on its wings and long twisting tails trailing behind; folds its wings before a disorienting gust."
     },
     {
       "id": "thorn_widow",
