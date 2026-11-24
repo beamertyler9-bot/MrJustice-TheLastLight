@@ -11592,7 +11592,23 @@
       "region": 12,
       "kind": "hostile",
       "boss": false,
-      "hook": "Carved sandstone armor and broken gilding; joints light before spear thrusts."
+      "hook": "Ancient sandstone temple guardian, cracked and glowing from within; its joints light as the gem in its brow gathers a beam."
+    },
+    {
+      "id": "pharaoh_guardian",
+      "name": "Pharaoh Guardian",
+      "region": 12,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "Royal sandstone temple statue in a striped headdress; the gem in its cobra crown fires a beam of light."
+    },
+    {
+      "id": "lion_warden",
+      "name": "Lion Warden",
+      "region": 12,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "Lion-headed temple statue crowned with a gilded sun disc; the gem in the disc fires a beam of light."
     },
     {
       "id": "sandwraith",

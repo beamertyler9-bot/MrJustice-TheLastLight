@@ -39,6 +39,9 @@ const DESIGNS := {
 	"dune_monitor": ["res://tools/sculpt_sand_lizard.gd", "monitor"],
 	"thorn_devil": ["res://tools/sculpt_sand_lizard.gd", "devil_wild", "wild"],
 	"obelisk_scorpion": ["res://tools/sculpt_obelisk_scorpion.gd", "fattail"],
+	"sunken_sentinel": ["res://tools/sculpt_sunken_sentinel.gd", "sunken"],
+	"pharaoh_guardian": ["res://tools/sculpt_sunken_sentinel.gd", "pharaoh"],
+	"lion_warden": ["res://tools/sculpt_sunken_sentinel.gd", "lion"],
 }
 
 

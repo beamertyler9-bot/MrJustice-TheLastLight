@@ -77,6 +77,8 @@ const DATA = {
 	"dune_monitor": ["sprawl", "parcel_twitch", "snap", 6.5, 0.26, 0.55, Vector3(0.04, 0.12, 0.05), Vector3(0.09, 0.16, 0), -0.23],
 	"thorn_devil": ["sprawl", "warm_rock", "low_scurry", 4.2, 0.25, 0.5, Vector3(0.1, 0.13, 0.05), Vector3(0.18, 0.34, 0.04), 0.08],
 	"sunken_sentinel": ["march", "spear_guard", "thrust", 5.7, 0.28, 0.68, Vector3(0.1, 0.21, 0.05), Vector3(0.03, 0.09, 0), 0.25],
+	"pharaoh_guardian": ["march", "spear_guard", "thrust", 5.7, 0.28, 0.68, Vector3(0.1, 0.21, 0.05), Vector3(0.03, 0.09, 0), 0.25],
+	"lion_warden": ["march", "spear_guard", "thrust", 5.7, 0.28, 0.68, Vector3(0.1, 0.21, 0.05), Vector3(0.03, 0.09, 0), 0.25],
 	"sandwraith": ["float", "sand_condense", "condense", 3.2, 0.21, 0.11, Vector3(0.18, 0.24, 0.13), Vector3(0.21, 0.31, 0.06), -0.11],
 	"obelisk_scorpion": ["six", "chisel_claw", "tail_sting", 8.4, 0.28, 0.6, Vector3(0.14, 0.1, 0.08), Vector3(0.08, 0.18, -0.12), 0.2],
 	"glass_anubid": ["digitigrade", "prism_lock", "beam", 6.2, 0.3, 0.72, Vector3(0.13, 0.25, 0.045), Vector3(0.11, 0.18, 0.06), -0.07],

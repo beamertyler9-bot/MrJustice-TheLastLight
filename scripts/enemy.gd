@@ -356,6 +356,12 @@ func _launch_projectile() -> void:
 		ember.name = "SugarShard"
 		B.facet(ember, Vector3.ZERO, Vector3(0.09, 0.09, 0.42), B.mat("#fff4dc", 0, 0.55))
 		B.facet(ember, Vector3(0, 0, -0.16), Vector3(0.06, 0.06, 0.14), B.mat("#f08a1c", 0, 0.5))
+	elif profile.get("beam", false):
+		# A lance of gathered light from the gem in a temple guardian's head: long, bright and
+		# fast, with a white-hot core.
+		ember.name = "GemBeam"
+		B.facet(ember, Vector3(0, 0, 0.6), Vector3(0.14, 0.14, 1.7), B.mat("#5ff0e0", 0, 1.0))
+		B.facet(ember, Vector3(0, 0, 0.6), Vector3(0.06, 0.06, 1.8), B.mat("#f2fffd", 0, 1.0))
 	else:
 		B.facet(ember, Vector3.ZERO, Vector3(0.23, 0.23, 0.4), B.mat("#ffb760", 0, 0.8))
 		B.facet(ember, Vector3(0, 0, 0.18), Vector3(0.13, 0.13, 0.4), B.mat("#e97343", 0, 0.5))
@@ -367,7 +373,9 @@ func _launch_projectile() -> void:
 		var target: Vector3 = game.player.global_position + Vector3.UP * 0.95
 		var across := Vector2(target.x - ember.global_position.x, target.z - ember.global_position.z).length()
 		if across > 0.5: direction = (direction + Vector3.UP * clampf((target.y - ember.global_position.y) / across, -0.6, 0.6)).normalized()
-	projectiles.append({"node": ember, "direction": direction, "life": 2.4})
+	var beam: bool = profile.get("beam", false)
+	if beam: ember.look_at(ember.global_position + direction, Vector3.UP); ember.rotate_object_local(Vector3.UP, PI)
+	projectiles.append({"node": ember, "direction": direction, "life": 0.9 if beam else 2.4, "speed": 20.0 if beam else 8.0})
 
 func _tick_projectiles(dt: float, player: Node3D) -> void:
 	for i in range(projectiles.size() - 1, -1, -1):
@@ -378,7 +386,7 @@ func _tick_projectiles(dt: float, player: Node3D) -> void:
 			local_dt = maxf(0.0, dt - float(bolt.stasis)); bolt.stasis = maxf(0.0, float(bolt.stasis) - dt)
 			if local_dt <= 0: continue
 		var start := node.global_position
-		var end: Vector3 = start + bolt.direction * 8.0 * local_dt
+		var end: Vector3 = start + bolt.direction * float(bolt.get("speed", 8.0)) * local_dt
 		var ray = PhysicsRayQueryParameters3D.create(start, end, 1 | 8 | 16)
 		var blocked := not get_world_3d().direct_space_state.intersect_ray(ray).is_empty()
 		var center := player.global_position + Vector3.UP * 0.95

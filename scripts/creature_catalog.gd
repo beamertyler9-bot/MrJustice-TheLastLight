@@ -12,7 +12,7 @@ const FORMS = {
 	"ember_salamander": "lizard", "ash_moth": "moth", "basalt_beetle": "beetle", "copperback_gecko": "lizard", "cinderfin_fish": "fish", "ventwing_swift": "bird",
 	"ashen_raven": "bird", "pallid_moth": "moth", "gravemoss_snail": "snail", "prismhart": "deer", "opaline_otter": "otter", "chimewing_manta": "manta", "geode_tortoise": "tortoise", "faceted_finch": "bird", "quartz_hare": "hare",
 	"cliffwarden": "golem", "stonejaw_wyrm": "wyrm", "fudge_golem": "golem", "cocoa_knight": "knight", "chocobar_croc": "crawler", "wrapper_mimic": "mimic", "pretzel_crawler": "crawler", "cola_sloshback": "frog", "sugarspike_wasp": "winged", "grand_confectioner": "knight",
-	"windwhistle_stalker": "cat", "thistle_jackal": "hound", "grassland_colossus": "golem", "kiteclaw_raptor": "winged", "stormhorn_matriarch": "boar", "storm_bison": "boar", "thunder_rhino": "boar", "stormcloud_muskox": "boar", "stormfrill": "boar", "thunderclub": "boar", "dune_maw": "wyrm", "pit_antlion": "crawler", "dune_monitor": "wyrm", "thorn_devil": "lizard", "sunken_sentinel": "knight", "sandwraith": "wraith", "obelisk_scorpion": "scorpion", "glass_anubid": "hound",
+	"windwhistle_stalker": "cat", "thistle_jackal": "hound", "grassland_colossus": "golem", "kiteclaw_raptor": "winged", "stormhorn_matriarch": "boar", "storm_bison": "boar", "thunder_rhino": "boar", "stormcloud_muskox": "boar", "stormfrill": "boar", "thunderclub": "boar", "dune_maw": "wyrm", "pit_antlion": "crawler", "dune_monitor": "wyrm", "thorn_devil": "lizard", "sunken_sentinel": "knight", "pharaoh_guardian": "knight", "lion_warden": "knight", "sandwraith": "wraith", "obelisk_scorpion": "scorpion", "glass_anubid": "hound",
 	"riftback": "armored", "furnace_hound": "hound", "slag_crawler": "crawler", "ash_harpy": "winged", "root_reaper": "reaper", "wraithhart": "deer", "hollow_hound": "hound", "grave_creeper": "crawler", "veil_moth": "winged", "thorn_widow": "spider", "mourning_knight": "knight", "pale_watcher": "wraith", "blackthorn_regent": "knight",
 	"shard_sentinel": "knight", "prismstalker": "cat", "geode_mimic": "mimic", "resonance_wyrm": "wyrm", "glasswing_reaver": "winged", "aurora_custodian": "wraith"}
 static var roster: Array = []
@@ -35,7 +35,7 @@ static func hostiles_for(region: int) -> Array:
 	return entries().filter(func (e): return e.region == region and e.kind == "hostile" and not e.boss).map(func (e): return enemy_id(e.id))
 ## Big storm beasts roam the plains but are a rare sight: each is picked this often compared
 ## with an ordinary hostile (1.0).
-const RARITY = {"storm_bison": 0.2, "thunder_rhino": 0.2, "stormcloud_muskox": 0.2, "stormfrill": 0.2, "thunderclub": 0.2, "pit_antlion": 0.35, "dune_monitor": 0.35}
+const RARITY = {"storm_bison": 0.2, "thunder_rhino": 0.2, "stormcloud_muskox": 0.2, "stormfrill": 0.2, "thunderclub": 0.2, "pit_antlion": 0.35, "dune_monitor": 0.35, "pharaoh_guardian": 0.35, "lion_warden": 0.35}
 ## Picks one of `options` from `seed`, the same every time for the same seed, with rare
 ## species weighted down.
 static func pick_hostile(options: Array, seed: int) -> String:
@@ -73,6 +73,9 @@ const SIZES = {"cocoa_knight": {"radius": 0.6, "height": 2.6, "reach": 2.6}, "fu
 	"pit_antlion": {"radius": 0.8, "height": 1.4, "reach": 3.3, "hp": 6, "front_max": 2.4},
 	"dune_monitor": {"radius": 0.7, "height": 1.5, "reach": 3.4, "hp": 6, "front_max": 2.3},
 	"obelisk_scorpion": {"radius": 0.75, "height": 1.8, "reach": 3.0, "hp": 6, "front_max": 2.1},
+	"sunken_sentinel": {"radius": 0.45, "height": 2.6, "reach": 9.0, "hp": 7, "attack": "ranged", "beam": true, "windup": 1.0},
+	"pharaoh_guardian": {"radius": 0.45, "height": 2.6, "reach": 9.0, "hp": 7, "attack": "ranged", "beam": true, "windup": 1.0},
+	"lion_warden": {"radius": 0.45, "height": 2.6, "reach": 9.0, "hp": 7, "attack": "ranged", "beam": true, "windup": 1.0},
 }
 ## Ambushers lie still, disguised (a rock, a chest), until Mr. Justice comes within `trigger`
 ## metres; then they rise `sink` metres out of the ground on their legs and fight.
