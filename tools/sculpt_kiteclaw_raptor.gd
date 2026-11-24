@@ -169,8 +169,8 @@ func _raptor() -> Node3D:
 	for k in range(16):
 		var t := (k % 8) / 7.0
 		var side := -1.0 if k < 8 else 1.0
-		var at := Vector3(0.05 * side, 1.31 - t * 0.2, -0.58 + t * 0.24)
-		feather(body, cp, at, Vector3(side * 0.6, 0.15, 1.0), 0.13, 0.04, Vector3(side, 0.3, 0).normalized(), 0.08, 1)
+		var at := Vector3(0.062 * side, 1.31 - t * 0.2, -0.58 + t * 0.24)
+		feather(body, cp, at, Vector3(side * 0.12, 0.08, 1.0), 0.11, 0.042, Vector3(side, 0.35, 0).normalized(), -0.14, 1)
 	var head := joint(root, "Head", Vector3(0, 1.33, -0.64))
 	var hs := Sculpt.new(); var hp := hs.add_painter(body_paint)
 	var dark := hs.add_painter(func (p, n, v, w): return Color("#120d0a"))
@@ -192,14 +192,20 @@ func _raptor() -> Node3D:
 		hs.blob(Vector3(0.064 * side, 1.392, -0.741), Vector3(0.0045, 0.013, 0.004), dark, {"lat": 3, "lon": 6})
 	var crest := hs.add_painter(barred(Color("#3d5a6e"), Color("#9cc4d6"), Color("#1d2a33"), 2.0))
 	var face := hs.add_painter(contour)
-	# A tall swept-back crest of blue feathers, and feathers swept back over the cheeks.
-	for k in range(7):
-		var spread := (k - 3) * 0.12
-		feather(hs, crest, Vector3(spread * 0.15, 1.43, -0.72 + absf(k - 3) * 0.02), Vector3(spread, 0.55, 1.0), 0.26 - absf(k - 3) * 0.025, 0.034, Vector3(1, 0, -spread).normalized(), 0.18)
-	for side in [-1.0, 1.0]:
+	# A soft plume of blue feathers swept back from the brow over the skull, lying low and
+	# curving down at the tips, in three overlapping rows.
+	for row in range(3):
 		for k in range(5):
-			var at := Vector3(0.062 * side, 1.37 - k * 0.012, -0.68 + k * 0.015)
-			feather(hs, face, at, Vector3(side * 0.4, -0.1, 1.0), 0.1, 0.03, Vector3(side, 0, 0), 0.05)
+			var spread := (k - 2) * 0.16
+			var base := Vector3(spread * 0.1, 1.43 - row * 0.008, -0.74 + row * 0.04 + absf(k - 2) * 0.012)
+			var dir := Vector3(spread, 0.42 - row * 0.08, 1.0)
+			var lie := Vector3(-spread * 0.5, 1.0, -0.4).normalized()
+			feather(hs, crest, base, dir, 0.17 + row * 0.04 - absf(k - 2) * 0.02, 0.036, lie, -0.12)
+	# Small feathers lying flat against the head behind each eye.
+	for side in [-1.0, 1.0]:
+		for k in range(3):
+			var at := Vector3(0.066 * side, 1.4 - k * 0.018, -0.69 + k * 0.012)
+			feather(hs, face, at, Vector3(side * 0.18, -0.05 - k * 0.05, 1.0), 0.085 - k * 0.01, 0.028, Vector3(side, 0.1, -0.15).normalized(), -0.15)
 	part(head, "Head", hs)
 	var core := part(head, "GlowingEyes", es, glow); core.material_override = glow
 	var jaw := joint(head, "Jaw", Vector3(0, 1.32, -0.7))
