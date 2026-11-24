@@ -34,7 +34,7 @@ const DESIGNS := {
 	"stormfrill": ["res://tools/sculpt_stormhorn_boss.gd", "frill"],
 	"thunderclub": ["res://tools/sculpt_stormhorn_boss.gd", "club"],
 	"stormhorn_matriarch": ["res://tools/sculpt_stormhorn_boss.gd", "elk"],
-	"dune_maw": ["res://tools/sculpt_dune_maw.gd", "caecilian"],
+	"dune_maw": ["res://tools/sculpt_dune_maw.gd", "sandworm"],
 	"pit_antlion": ["res://tools/sculpt_dune_maw.gd", "antlion"],
 	"sandswim_skink": ["res://tools/sculpt_dune_maw.gd", "sandfish"],
 }

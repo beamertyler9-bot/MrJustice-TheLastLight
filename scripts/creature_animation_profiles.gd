@@ -74,7 +74,7 @@ const DATA = {
 	"thunder_rhino": ["pace", "lane_stamp", "stamp", 5.4, 0.32, 0.96, Vector3(0.28, 0.15, 0.1), Vector3(0.12, 0.19, 0.05), 0.16],
 	"stormcloud_muskox": ["pace", "lane_stamp", "stamp", 5.4, 0.32, 0.96, Vector3(0.28, 0.15, 0.1), Vector3(0.12, 0.19, 0.05), 0.16],
 	"dune_maw": ["slither", "sand_ridge", "emerge", 4.5, 0.29, 0.83, Vector3(0.32, 0.19, 0.08), Vector3(0.19, 0.31, -0.02), -0.15],
-	"sandswim_skink": ["slither", "sand_ridge", "emerge", 4.5, 0.29, 0.83, Vector3(0.32, 0.19, 0.08), Vector3(0.19, 0.31, -0.02), -0.15],
+	"sandswim_skink": ["sprawl", "parcel_twitch", "snap", 6.5, 0.26, 0.55, Vector3(0.04, 0.12, 0.05), Vector3(0.09, 0.16, 0), -0.23],
 	"sunken_sentinel": ["march", "spear_guard", "thrust", 5.7, 0.28, 0.68, Vector3(0.1, 0.21, 0.05), Vector3(0.03, 0.09, 0), 0.25],
 	"sandwraith": ["float", "sand_condense", "condense", 3.2, 0.21, 0.11, Vector3(0.18, 0.24, 0.13), Vector3(0.21, 0.31, 0.06), -0.11],
 	"obelisk_scorpion": ["six", "chisel_claw", "tail_sting", 8.4, 0.28, 0.6, Vector3(0.14, 0.1, 0.08), Vector3(0.08, 0.18, -0.12), 0.2],
