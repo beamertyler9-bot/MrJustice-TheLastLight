@@ -93,7 +93,7 @@ func lock(s: Sculpt, painter: int, base: Vector3, dir: Vector3, length: float, w
 
 
 ## Four legs with cloven hooves. Rows are [label, hip z, front?]; `thick` scales their girth.
-func legs(skin: Callable, width: float, front_z: float, hind_z: float, hip_y: float, thick: float, stocking := Callable(), toes := 2) -> Dictionary:
+func legs(skin: Callable, width: float, front_z: float, hind_z: float, hip_y: float, thick: float, stocking := Callable(), toes := 2, tall := 1.0) -> Dictionary:
 	# The upper legs always wear the coat; `stocking` (if given) colours the shins.
 	var hips: Array = []; var knees: Array = []
 	for row in [["Front", front_z, true], ["Hind", hind_z, false]]:
@@ -104,20 +104,20 @@ func legs(skin: Callable, width: float, front_z: float, hind_z: float, hip_y: fl
 			var us := Sculpt.new(); var up := us.add_painter(skin)
 			var knee_at: Vector3
 			if front:
-				knee_at = Vector3(x, 0.36, z - 0.02)
-				us.tube([Vector3(x * 1.02, hip_y + 0.16, z + 0.03), Vector3(x * 1.05, 0.56, z - 0.02), knee_at], [0.17 * thick, 0.13 * thick, 0.085 * thick], up, {"sides": 11, "per": 3})
+				knee_at = Vector3(x, 0.36 * tall, z - 0.02)
+				us.tube([Vector3(x * 1.02, hip_y + 0.16, z + 0.03), Vector3(x * 1.05, lerpf(hip_y, 0.36 * tall, 0.55) if tall != 1.0 else 0.56, z - 0.02), knee_at], [0.17 * thick, 0.13 * thick, 0.085 * thick], up, {"sides": 11, "per": 3})
 			else:
-				knee_at = Vector3(x, 0.4, z - 0.08)
-				us.tube([Vector3(x * 0.95, hip_y + 0.16, z + 0.06), Vector3(x * 1.05, 0.6, z), knee_at], [0.21 * thick, 0.15 * thick, 0.085 * thick], up, {"sides": 11, "per": 3})
+				knee_at = Vector3(x, 0.4 * tall, z - 0.08)
+				us.tube([Vector3(x * 0.95, hip_y + 0.16, z + 0.06), Vector3(x * 1.05, lerpf(hip_y, 0.4 * tall, 0.55) if tall != 1.0 else 0.6, z), knee_at], [0.21 * thick, 0.15 * thick, 0.085 * thick], up, {"sides": 11, "per": 3})
 			part(hip, "Upper", us)
 			var knee := joint(hip, "Knee", knee_at)
 			var ls := Sculpt.new(); var lp := ls.add_painter(stocking if stocking.is_valid() else skin)
 			var hf := ls.add_painter(func (p, n, v, w): return HOOF.lightened(clampf(n.y, 0.0, 1.0) * 0.18))
 			var hoof := Vector3(x, 0.05, knee_at.z + (-0.02 if front else 0.05))
 			if front:
-				ls.tube([knee_at, Vector3(x, 0.18, knee_at.z - 0.01), hoof + Vector3(0, 0.05, 0)], [0.08 * thick, 0.066 * thick, 0.07 * thick], lp, {"sides": 10, "per": 3})
+				ls.tube([knee_at, Vector3(x, 0.18 * tall, knee_at.z - 0.01), hoof + Vector3(0, 0.05, 0)], [0.08 * thick, 0.066 * thick, 0.07 * thick], lp, {"sides": 10, "per": 3})
 			else:
-				ls.tube([knee_at, Vector3(x, 0.27, knee_at.z + 0.09), Vector3(x, 0.13, knee_at.z + 0.07), hoof + Vector3(0, 0.05, 0)], [0.08 * thick, 0.066 * thick, 0.062 * thick, 0.068 * thick], lp, {"sides": 10, "per": 3})
+				ls.tube([knee_at, Vector3(x, 0.27 * tall, knee_at.z + 0.09), Vector3(x, 0.13 * tall, knee_at.z + 0.07), hoof + Vector3(0, 0.05, 0)], [0.08 * thick, 0.066 * thick, 0.062 * thick, 0.068 * thick], lp, {"sides": 10, "per": 3})
 			if toes == 2:
 				for t in [-1.0, 1.0]:
 					ls.blob(hoof + Vector3(0.032 * t * thick, -0.004, -0.025), Vector3(0.038 * thick, 0.05, 0.06 * thick), hf, {"lat": 5, "lon": 8})
