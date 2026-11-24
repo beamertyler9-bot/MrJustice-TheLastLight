@@ -27,6 +27,7 @@ const DESIGNS := {
 	"windwhistle_stalker": ["res://tools/sculpt_windwhistle_stalker.gd", "lion"],
 	"thistle_jackal": ["res://tools/sculpt_thistle_jackal.gd", "burrcoat"],
 	"grassland_colossus": ["res://tools/sculpt_grassland_colossus.gd", "sod"],
+	"kiteclaw_raptor": ["res://tools/sculpt_kiteclaw_raptor.gd", "raptor"],
 }
 
 
