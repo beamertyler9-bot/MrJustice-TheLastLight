@@ -28,6 +28,9 @@ const DESIGNS := {
 	"thistle_jackal": ["res://tools/sculpt_thistle_jackal.gd", "burrcoat"],
 	"grassland_colossus": ["res://tools/sculpt_grassland_colossus.gd", "sod"],
 	"kiteclaw_raptor": ["res://tools/sculpt_kiteclaw_raptor.gd", "raptor"],
+	"storm_bison": ["res://tools/sculpt_stormhorn_matriarch.gd", "bison"],
+	"thunder_rhino": ["res://tools/sculpt_stormhorn_matriarch.gd", "rhino"],
+	"stormcloud_muskox": ["res://tools/sculpt_stormhorn_matriarch.gd", "muskox"],
 }
 
 

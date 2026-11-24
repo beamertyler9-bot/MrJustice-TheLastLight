@@ -1,7 +1,8 @@
 extends "res://tools/creature_kit.gd"
-## The Stormhorn Matriarch, boss of the Windbell Plains, sculpted by hand: a huge plated grazing
-## beast with storm-shaped horns that lowers its head and charges down a lane. Three designs,
-## all built at about 1.4 m tall and scaled up to stand well over Mr. Justice:
+## Storm beasts of the Windbell Plains, sculpted by hand: huge plated grazers with storm-shaped
+## horns that roam the open grass and lower their heads to charge anyone who comes too close.
+## (They began as designs for the Stormhorn Matriarch.) Each is built about 1.4 m tall and
+## scaled up to stand well over Mr. Justice:
 ##   bison - a shaggy storm bison with a great hump, slate plates down its back and jagged
 ##           lightning-bolt horns with glowing tips
 ##   rhino - an armoured thunder rhino whose heavy plates of hide are split by glowing seams of
@@ -92,7 +93,7 @@ func lock(s: Sculpt, painter: int, base: Vector3, dir: Vector3, length: float, w
 
 
 ## Four legs with cloven hooves. Rows are [label, hip z, front?]; `thick` scales their girth.
-func legs(skin: Callable, width: float, front_z: float, hind_z: float, hip_y: float, thick: float, stocking := Callable()) -> Dictionary:
+func legs(skin: Callable, width: float, front_z: float, hind_z: float, hip_y: float, thick: float, stocking := Callable(), toes := 2) -> Dictionary:
 	# The upper legs always wear the coat; `stocking` (if given) colours the shins.
 	var hips: Array = []; var knees: Array = []
 	for row in [["Front", front_z, true], ["Hind", hind_z, false]]:
@@ -117,8 +118,14 @@ func legs(skin: Callable, width: float, front_z: float, hind_z: float, hip_y: fl
 				ls.tube([knee_at, Vector3(x, 0.18, knee_at.z - 0.01), hoof + Vector3(0, 0.05, 0)], [0.08 * thick, 0.066 * thick, 0.07 * thick], lp, {"sides": 10, "per": 3})
 			else:
 				ls.tube([knee_at, Vector3(x, 0.27, knee_at.z + 0.09), Vector3(x, 0.13, knee_at.z + 0.07), hoof + Vector3(0, 0.05, 0)], [0.08 * thick, 0.066 * thick, 0.062 * thick, 0.068 * thick], lp, {"sides": 10, "per": 3})
-			for t in [-1.0, 1.0]:
-				ls.blob(hoof + Vector3(0.032 * t * thick, -0.004, -0.025), Vector3(0.038 * thick, 0.05, 0.06 * thick), hf, {"lat": 5, "lon": 8})
+			if toes == 2:
+				for t in [-1.0, 1.0]:
+					ls.blob(hoof + Vector3(0.032 * t * thick, -0.004, -0.025), Vector3(0.038 * thick, 0.05, 0.06 * thick), hf, {"lat": 5, "lon": 8})
+			else:
+				# A round foot pad with three broad nails, like a rhino's.
+				ls.blob(hoof + Vector3(0, 0.0, 0.005), Vector3(0.075, 0.05, 0.075) * thick, lp, {"lat": 6, "lon": 10})
+				for t in [-1.0, 0.0, 1.0]:
+					ls.blob(hoof + Vector3(0.05 * t * thick, -0.008, -0.055 * thick + absf(t) * 0.02), Vector3(0.028, 0.04, 0.026) * thick, hf, {"lat": 4, "lon": 7})
 			part(knee, "Lower", ls)
 			hips.append(hip); knees.append(knee)
 	return {"hips": hips, "knees": knees}
@@ -170,12 +177,14 @@ static func horn_paint(p: Vector3, n: Vector3, v: float, _w: float) -> Color:
 func _bison() -> Node3D:
 	var coat := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
 		var streak := Sculpt.fbm(Vector3(p.x * 9.0, p.y * 6.0, p.z * 9.0))
-		var light := Color("#7b5838").lerp(Color("#5a3d25"), smoothstep(0.2, -0.3, p.z))
-		var c := light.lerp(Color("#2c1d13"), clampf(smoothstep(0.1, -0.5, p.z) * 0.6 + streak * 0.35 + smoothstep(0.45, 0.15, p.y) * 0.5, 0.0, 1.0))
+		var light := Color("#5e4028").lerp(Color("#4b3220"), smoothstep(0.2, -0.3, p.z))
+		var c := light.lerp(Color("#2c1d13"), clampf(smoothstep(0.1, -0.5, p.z) * 0.35 + streak * 0.35 + smoothstep(0.45, 0.15, p.y) * 0.5, 0.0, 1.0))
 		return c.lerp(Color("#5e6870"), smoothstep(0.75, 1.0, n.y) * 0.12)
 	var hair := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
 		return Color("#24170f").lerp(Color("#6a4a2e"), clampf(0.25 + Sculpt.noise(p * 11.0) * 0.4 + v * 0.3, 0.0, 1.0))
-	var body := Sculpt.new(); var bp := body.add_painter(coat); var hp := body.add_painter(hair); var plate := body.add_painter(slate)
+	var cape := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+		return Color("#3a2617").lerp(Color("#7a5433"), clampf(0.3 + Sculpt.noise(p * 11.0) * 0.4 + (1.0 - v) * 0.3, 0.0, 1.0))
+	var body := Sculpt.new(); var bp := body.add_painter(coat); var hp := body.add_painter(cape); var plate := body.add_painter(slate)
 	body.tube([Vector3(0, 0.74, 0.72), Vector3(0, 0.8, 0.45), Vector3(0, 0.83, 0.1), Vector3(0, 0.92, -0.2), Vector3(0, 0.92, -0.44)], [0.27, 0.34, 0.37, 0.43, 0.38], bp, {"sides": 16, "per": 3, "flat": 0.82, "lump": 0.05})
 	body.blob(Vector3(0, 1.12, -0.26), Vector3(0.27, 0.26, 0.36), bp, {"lat": 9, "lon": 12, "lump": 0.08})
 	body.blob(Vector3(0, 0.62, -0.42), Vector3(0.28, 0.3, 0.26), bp, {"lat": 8, "lon": 12})
@@ -184,18 +193,18 @@ func _bison() -> Node3D:
 		body.blob(Vector3(0.17 * side, 0.84, 0.55), Vector3(0.16, 0.22, 0.22), bp, {"lat": 7, "lon": 10})
 		body.blob(Vector3(0.2 * side, 0.88, -0.36), Vector3(0.16, 0.24, 0.2), bp, {"lat": 7, "lon": 10, "lump": 0.1})
 	# A woolly cape over the hump, shoulders and chest: locks hanging down and back.
-	for k in range(34):
-		var t := float(k) / 33.0
+	for k in range(40):
+		var t := float(k) / 39.0
 		var ang := lerpf(-2.5, 2.5, t) + Sculpt.noise(Vector3(k, 1, 1)) * 0.15
-		for ring in range(2):
-			var z := -0.5 + ring * 0.2 + Sculpt.noise(Vector3(k, ring, 3)) * 0.04
+		for ring in range(3):
+			var z := -0.52 + ring * 0.14 + Sculpt.noise(Vector3(k, ring, 3)) * 0.04
 			var center := Vector3(0, 0.9 + ring * 0.08, z)
 			var radial := Vector3(sin(ang), cos(ang), 0)
 			var reach := Vector3(0.36, 0.34 + ring * 0.04, 0)
 			var base := center + radial * reach
 			if base.y < 0.62: continue
 			var dir := radial * 0.4 + Vector3(0, -1.0, 0.35 + ring * 0.2)
-			lock(body, hp, base, dir, 0.24 + 0.08 * absf(Sculpt.noise(Vector3(k, ring, 5) * 1.7)), 0.07, Vector3(radial.x, radial.y, 0), 0.15)
+			lock(body, hp, base, dir, 0.22 + 0.08 * absf(Sculpt.noise(Vector3(k, ring, 5) * 1.7)), 0.058, Vector3(radial.x, radial.y, 0), 0.15, 5, 2)
 	# Slate plates down the hump and back, overlapping like roof tiles, and two rows on the flanks.
 	var spine := func (z: float) -> float:
 		if z < -0.1: return 1.36 - absf(z + 0.28) * 0.75
@@ -230,7 +239,7 @@ func _bison() -> Node3D:
 	# Storm horns: out to the sides, then up, breaking into a bolt at the tips.
 	for side in [-1.0, 1.0]:
 		storm_horn(hs, horn, head, [Vector3(0.15 * side, 0.8, -0.86), Vector3(0.28 * side, 0.82, -0.87), Vector3(0.39 * side, 0.9, -0.88),
-			Vector3(0.43 * side, 1.0, -0.88), Vector3(0.45 * side, 1.1, -0.9), Vector3(0.5 * side, 1.2, -0.9), Vector3(0.52 * side, 1.3, -0.92)], 0.075, 0.035, Vector3(side, 0, 0))
+			Vector3(0.43 * side, 1.0, -0.88), Vector3(0.45 * side, 1.1, -0.9), Vector3(0.5 * side, 1.2, -0.9), Vector3(0.52 * side, 1.3, -0.92)], 0.09, 0.035, Vector3(side, 0, 0))
 	# A long beard.
 	for k in range(9):
 		var x := (k - 4) * 0.03
@@ -246,7 +255,7 @@ func _bison() -> Node3D:
 		var xs := Sculpt.new(); var xp := xs.add_painter(hair)
 		xs.tube([Vector3(0.17 * side, 0.7, -0.82), Vector3(0.25 * side, 0.68, -0.81), Vector3(0.29 * side, 0.66, -0.8)], [0.04, 0.035, 0.01], xp, {"sides": 7, "per": 2, "flat": 0.4, "side": Vector3.UP, "cap_rings": 1})
 		ears.append(ear); ear_sculpts.append(xs)
-	var leg_rig := legs(coat, 0.21, -0.36, 0.55, 0.72, 1.0)
+	var leg_rig := legs(coat, 0.21, -0.36, 0.55, 0.72, 1.12)
 	for k in range(2):
 		var side := -1.0 if k == 0 else 1.0
 		var fs := Sculpt.new(); var fp := fs.add_painter(hair)
@@ -265,7 +274,7 @@ func _bison() -> Node3D:
 		var ang := TAU * k / 5.0
 		lock(tts, ttp, Vector3(0, 0.62, 0.9) + Vector3(cos(ang), 0, sin(ang)) * 0.015, Vector3(cos(ang) * 0.25, -1.0, sin(ang) * 0.25), 0.2, 0.035, Vector3(cos(ang), 0, sin(ang)), 0.05, 5, 1)
 	return _close({"body": body, "head": head, "head_sculpt": hs, "jaw": jaw, "jaw_sculpt": js, "eye_sculpt": eye_sculpt, "ears": ears, "ear_sculpts": ear_sculpts,
-		"hips": leg_rig.hips, "knees": leg_rig.knees, "tails": [tail, tip], "tail_sculpts": [ts, tts], "fronds": fronds, "frond_sculpts": frond_sculpts}, 1.9)
+		"hips": leg_rig.hips, "knees": leg_rig.knees, "tails": [tail, tip], "tail_sculpts": [ts, tts], "fronds": fronds, "frond_sculpts": frond_sculpts}, 1.5)
 
 
 # ------------------------------------------------------------------ B: thunder rhino
@@ -274,7 +283,7 @@ func _rhino() -> Node3D:
 	var hide := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
 		var mottle := Sculpt.fbm(p * 6.0)
 		var c := Color("#6b7177").lerp(Color("#3f454b"), clampf(n.y * 0.4 + 0.3 + mottle * 0.6, 0.0, 1.0))
-		c = c.lightened(smoothstep(0.3, 0.45, Sculpt.noise(p * 26.0)) * 0.12)
+		c = c.lightened(smoothstep(0.25, 0.45, Sculpt.noise(p * 24.0)) * 0.18).darkened(smoothstep(-0.3, -0.5, Sculpt.noise(p * 24.0)) * 0.15)
 		c = c.lerp(Color("#8d9297"), clampf(-n.y * 0.5, 0.0, 1.0) * 0.4)
 		return c.darkened(smoothstep(0.3, 0.1, p.y) * 0.3)
 	var body := Sculpt.new(); var bp := body.add_painter(hide)
@@ -326,7 +335,7 @@ func _rhino() -> Node3D:
 		xs.tube([Vector3(0.12 * side, 0.93, -0.7), Vector3(0.16 * side, 1.04, -0.68), Vector3(0.18 * side, 1.12, -0.66)], [0.045, 0.05, 0.02], xp, {"sides": 8, "per": 2, "cap_rings": 1, "flat": 0.6, "side": Vector3.BACK})
 		for b in range(4): lock(xs, tuft, Vector3(0.18 * side, 1.11, -0.66), Vector3(side * (0.2 + b * 0.1), 1.0, 0.1), 0.06, 0.015, Vector3.BACK, 0.2, 4, 1)
 		ears.append(ear); ear_sculpts.append(xs)
-	var leg_rig := legs(hide, 0.25, -0.34, 0.5, 0.66, 1.35)
+	var leg_rig := legs(hide, 0.25, -0.34, 0.5, 0.66, 1.35, Callable(), 3)
 	var tail := joint(root, "Tail", Vector3(0, 0.95, 0.78))
 	var ts := Sculpt.new(); var tp := ts.add_painter(hide)
 	ts.tube([Vector3(0, 0.95, 0.76), Vector3(0, 0.84, 0.84), Vector3(0, 0.7, 0.86)], [0.035, 0.025, 0.02], tp, {"sides": 7, "per": 2, "cap1": false})
@@ -336,7 +345,7 @@ func _rhino() -> Node3D:
 		var ang := TAU * k / 4.0
 		lock(tts, ttp, Vector3(0, 0.71, 0.86), Vector3(cos(ang) * 0.3, -1.0, sin(ang) * 0.3), 0.1, 0.022, Vector3(cos(ang), 0, sin(ang)), 0.05, 4, 1)
 	return _close({"body": body, "head": head, "head_sculpt": hs, "jaw": jaw, "jaw_sculpt": js, "eye_sculpt": eye_sculpt, "ears": ears, "ear_sculpts": ear_sculpts,
-		"hips": leg_rig.hips, "knees": leg_rig.knees, "tails": [tail, tip], "tail_sculpts": [ts, tts], "fronds": [], "frond_sculpts": []}, 1.85)
+		"hips": leg_rig.hips, "knees": leg_rig.knees, "tails": [tail, tip], "tail_sculpts": [ts, tts], "fronds": [], "frond_sculpts": []}, 1.5)
 
 
 # ------------------------------------------------------------------ C: storm-cloud musk ox
@@ -357,19 +366,23 @@ func _muskox() -> Node3D:
 	body.tube([Vector3(0, 0.98, -0.44), Vector3(0, 0.86, -0.6), Vector3(0, 0.76, -0.7)], [0.36, 0.31, 0.26], bp, {"sides": 14, "per": 3, "flat": 0.9, "lump": 0.12})
 	# The skirt: long locks hanging from the flanks, rump and chest almost to the ground.
 	var skirt := body.add_painter(wool)
-	for k in range(46):
-		var t := float(k) / 46.0
-		var ang := TAU * t
-		var radial := Vector3(sin(ang), 0, -cos(ang))
-		var z := radial.z * 0.62 + 0.08
-		var x := radial.x * (0.38 if absf(radial.z) < 0.7 else 0.3)
-		var top_y := 0.9 + (0.08 if z < -0.1 else 0.0)
-		var base := Vector3(x, top_y, z)
-		var length := top_y - 0.22 + 0.05 * Sculpt.noise(Vector3(k, 2, 2) * 1.3)
-		var dir := radial * 0.22 + Vector3(0, -1.0, 0)
-		lock(body, skirt, base, dir, length, 0.085, Vector3(radial.x, 0, radial.z), 0.0, 6, 2, 0.04)
-		if k % 2 == 0:
-			lock(body, skirt, base + Vector3(0, 0.18, 0) - radial * 0.03, dir + radial * 0.1, length * 0.7, 0.075, Vector3(radial.x, 0, radial.z), 0.0, 6, 2, 0.035)
+	for layer in range(2):
+		var count := 40 if layer == 0 else 30
+		for k in range(count):
+			var ang := TAU * (k + layer * 0.5) / count
+			var radial := Vector3(sin(ang), 0, -cos(ang))
+			var tangent := Vector3(cos(ang), 0, sin(ang))
+			var z := radial.z * (0.6 - layer * 0.04) + 0.08
+			var x := radial.x * ((0.38 if absf(radial.z) < 0.7 else 0.3) - layer * 0.03)
+			var top_y := 0.88 + layer * 0.2 + (0.08 if z < -0.1 else 0.0)
+			var base := Vector3(x, top_y, z)
+			var rnd := Sculpt.noise(Vector3(k, layer, 2) * 1.7)
+			var length := (top_y - 0.2 + 0.07 * rnd) if layer == 0 else (0.42 + 0.1 * rnd)
+			var sway := tangent * 0.04 * sin(k * 2.3 + layer)
+			var out := radial * (0.11 + layer * 0.04)
+			var pts := [base, base + out + sway * 0.5 + Vector3(0, -length * 0.35, 0), base + out * 1.3 - sway + Vector3(0, -length * 0.7, 0), base + out * 1.25 + sway + Vector3(0, -length, 0)]
+			var wd := 0.1 - layer * 0.015
+			body.tube(pts, [wd, wd * 1.05, wd * 0.9, wd * 0.5], skirt, {"sides": 6, "per": 2, "lump": 0.25, "cap_rings": 1, "cap1": true, "cap_len": 0.4, "flat": 0.35, "side": radial})
 	# Lightning flickering in the skirt.
 	for s in [[0.42, -0.25, 0.1], [-0.42, 0.25, -0.15], [0.41, 0.45, 0.0], [-0.4, -0.45, 0.2]]:
 		var sx: float = s[0]; var sz: float = s[1]
@@ -399,6 +412,7 @@ func _muskox() -> Node3D:
 		storm_horn(hs, horn, head, [Vector3(0.17 * side, 0.9, -0.84), Vector3(0.24 * side, 0.86, -0.85), Vector3(0.27 * side, 0.74, -0.88), Vector3(0.28 * side, 0.62, -0.92),
 			Vector3(0.33 * side, 0.6, -0.97), Vector3(0.4 * side, 0.68, -1.0), Vector3(0.45 * side, 0.78, -1.01)], 0.08, 0.025, Vector3(0, 0, 1))
 	spark(head, Vector3(-0.17, 0.95, -0.9), Vector3(0.17, 0.95, -0.9), 5, 0.02, Vector3.UP, 0.009)
+	hs.blob(Vector3(0, 0.98, -0.76), Vector3(0.12, 0.07, 0.1), wp, {"lat": 6, "lon": 10, "lump": 0.5})
 	var jaw := joint(head, "Jaw", Vector3(0, 0.5, -0.94))
 	var js := Sculpt.new(); var jp := js.add_painter(face)
 	js.tube([Vector3(0, 0.52, -0.92), Vector3(0, 0.47, -1.08)], [0.08, 0.055], jp, {"sides": 10, "per": 2, "flat": 1.1, "cap_rings": 2})
@@ -417,4 +431,4 @@ func _muskox() -> Node3D:
 	var tts := Sculpt.new(); var ttp := tts.add_painter(wool)
 	lock(tts, ttp, Vector3(0, 0.72, 0.78), Vector3(0, -1.0, 0.1), 0.16, 0.05, Vector3.RIGHT, 0.0)
 	return _close({"body": body, "head": head, "head_sculpt": hs, "jaw": jaw, "jaw_sculpt": js, "eye_sculpt": eye_sculpt, "ears": ears, "ear_sculpts": ear_sculpts,
-		"hips": leg_rig.hips, "knees": leg_rig.knees, "tails": [tail, tip], "tail_sculpts": [ts, tts], "fronds": [], "frond_sculpts": []}, 1.85)
+		"hips": leg_rig.hips, "knees": leg_rig.knees, "tails": [tail, tip], "tail_sculpts": [ts, tts], "fronds": [], "frond_sculpts": []}, 1.5)

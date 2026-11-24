@@ -11451,6 +11451,30 @@
       "hook": "Long tail and sail-like feather arms; shadows and a cry precede its dive."
     },
     {
+      "id": "storm_bison",
+      "name": "Storm Bison",
+      "region": 11,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "Shaggy humped bison with slate plates and lightning-tipped horns; paws the ground, then charges."
+    },
+    {
+      "id": "thunder_rhino",
+      "name": "Thunder Rhino",
+      "region": 11,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "Armoured grey rhino with storm light in its hide folds and a bolt-shaped horn; snorts before it charges."
+    },
+    {
+      "id": "stormcloud_muskox",
+      "name": "Stormcloud Musk Ox",
+      "region": 11,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "Musk ox with a stone brow boss and a skirt of rain-cloud wool; lowers its hooked horns and rams."
+    },
+    {
       "id": "stormhorn_matriarch",
       "name": "Stormhorn Matriarch",
       "region": 11,
