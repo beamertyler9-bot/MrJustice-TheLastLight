@@ -969,10 +969,6 @@ func _knight() -> Node3D:
 			var sd := signf(_world(kn).x)
 			var s3 := Sculpt.new()
 			thorn_branch(s3, _world(kn) + Vector3(0.05 * sd, 0.0, -0.03), Vector3(sd, 0.4, -0.5), 0.25, 0.016, 0, 51.0 + sd, 0.04)
-			# Roots spreading from the sabatons across the ground.
-			for q in range(2):
-				var a := lerpf(-0.8, 0.8, q) + (0.0 if sd > 0 else PI)
-				thorn_branch(s3, Vector3(0.11 * sd, 0.04, -0.02), Vector3(cos(a), -0.1, sin(a) * 0.8 + 0.2), 0.45, 0.024, 0, 61.0 + q * 2.1 + sd, 0.0, true)
 			part(kn, "Blackthorn", s3)
 		# Little twigs creeping out of the visor's sight.
 		var vs := Sculpt.new()

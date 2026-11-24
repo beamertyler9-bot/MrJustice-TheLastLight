@@ -147,3 +147,9 @@ monster should stand clearly bigger than him.
 - Built on cemetery angel statues and the "veiled" marbles of 18th- and 19th-century Italy (Giuseppe Sanmartino's Veiled Christ in Naples; Giovanni Strazza's Veiled Virgin). In those, a thin carved veil lies over a face you can still make out beneath it. The figure has deep-folded robes, folded wings, a halo, and a handbell held by its handle.
 - Its gaze is a pale beam fired from the mask's eyes behind the veil.
 - Considered but not used: a cracked bronze church bell with a hooded figure in a Venetian bauta mask rising from it; and the ophanim of Ezekiel 1:18 (wheels whose "rims were full of eyes round about") with the six wings of Isaiah's seraphim.
+
+## Blackthorn Regent (Hollowmourn boss)
+- Built on the same researched harness as the Mourning Knight: a close helmet with a pointed visor, a tarnished crown and a lantern of iron and horn held by its ring.
+- Blackthorn (Prunus spinosa): black bark; short side-shoots that harden into long spines; white five-petalled blossom (which opens before the leaves); round blue-black sloes. It forms dense, impenetrable thickets.
+- The king died in his armour and blackthorn grew up through it, bursting out of the breastplate and every gap in the plate. His antlers are blackthorn branches.
+- Considered but not used: a king in black parade armour etched with gold (like the Emperor Maximilian's), with an ermine tippet; a great-helmed tournament king.
