@@ -31,6 +31,22 @@ extends "res://tools/creature_kit.gd"
 ##              hatchment, an empty scabbard at the hip, and the longsword carried on the
 ##              shoulder
 
+##
+## The same harness also makes the Blackthorn Regent, the haunted king of Blackthorn Keep (a
+## boss): an antler-crowned suit of royal armour carrying a lantern in one hand and a great
+## sword in the other, a royal mantle behind it. Three designs:
+##   royal  - parade armour of a king about 1510 (like the Emperor Maximilian's), blackened
+##            and etched with gold, a close helmet with a pointed visor under a gold crown from
+##            which a stag's antlers branch, a purple mantle with an ermine tippet, a tabard of
+##            the royal arms, a lantern of iron and horn
+##   thorn  - the same king grown through with blackthorn (Prunus spinosa): thorny black
+##            branches wound round every limb, its white blossom and blue-black sloes, antlers
+##            that are themselves blackthorn branches, a cloak gone to moss and rags, and a
+##            will-o'-the-wisp in its lantern
+##   crest  - a king as the Codex Manesse paints them at the tournament: a great helm crowned,
+##            with a stag's antlers rising from it as its crest, a royal surcoat and a long
+##            cloak
+
 const VIOLET := Color("#b48aff")
 
 var kind := "crusader"
@@ -63,7 +79,9 @@ func _init() -> void:
 func build(variant: String) -> Node3D:
 	root = Node3D.new(); root.name = "MourningKnight"
 	kind = variant
-	if not variant in ["crusader", "gothic", "blackknight"]: return null
+	if not variant in ["crusader", "gothic", "blackknight", "royal", "thorn", "crest"]: return null
+	if variant == "royal" or variant == "crest": glow.albedo_color = Color("#ffe6a0").darkened(0.2); glow.emission = Color("#ffe0a0")
+	if variant == "thorn": glow.albedo_color = Color("#b8ff9a").darkened(0.2); glow.emission = Color("#a8ff8a")
 	return _knight()
 
 
@@ -88,6 +106,38 @@ static func ghost_fire(p: Vector3, _n: Vector3, v: float, _w: float) -> Color:
 static func horn(p: Vector3, n: Vector3, v: float, _w: float) -> Color:
 	var c := Color("#0e0c10").lerp(Color("#3a3238"), clampf(n.y * 0.3 + 0.3 + smoothstep(0.6, 0.95, sin(v * 60.0)) * 0.4, 0.0, 1.0))
 	return c.lerp(Color("#8a7e6e"), smoothstep(0.6, 1.0, v) * 0.6)
+
+
+## Blackened steel etched in bands of gold, the way the royal armourers decorated parade armour.
+static func gilt_black(p: Vector3, n: Vector3, v: float, w: float) -> Color:
+	var c := black_steel(p, n, v, w)
+	var band := smoothstep(0.9, 0.95, fposmod(p.y * 7.0 + 0.3 * sin(p.x * 20.0 + p.z * 20.0), 1.0))
+	var scroll := smoothstep(0.78, 0.86, Sculpt.noise(p * 26.0)) * smoothstep(0.7, 0.95, fposmod(p.y * 9.0, 1.0))
+	return c.lerp(Color("#a8843e"), clampf(band + scroll * 0.6, 0.0, 1.0) * 0.7)
+
+
+## Ermine: white fur dotted with the black tail-tips, as on royal robes.
+static func ermine(p: Vector3, n: Vector3, _v: float, _w: float) -> Color:
+	var c := Color("#d8d4cc").lerp(Color("#f6f4ee"), clampf(n.y * 0.3 + 0.5 + Sculpt.noise(p * 40.0) * 0.2, 0.0, 1.0))
+	var cell := Vector2(fposmod(p.x * 14.0 + p.z * 14.0 + floorf(p.y * 14.0) * 0.5, 1.0) - 0.5, fposmod(p.y * 14.0, 1.0) - 0.5)
+	return Color("#111014") if cell.length() < 0.16 else c
+
+
+static func royal_purple(p: Vector3, n: Vector3, v: float, _w: float) -> Color:
+	var c := Color("#1e0a24").lerp(Color("#5a1a62"), clampf(0.45 + 0.3 * sin(p.x * 36.0 + p.z * 28.0) + n.y * 0.15 + Sculpt.fbm(p * 5.0) * 0.3, 0.0, 1.0))
+	return c.lerp(Color("#3a2a40"), smoothstep(0.85, 1.0, v) * 0.5)
+
+
+static func moss_rag(p: Vector3, n: Vector3, v: float, _w: float) -> Color:
+	var c := Color("#0e100c").lerp(Color("#2a3220"), clampf(0.4 + 0.3 * sin(p.x * 30.0 + p.z * 26.0) + n.y * 0.2 + Sculpt.fbm(p * 6.0) * 0.4, 0.0, 1.0))
+	return c.lerp(Color("#2a241e"), smoothstep(0.7, 1.0, v) * 0.6)
+
+
+## The royal arms: quarterly sable and or (black and gold).
+static func royal_arms(p: Vector3, n: Vector3, v: float, w: float) -> Color:
+	var gold_q := (p.x > 0.0) == (p.y > 1.05)
+	var c := Color("#6e5016") if gold_q else Color("#141218")
+	return c.darkened(clampf(-n.y * 0.2 + smoothstep(0.85, 1.0, v) * 0.4, 0.0, 0.6))
 
 
 static func brass(p: Vector3, n: Vector3, _v: float, _w: float) -> Color:
@@ -285,11 +335,37 @@ func cloak(s: Sculpt, painter: int, r: float, top_y: float, length: float, sprea
 	cloth_sheet(s, painter, tops, outs, lens, func (i: int, t: float, yy: float) -> float: return 0.02 + 0.14 * t * t, 16)
 
 
+## A blackthorn branch along `path`: black bark, long spines, white five-petalled blossom and
+## blue-black sloes.
+func blackthorn(s: Sculpt, path: Array, thick: float, flowers := 3) -> void:
+	var bark := s.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#0e0b0a").lerp(Color("#2e2622"), clampf(n.y * 0.3 + 0.3 + Sculpt.noise(p * 40.0) * 0.3, 0.0, 1.0)))
+	var spine := s.add_painter(func (p, n, v, w): return Color("#120e0c").lerp(Color("#6a5a4a"), v))
+	var bl := s.add_painter(func (p, n, v, w): return Color("#f4f0e8").lerp(Color("#e8c8d0"), clampf(1.0 - n.y, 0.0, 1.0) * 0.3))
+	var sl := s.add_painter(func (p, n, v, w): return Color("#141830").lerp(Color("#6a7aa8"), clampf(n.y * 0.5 + 0.2, 0.0, 1.0)))
+	var rr: Array = []
+	for k in range(path.size()): rr.append(thick * (1.0 - 0.4 * k / float(path.size())))
+	s.tube(path, rr, bark, {"sides": 6, "per": 2, "lump": 0.25})
+	for k in range(1, path.size() - 1):
+		var a: Vector3 = path[k]; var d: Vector3 = ((path[k + 1] as Vector3) - (path[k - 1] as Vector3)).normalized()
+		var side := d.cross(Vector3.UP if absf(d.y) < 0.9 else Vector3.RIGHT).normalized().rotated(d, k * 2.4)
+		s.crystal(a, (side + d * 0.3).normalized(), thick * 3.5, thick * 0.5, spine, 4)
+	for q in range(flowers):
+		var at: Vector3 = path[1 + (q * 3) % maxi(path.size() - 2, 1)]
+		for pt in range(5):
+			var a := TAU * pt / 5.0
+			s.blob(at + Vector3(cos(a) * 0.013, 0.012, sin(a) * 0.013), Vector3(0.011, 0.004, 0.011), bl, {"lat": 3, "lon": 5})
+		var sa: Vector3 = path[(q * 3 + 2) % path.size()]
+		s.blob(sa + Vector3(0, -0.014, 0), Vector3.ONE * 0.015, sl, {"lat": 4, "lon": 6})
+
+
 # ------------------------------------------------------------------ the knight
 
 func _knight() -> Node3D:
 	var crusader := kind == "crusader"; var gothic := kind == "gothic"; var black := kind == "blackknight"
+	var regent := kind in ["royal", "thorn", "crest"]
 	var plate_paint: Callable = black_steel if black else steel
+	if kind == "royal": plate_paint = gilt_black
+	if kind == "thorn": plate_paint = func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return steel(p, n, v, w).darkened(0.35).lerp(Color("#3a4a2a"), smoothstep(0.65, 0.9, Sculpt.noise(p * 9.0) + n.y * 0.15) * 0.4)
 	var fl := 9 if gothic else 0
 
 	# ---- torso
@@ -357,7 +433,7 @@ func _knight() -> Node3D:
 	var eyes: Array = []
 	var hy := 1.68
 	match kind:
-		"crusader":
+		"crusader", "crest":
 			# A great helm: a tall flat-topped barrel with a brass cross over the face, a pair of
 			# eye-slits either side of it, and breathing holes on the right cheek.
 			hs.tube([Vector3(0, 1.52, 0.0), Vector3(0, 1.66, -0.005), Vector3(0, 1.8, 0.0)], [0.13, 0.135, 0.125], hp, {"sides": 16, "per": 3, "flat": 0.92, "cap1": false})
@@ -372,6 +448,17 @@ func _knight() -> Node3D:
 			var cs := Sculpt.new(); var cp := cs.add_painter(mail)
 			cs.tube([Vector3(0, 1.56, 0.0), Vector3(0, 1.47, 0.0)], [0.14, 0.2], cp, {"sides": 16, "per": 1, "side": Vector3.BACK, "flat": 0.85, "cap0": false})
 			part(head, "Coif", cs, mail_mat)
+		"royal", "thorn":
+			# A close helmet: a rounded skull, a visor drawn forward to a point like a sparrow's
+			# beak with a sight-slit across it, a bevor rising over the chin, a gorget below.
+			hs.blob(Vector3(0, hy + 0.01, 0.01), Vector3(0.125, 0.135, 0.145), hp, {"lat": 10, "lon": 16})
+			hs.tube([Vector3(0, hy + 0.14, -0.06), Vector3(0, hy + 0.155, 0.04), Vector3(0, hy + 0.11, 0.15)], [0.011, 0.014, 0.011], hp, {"sides": 5, "per": 2})
+			for side: float in [-1.0, 1.0]:
+				slab(hs, hp, Vector3(0.05 * side, hy - 0.01, -0.105), Vector3(0.1, 0.12, 0.014), Basis(Vector3.UP, -0.5 * side) * Basis(Vector3.RIGHT, -0.15), 0.3, 0.0)
+				eyes.append(Vector3(0.042 * side, hy + 0.028, -0.14))
+			hs.tube([Vector3(-0.1, hy + 0.03, -0.09), Vector3(0, hy + 0.028, -0.152), Vector3(0.1, hy + 0.03, -0.09)], [0.009, 0.011, 0.009], hd, {"sides": 5, "per": 3})
+			for k in range(5): hs.tube([Vector3(0.012 + k * 0.012, hy - 0.03 - k * 0.012, -0.145 + k * 0.008), Vector3(0.05 + k * 0.01, hy - 0.035 - k * 0.012, -0.12 + k * 0.006)], [0.004, 0.004], hd, {"sides": 4, "per": 1})
+			hs.blob(Vector3(0, hy - 0.1, -0.04), Vector3(0.12, 0.075, 0.11), hp, {"lat": 7, "lon": 12})
 		"gothic":
 			# A sallet: a deep rounded bowl drawn out behind into a long tail, a low comb on top,
 			# a sight cut across the front; the bevor rising over the chin to meet it.
@@ -413,6 +500,44 @@ func _knight() -> Node3D:
 			es.tube([Vector3(0.02 * sd, hy - 0.002, -0.15), Vector3(0.05 * sd, hy + 0.012, -0.136), Vector3(0.082 * sd, hy + 0.027, -0.113)], [0.006, 0.007, 0.004], ew, {"sides": 5, "per": 2})
 		else: es.blob(e, Vector3(0.016, 0.008, 0.006), ew, {"lat": 4, "lon": 6})
 	var core := part(head, "GhostEyes", es, glow); core.material_override = glow
+	if regent:
+		# A gold crown round the helm, and a stag's antlers branching up out of it (for the
+		# thorn-grown king, blackthorn branches in their place).
+		var cr := Sculpt.new(); var gp := cr.add_painter(brass); var jp := cr.add_painter(func (p, n, v, w): return Color("#7a1a3a").lightened(clampf(n.y, 0.0, 1.0) * 0.3))
+		var ctop := hy + (0.12 if kind == "crest" else 0.1)
+		var cr_r := 0.14 if kind == "crest" else 0.132
+		var ring: Array = []; var rr: Array = []
+		for k in range(25):
+			var a := TAU * k / 24.0
+			ring.append(Vector3(sin(a) * cr_r, ctop, 0.01 + cos(a) * (cr_r + 0.012))); rr.append(0.016)
+		cr.tube(ring, rr, gp, {"sides": 6, "per": 1, "flat": 2.2, "side": Vector3.UP})
+		for k in range(8):
+			var a := TAU * k / 8.0
+			var at := Vector3(sin(a) * cr_r, ctop + 0.015, 0.01 + cos(a) * (cr_r + 0.012))
+			cr.crystal(at, Vector3(sin(a) * 0.15, 1.0, cos(a) * 0.15).normalized(), 0.06, 0.018, gp, 4)
+			cr.blob(at + Vector3(0, -0.012, 0) + Vector3(sin(a), 0, cos(a)) * 0.012, Vector3.ONE * 0.012, jp, {"lat": 4, "lon": 6})
+		var wood := cr.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#120e0c").lerp(Color("#3a2e26"), clampf(n.y * 0.3 + 0.3 + Sculpt.noise(p * 30.0) * 0.3, 0.0, 1.0)))
+		var ant := cr.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#5a4a38").lerp(Color("#d8ccb0"), clampf(v * 0.9 + n.y * 0.1, 0.0, 1.0)))
+		var ap: int = wood if kind == "thorn" else ant
+		for side: float in [-1.0, 1.0]:
+			var base := Vector3(0.1 * side, ctop + 0.01, 0.0)
+			var beam: Array = []; var br: Array = []
+			for k in range(9):
+				var t := k / 8.0
+				beam.append(base + Vector3((0.12 * t + 0.1 * t * t) * side, 0.5 * t - 0.06 * t * t, 0.12 * t * t)); br.append(lerpf(0.028, 0.008, t))
+			cr.tube(beam, br, ap, {"sides": 7, "per": 2, "lump": 0.15 if kind == "thorn" else 0.05})
+			# Tines: brow, bez and trez forward, a crown of points at the top.
+			for tk: Array in [[0.15, Vector3(0.2 * side, 0.4, -1.0), 0.14], [0.35, Vector3(0.3 * side, 0.6, -0.8), 0.17], [0.55, Vector3(0.2 * side, 0.9, -0.5), 0.15], [0.85, Vector3(0.4 * side, 1.0, -0.2), 0.12], [1.0, Vector3(0.6 * side, 0.8, 0.4), 0.1]]:
+				var at: Vector3 = beam[int(round(float(tk[0]) * 8.0))]
+				var d: Vector3 = (tk[1] as Vector3).normalized()
+				var l: float = tk[2]
+				cr.tube([at, at + d * l * 0.6 + Vector3(0, 0.02, 0), at + d * l + Vector3(0, 0.04, 0)], [0.014, 0.01, 0.003], ap, {"sides": 6, "per": 2, "cap1": false})
+			if kind == "thorn":
+				var thp := cr.add_painter(func (p, n, v, w): return Color("#1a1210").lerp(Color("#8a7a62"), v))
+				for k in range(10):
+					var at: Vector3 = beam[1 + k % 7]
+					cr.crystal(at, Vector3(sin(k * 2.1), 0.5, cos(k * 1.7)).normalized(), 0.05, 0.008, thp, 4)
+		steel_part(head, "Crown", cr)
 	if black:
 		# Great backswept horns from the temples, and a crown of iron thorns round the brow.
 		var hn := Sculpt.new(); var hnp := hn.add_painter(horn); var tn := hn.add_painter(black_steel)
@@ -470,6 +595,9 @@ func _knight() -> Node3D:
 		"blackknight":
 			# The sword carried on the shoulder, the fist low before the hip.
 			sw_c = Vector3(0.21, 1.0, -0.17); sw_d = Vector3(0.02, 0.86, 0.5).normalized()
+		"royal", "thorn", "crest":
+			# A low guard with the great sword, the point raised forward at the enemy's chest.
+			sw_c = Vector3(0.22, 1.0, -0.28); sw_d = Vector3(-0.08, 0.45, -0.89).normalized()
 	for side: float in [-1.0, 1.0]:
 		var label := "Left" if side < 0 else "Right"
 		var sh_at := Vector3(0.23 * side, 1.42, 0.0)
@@ -490,8 +618,13 @@ func _knight() -> Node3D:
 		elif gothic:
 			hand_kind = "sword"
 			fc = sw_c + Vector3(0, 0.09, 0); fd = sw_d
+		elif regent:
+			# The lantern held up before it by its ring, the fist closed round the ring.
+			hand_kind = "lantern"
+			elbow_at = Vector3(-0.29, 1.12, 0.04)
+			fc = Vector3(-0.3, 1.1, -0.3); fd = Vector3(0, 0, -1)
 		if hand_kind != "open":
-			if side > 0.0 or gothic:
+			if (side > 0.0 or gothic) and hand_kind != "lantern":
 				elbow_at = Vector3(0.27 * side, 1.12, 0.06)
 			wrist = fc - (fc - elbow_at).normalized() * 0.07
 		var fa := (fc - wrist).normalized()
@@ -554,6 +687,7 @@ func _knight() -> Node3D:
 			# Edges in line with the knuckles: the edge points along the forearm's line.
 			e = (fa - fd * fa.dot(fd)).normalized()
 			var blade := 1.0; var grip := 0.2; var width := 0.05
+			if regent: blade = 1.25; grip = 0.28; width = 0.062
 			if gothic: blade = 1.0; grip = 0.3; width = 0.058
 			var gc := fc
 			if gothic: gc = fc + Vector3(0, 0.05, 0)
@@ -573,6 +707,36 @@ func _knight() -> Node3D:
 					rs.tube(rpts, rrr, rp, {"sides": 4, "per": 1})
 				part(elbow, "Runes", rs, glow).material_override = glow
 			steel_part(elbow, "Sword", ss)
+		if regent and side < 0.0:
+			# A lantern of iron and horn hanging from the fist by its ring: four corner posts, a
+			# pierced conical roof, panes of thin horn, and a cold flame inside.
+			var ln := Sculpt.new(); var ip := ln.add_painter(black_steel); var hn := ln.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#c8a868").lerp(Color("#f0d8a0"), clampf(n.y * 0.3 + 0.5, 0.0, 1.0)))
+			var ring_c := fc + Vector3(0, -0.01, 0)
+			var rpts: Array = []; var rrr: Array = []
+			for k in range(13):
+				var a := TAU * k / 12.0
+				rpts.append(ring_c + Vector3(sin(a) * 0.035, -0.02 + cos(a) * 0.035 - 0.015, 0)); rrr.append(0.006)
+			ln.tube(rpts, rrr, ip, {"sides": 5, "per": 1})
+			var top := ring_c + Vector3(0, -0.08, 0)
+			ln.lathe(top + Vector3(0, -0.07, 0), [Vector2(0.09, 0.0), Vector2(0.06, 0.03), Vector2(0.0, 0.07)], ip, {"sides": 8})
+			var lb := top + Vector3(0, -0.3, 0)
+			for k in range(4):
+				var a := TAU * (k + 0.5) / 4.0
+				var off := Vector3(sin(a) * 0.075, 0, cos(a) * 0.075)
+				ln.tube([top + Vector3(0, -0.07, 0) + off, lb + off], [0.007, 0.007], ip, {"sides": 4, "per": 1})
+			ln.lathe(lb + Vector3(0, -0.02, 0), [Vector2(0.0, 0.0), Vector2(0.06, 0.0), Vector2(0.088, 0.02), Vector2(0.0, 0.025)], ip, {"sides": 8})
+			part(elbow, "Lantern", ln)
+			var pn := Sculpt.new(); var pnp := pn.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color(0.95, 0.85, 0.6, 0.45))
+			pn.tube([top + Vector3(0, -0.075, 0), lb + Vector3(0, 0.015, 0)], [0.068, 0.068], pnp, {"sides": 4, "per": 1, "cap0": false, "cap1": false, "twist": 0.0})
+			var pm := StandardMaterial3D.new(); pm.vertex_color_use_as_albedo = true; pm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA; pm.cull_mode = BaseMaterial3D.CULL_DISABLED; pm.emission_enabled = true; pm.emission = glow.emission * 0.35
+			part(elbow, "Panes", pn, pm)
+			var fl2 := Sculpt.new(); var flp := fl2.add_painter(func (p, n, v, w): return Color.WHITE)
+			var fcen := (top + lb) * 0.5 + Vector3(0, -0.02, 0)
+			fl2.blob(fcen, Vector3(0.03, 0.05, 0.03), flp, {"lat": 5, "lon": 8})
+			fl2.crystal(fcen + Vector3(0, 0.03, 0), Vector3.UP, 0.06, 0.022, flp, 5)
+			part(elbow, "LanternFlame", fl2, glow).material_override = glow
+			var ll := OmniLight3D.new(); ll.name = "LanternLight"; ll.light_color = glow.emission; ll.light_energy = 0.8; ll.omni_range = 2.2
+			elbow.add_child(ll); ll.position = fcen - _world(elbow)
 		if crusader and side < 0.0:
 			# The heater shield on the forearm: black, strewn with silver tears, edged in steel.
 			var sh := Sculpt.new(); var shr := sh.add_painter(steel)
@@ -648,6 +812,23 @@ func _knight() -> Node3D:
 		panel.call(cv, -1.0, 1.0, 0.17, 0.42, 0.4, 1.0, false)
 		panel.call(cv, 1.0, 1.0, 0.17, 0.42, 0.4, 2.0, false)
 		cloak(cs, cb, 0.3, 1.48, 1.4, 1.45, 0.35)
+	elif regent:
+		var arms_p := cs.add_painter(royal_arms)
+		if kind == "royal" or kind == "crest":
+			# A tabard of the royal arms, a long purple mantle, an ermine tippet over the shoulders.
+			panel.call(arms_p, -1.0, 1.44, 0.19, 0.95 if kind == "crest" else 0.7, 0.12, 1.0, kind == "crest")
+			panel.call(arms_p, 1.0, 1.44, 0.19, 0.95 if kind == "crest" else 0.7, 0.12, 2.0, kind == "crest")
+			cloak(cs, cs.add_painter(royal_purple), 0.3, 1.5, 1.65, 1.5, 0.12)
+			if kind == "royal":
+				var tops: Array = []; var outs: Array = []; var lens: Array = []
+				for k in range(41):
+					var a := lerpf(-PI, PI, k / 40.0)
+					tops.append(Vector3(sin(a) * 0.16, 1.56, cos(a) * 0.14)); outs.append(Vector3(sin(a), 0, cos(a))); lens.append(0.16)
+				cloth_sheet(cs, cs.add_painter(ermine), tops, outs, lens, func (i: int, t: float, yy: float) -> float: return 0.02 + 0.12 * sqrt(t), 8)
+		else:
+			# A cloak gone to moss and rags.
+			cloak(cs, cs.add_painter(moss_rag), 0.3, 1.5, 1.55, 1.55, 0.5)
+			panel.call(cs.add_painter(moss_rag), -1.0, 1.0, 0.17, 0.5, 0.5, 1.0, false)
 	else:
 		# A tabard bearing a mourning hatchment: a black lozenge strewn with silver tears on violet.
 		var hatch := cs.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
@@ -681,7 +862,35 @@ func _knight() -> Node3D:
 		for at: Vector3 in [Vector3(0, 1.52, 0.0), Vector3(0, 0.95, 0.0)]:
 			for k in range(3): gf.tube([at, at + Vector3(0.03 * (k - 1), 0.1, 0.02), at + Vector3(0.05 * (k - 1), 0.18, 0.05)], [0.03, 0.02, 0.002], gfp, {"sides": 6, "per": 2, "cap1": false})
 		part(root, "GhostFire", gf, fire_mat)
+	if kind == "thorn":
+		# Blackthorn grown through the armour: thorny branches round the limbs, white blossom,
+		# blue-black sloes.
+		var limbs: Array = []
+		for k in range(arms.size()): limbs.append([arms[k], forearms[k]])
+		for k in range(hips.size()): limbs.append([hips[k], knees[k]])
+		for pair: Array in limbs:
+			for j in range(2):
+				var nd: Node3D = pair[j]
+				var c0 := _world(nd)
+				var c1 := _world(pair[1]) if j == 0 else c0 + Vector3(0, -0.3, -0.05)
+				var bs := Sculpt.new()
+				var path: Array = []
+				for q in range(9):
+					var t := q / 8.0
+					var a := t * TAU * 1.2 + j
+					path.append(c0.lerp(c1, t) + Vector3(cos(a) * 0.075, 0, sin(a) * 0.075))
+				blackthorn(bs, path, 0.018, 4)
+				part(nd, "Blackthorn", bs)
+		var tb := Sculpt.new()
+		var tpath: Array = []
+		for q in range(14):
+			var t := q / 13.0
+			var a := t * TAU * 2.0
+			tpath.append(Vector3(cos(a) * 0.22, lerpf(0.95, 1.45, t), sin(a) * 0.16))
+		blackthorn(tb, tpath, 0.02, 8)
+		part(root, "Blackthorn", tb)
 	var scale := 1.42 if not black else 1.55
+	if regent: scale = 1.8
 	var node := _finish({"head": head, "core": core, "arms": arms, "forearms": forearms, "feet": hips, "knees": knees, "leaves": []}, scale)
 	var rig: Dictionary = node.get_meta("rig_bindings")
 	rig["visual_rig"] = {"head": node.get_path_to(head), "wings": [], "wing_meshes": [], "legs": [], "knees": [], "ears": [], "tails": [], "features": {}}
