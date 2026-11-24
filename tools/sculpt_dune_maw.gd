@@ -152,7 +152,7 @@ func _antlion() -> Node3D:
 
 ## Legs for a sprawling lizard: the upper limb reaches out sideways to the elbow or knee, the
 ## lower limb plants down to a flat foot with five long clawed toes spread wide.
-func lizard_legs(skin: Callable, rows: Array) -> Dictionary:
+func lizard_legs(skin: Callable, rows: Array, thick := 1.0) -> Dictionary:
 	var hips: Array = []; var knees: Array = []
 	for row in rows:
 		for side in [-1.0, 1.0]:
@@ -162,19 +162,19 @@ func lizard_legs(skin: Callable, rows: Array) -> Dictionary:
 			var wrist := Vector3(0.53 * side, 0.09, float(row[1]) + (-0.04 if front else 0.14))
 			var hip := joint(root, str(row[0]) + ("Left" if side < 0 else "Right") + "Leg", hip_at)
 			var us := Sculpt.new(); var up := us.add_painter(skin)
-			us.tube([hip_at - Vector3(0.06 * side, 0, 0), hip_at.lerp(elbow, 0.5) + Vector3(0, 0.035, 0), elbow], [0.1 if front else 0.13, 0.085, 0.07], up, {"sides": 10, "per": 3})
+			us.tube([hip_at - Vector3(0.06 * side, 0, 0), hip_at.lerp(elbow, 0.5) + Vector3(0, 0.035, 0), elbow], [(0.1 if front else 0.13) * thick, 0.085 * thick, 0.07 * thick], up, {"sides": 10, "per": 3})
 			part(hip, "UpperLeg", us)
 			var knee := joint(hip, "Elbow" if front else "Knee", elbow)
 			var ls := Sculpt.new(); var lp := ls.add_painter(skin); var cl := ls.add_painter(func (p, n, v, w): return Color("#2a2018").lerp(Color("#c8b48a"), v))
-			ls.tube([elbow, elbow.lerp(wrist, 0.5) + Vector3(0.02 * side, 0, 0), wrist + Vector3(0, 0.03, 0)], [0.07, 0.058, 0.05], lp, {"sides": 9, "per": 3})
-			ls.blob(wrist + Vector3(0, -0.02, -0.02), Vector3(0.07, 0.035, 0.07), lp, {"lat": 5, "lon": 8})
+			ls.tube([elbow, elbow.lerp(wrist, 0.5) + Vector3(0.02 * side, 0, 0), wrist + Vector3(0, 0.03, 0)], [0.07 * thick, 0.058 * thick, 0.05 * thick], lp, {"sides": 9, "per": 3})
+			ls.blob(wrist + Vector3(0, -0.02, -0.02), Vector3(0.07, 0.035, 0.07) * thick, lp, {"lat": 5, "lon": 8})
 			for t in range(5):
 				var ang := lerpf(-1.1, 0.9, t / 4.0) if front else lerpf(-0.6, 1.6, t / 4.0)
 				var dir := Vector3(sin(ang) * side, 0, -cos(ang))
 				var length := 0.12 + 0.05 * sin(float(t) / 4.0 * PI) + (0.04 if not front and t == 3 else 0.0)
 				var toe := wrist + Vector3(0, -0.02, 0) + dir * 0.04
-				ls.tube([toe, toe + dir * length * 0.6 + Vector3(0, 0.012, 0), toe + dir * length + Vector3(0, -0.015, 0)], [0.022, 0.017, 0.012], lp, {"sides": 5, "per": 2, "cap_rings": 1})
-				ls.crystal(toe + dir * length, dir + Vector3(0, -0.5, 0), 0.05, 0.01, cl, 4)
+				ls.tube([toe, toe + dir * length * 0.6 + Vector3(0, 0.012, 0), toe + dir * length + Vector3(0, -0.015, 0)], [0.022 * thick, 0.017 * thick, 0.012 * thick], lp, {"sides": 5, "per": 2, "cap_rings": 1})
+				ls.crystal(toe + dir * length, dir + Vector3(0, -0.5, 0), 0.05 * thick, 0.01 * thick, cl, 4)
 			part(knee, "LowerLeg", ls)
 			hips.append(hip); knees.append(knee)
 	return {"hips": hips, "knees": knees}
