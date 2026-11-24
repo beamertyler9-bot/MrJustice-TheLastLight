@@ -260,7 +260,7 @@ func _pangolin() -> Node3D:
 	var nose := hs.add_painter(func (p, n, v, w): return Color("#1e1716").lightened(clampf(n.y, 0.0, 1.0) * 0.15))
 	hs.tube([Vector3(0, 0.5, -0.55), Vector3(0, 0.46, -0.74), Vector3(0, 0.41, -0.9), Vector3(0, 0.37, -1.03)], [0.18, 0.125, 0.075, 0.045], hp, {"sides": 14, "per": 3, "cap_len": 0.5})
 	hs.blob(Vector3(0, 0.368, -1.07), Vector3(0.035, 0.028, 0.022), nose, {"lat": 5, "lon": 8})
-	for row in range(7):
+	for row in range(5):
 		var z := -0.46 - row * 0.06
 		var yc := 0.5 + (z + 0.55) * (0.21 if z < -0.55 else 0.5); var rc := 0.18 + (z + 0.55) * (0.29 if z < -0.55 else 0.5)
 		var n := 8 - row
@@ -269,9 +269,10 @@ func _pangolin() -> Node3D:
 			var out := Vector3(sin(a), cos(a), 0)
 			shingle(hs, hsp, Vector3(sin(a) * rc * 1.04, yc + cos(a) * rc * 1.04, z), Vector3(0, 0.55, 1), out, 0.13 - row * 0.01, 0.065 - row * 0.006, 0.03)
 	for side: float in [-1.0, 1.0]:
-		# Heavy lids over small eyes.
-		hs.blob(Vector3(0.075 * side, 0.5, -0.79), Vector3(0.03, 0.018, 0.03), hp, {"lat": 4, "lon": 7})
-	var core := _eyes(head, [Vector3(-0.077, 0.487, -0.8), Vector3(0.077, 0.487, -0.8)], 0.014)
+		# Small eyes on the sides of the head, in dark sockets under heavy lids.
+		hs.blob(Vector3(0.088 * side, 0.488, -0.8), Vector3(0.03, 0.026, 0.034), hs.add_painter(func (p, n, v, w): return Color("#15100e")), {"lat": 5, "lon": 8})
+		hs.blob(Vector3(0.09 * side, 0.51, -0.8), Vector3(0.034, 0.014, 0.036), hp, {"lat": 4, "lon": 7, "basis": Basis(Vector3.FORWARD, -0.35 * side)})
+	var core := _eyes(head, [Vector3(-0.1, 0.49, -0.802), Vector3(0.1, 0.49, -0.802)], 0.02)
 	part(head, "Head", hs)
 	var jaw := joint(head, "Jaw", Vector3(0, 0.38, -0.9))
 	var js := Sculpt.new(); var jt := js.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#8a2c2a").lerp(Color("#c4524a"), v))
@@ -383,14 +384,21 @@ func _tortoise() -> Node3D:
 	# A volcano on the crown of the shell: a cone of basalt with a pool of lava in its crater,
 	# lava spilling over the rim and running down between the scutes, and a column of smoke.
 	var top := c + Vector3(0, r.y, 0)
-	lava.lathe(top + Vector3(0, 0.2, 0), [Vector2(0, 0.0), Vector2(0.1, 0.0), Vector2(0.105, -0.02), Vector2(0, -0.02)], lw, {"sides": 12})
+	lava.lathe(top + Vector3(0, 0.225, 0), [Vector2(0, 0.012), Vector2(0.08, 0.008), Vector2(0.13, -0.005), Vector2(0.135, -0.03), Vector2(0, -0.03)], lw, {"sides": 14})
 	for k in range(4):
 		var th := TAU * (k + 0.5) / 5.0 + 0.2
 		var pts: Array = []; var pr: Array = []
-		for j in range(7):
-			var phi := lerpf(0.18, 1.32 - 0.12 * (k % 2), j / 6.0)
+		# Over the lip of the crater and down the side of the cone...
+		var dir := Vector3(cos(th), 0, sin(th))
+		for j in range(4):
+			var t := j / 3.0
+			var rr := lerpf(0.12, 0.35, t)
+			pts.append(top + dir * rr + Vector3(0, lerpf(0.225, -0.055, t) + 0.025, 0)); pr.append(lerpf(0.04, 0.036, t))
+		# ...then down the shell between the scutes, thinning as it cools.
+		for j in range(1, 7):
+			var phi := lerpf(0.72, 1.32 - 0.12 * (k % 2), j / 6.0)
 			var pt: Array = on_dome(c, r, phi, th + 0.12 * sin(j * 1.7 + k))
-			pts.append((pt[0] as Vector3) + (pt[1] as Vector3) * 0.045); pr.append(lerpf(0.035, 0.018, j / 6.0))
+			pts.append((pt[0] as Vector3) + (pt[1] as Vector3) * 0.045); pr.append(lerpf(0.034, 0.018, j / 6.0))
 		lava.tube(pts, pr, lw, {"sides": 6, "per": 2, "lump": 0.25})
 		lava.blob((pts[-1] as Vector3) + Vector3(0, -0.03, 0), Vector3(0.025, 0.04, 0.025), lw, {"lat": 4, "lon": 6})
 	part(root, "Lava", lava, glow).material_override = glow
