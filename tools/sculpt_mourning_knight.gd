@@ -36,6 +36,7 @@ const VIOLET := Color("#b48aff")
 var kind := "crusader"
 var cloth_mat: StandardMaterial3D
 var mail_mat: StandardMaterial3D
+var fire_mat: StandardMaterial3D
 
 
 func _init() -> void:
@@ -51,6 +52,12 @@ func _init() -> void:
 	mail_mat.vertex_color_use_as_albedo = true
 	mail_mat.metallic = 0.6; mail_mat.roughness = 0.5
 	glow.albedo_color = VIOLET.darkened(0.2); glow.emission = VIOLET; glow.emission_energy_multiplier = 2.4
+	fire_mat = StandardMaterial3D.new()
+	fire_mat.vertex_color_use_as_albedo = true
+	fire_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	fire_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fire_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	fire_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 
 
 func build(variant: String) -> Node3D:
@@ -70,6 +77,17 @@ static func steel(p: Vector3, n: Vector3, _v: float, w: float) -> Color:
 
 static func black_steel(p: Vector3, n: Vector3, v: float, w: float) -> Color:
 	return steel(p, n, v, w).darkened(0.55).lerp(Color("#2a2434"), 0.15)
+
+
+static func ghost_fire(p: Vector3, _n: Vector3, v: float, _w: float) -> Color:
+	var a := (1.0 - v) * (0.55 + 0.3 * Sculpt.noise(p * 12.0))
+	return Color(0.62 * a, 0.4 * a, 1.0 * a, 1.0)
+
+
+## Horn: near-black, ridged, paling to dull bone at the tip.
+static func horn(p: Vector3, n: Vector3, v: float, _w: float) -> Color:
+	var c := Color("#0e0c10").lerp(Color("#3a3238"), clampf(n.y * 0.3 + 0.3 + smoothstep(0.6, 0.95, sin(v * 60.0)) * 0.4, 0.0, 1.0))
+	return c.lerp(Color("#8a7e6e"), smoothstep(0.6, 1.0, v) * 0.6)
 
 
 static func brass(p: Vector3, n: Vector3, _v: float, _w: float) -> Color:
@@ -162,7 +180,7 @@ func fist(s: Sculpt, painter: int, c: Vector3, d: Vector3, a: Vector3, bh: Vecto
 
 
 ## A sword: the grip centred on `c`, the blade along `d`, its edges along `e`.
-func sword(s: Sculpt, sp: int, gp: int, bp: int, c: Vector3, d: Vector3, e: Vector3, blade: float, grip: float, width: float) -> void:
+func sword(s: Sculpt, sp: int, gp: int, bp: int, c: Vector3, d: Vector3, e: Vector3, blade: float, grip: float, width: float, wavy := false) -> void:
 	var f := d.cross(e).normalized()
 	var guard := c + d * (grip * 0.5 + 0.01)
 	# Grip wrapped in leather, a wheel pommel below it.
@@ -175,7 +193,16 @@ func sword(s: Sculpt, sp: int, gp: int, bp: int, c: Vector3, d: Vector3, e: Vect
 	s.tube([guard - e * q + d * 0.02, guard - e * q * 0.5, guard, guard + e * q * 0.5, guard + e * q + d * 0.02], [0.012, 0.014, 0.016, 0.014, 0.012], bp, {"sides": 6, "per": 2})
 	# The blade: a long flattened diamond, tapering to the point, a dark fuller down its middle.
 	var tip := guard + d * blade
-	s.tube([guard + d * 0.01, guard + d * blade * 0.5, guard + d * blade * 0.88, tip], [width * 0.5, width * 0.43, width * 0.3, 0.002], sp, {"sides": 4, "per": 3, "flat": 0.16, "side": f, "cap1": false})
+	if wavy:
+		# A flamberge: the blade's edges rippling like a flame all the way to the point.
+		var pts: Array = []; var rr: Array = []
+		for k in range(25):
+			var t := k / 24.0
+			pts.append(guard + d * (0.01 + blade * t) + e * width * 0.22 * sin(t * TAU * 5.5) * smoothstep(0.08, 0.2, t) * (1.0 - t * 0.6))
+			rr.append(width * lerpf(0.55, 0.32, t) * (1.0 - smoothstep(0.9, 1.0, t)) + 0.002)
+		s.tube(pts, rr, sp, {"sides": 4, "per": 1, "flat": 0.16, "side": f, "cap1": false})
+	else:
+		s.tube([guard + d * 0.01, guard + d * blade * 0.5, guard + d * blade * 0.88, tip], [width * 0.5, width * 0.43, width * 0.3, 0.002], sp, {"sides": 4, "per": 3, "flat": 0.16, "side": f, "cap1": false})
 	var fuller := s.add_painter(func (p, n, v, w): return Color("#16171c"))
 	for sgn: float in [-1.0, 1.0]:
 		s.tube([guard + d * 0.03 + f * sgn * width * 0.075, guard + d * blade * 0.6 + f * sgn * width * 0.06], [width * 0.09, width * 0.05], fuller, {"sides": 4, "per": 1, "flat": 0.3, "side": f})
@@ -303,6 +330,24 @@ func _knight() -> Node3D:
 	body.tube([Vector3(0, 0.98 if crusader else 0.9, 0), Vector3(0, 0.96 if crusader else 0.88, 0)], [0.185 if crusader else 0.21, 0.19 if crusader else 0.215], belt, {"sides": 18, "per": 1, "side": Vector3.BACK, "flat": 0.72})
 	body.blob(Vector3(0, 0.97 if crusader else 0.89, -0.15), Vector3(0.03, 0.025, 0.012), bp, {"lat": 4, "lon": 6})
 	body.blob(Vector3(0, 1.5, 0.0), Vector3(0.06, 0.03, 0.06), dark, {"lat": 4, "lon": 8})
+	if black:
+		# The breastplate embossed as a ribcage, ghost-light glowing between the ribs.
+		var rb := Sculpt.new(); var rbg := rb.add_painter(func (p, n, v, w): return Color.WHITE)
+		for k in range(5):
+			var yy := 1.38 - k * 0.055
+			for side: float in [-1.0, 1.0]:
+				var pts: Array = []; var rr: Array = []
+				for j in range(6):
+					var a := lerpf(0.08, 1.25, j / 5.0)
+					pts.append(Vector3(sin(a) * (0.2 - k * 0.008) * side, yy - 0.04 * sin(a) - 0.01 * j, -cos(a) * 0.175 - 0.005)); rr.append(0.011 - j * 0.001)
+				body.tube(pts, rr, sp, {"sides": 5, "per": 2})
+				var gl: Array = []
+				for q in pts: gl.append((q as Vector3) + Vector3(0, -0.027, 0.004))
+				rb.tube(gl, [0.004, 0.004, 0.004, 0.004, 0.003, 0.002], rbg, {"sides": 4, "per": 1})
+		body.tube([Vector3(0, 1.41, -0.18), Vector3(0, 1.17, -0.185)], [0.016, 0.012], sp, {"sides": 5, "per": 2})
+		var dim := glow.duplicate() as StandardMaterial3D
+		dim.emission_energy_multiplier = 0.9; dim.albedo_color = Color("#5a3a8a")
+		part(root, "RibGlow", rb, dim).material_override = dim
 	steel_part(root, "Body", body)
 	if ms.triangles() > 0: part(root, "Mail", ms, mail_mat)
 
@@ -343,29 +388,62 @@ func _knight() -> Node3D:
 			# sight slit and breaths, cheek-plates meeting at the chin, a rondel on a stem behind.
 			hs.blob(Vector3(0, hy + 0.01, 0.01), Vector3(0.125, 0.135, 0.145), hp, {"lat": 10, "lon": 16})
 			hs.tube([Vector3(0, hy + 0.15, -0.07), Vector3(0, hy + 0.16, 0.04), Vector3(0, hy + 0.11, 0.15)], [0.012, 0.015, 0.012], hp, {"sides": 5, "per": 2})
-			hs.blob(Vector3(0, hy - 0.025, -0.08), Vector3(0.11, 0.075, 0.08), hp, {"lat": 7, "lon": 12})
-			hs.crystal(Vector3(0, hy - 0.03, -0.1), Vector3(0, -0.15, -1), 0.09, 0.075, hp, 6)
-			hs.tube([Vector3(-0.1, hy + 0.02, -0.08), Vector3(0, hy + 0.017, -0.14), Vector3(0.1, hy + 0.02, -0.08)], [0.009, 0.011, 0.009], hd, {"sides": 5, "per": 3})
+			# A grotesque visor (Henry VIII's horned helmet of 1512 wore a face like this): two
+			# angled plates meeting in a sharp prow, slanted eye-slits glaring down toward the
+			# middle, and a black mouth hung with iron fangs.
 			for side: float in [-1.0, 1.0]:
-				eyes.append(Vector3(0.042 * side, hy + 0.017, -0.132))
-				for k in range(4): hs.tube([Vector3(0.03 * side, hy - 0.04 - k * 0.018, -0.14 + k * 0.004), Vector3(0.075 * side, hy - 0.04 - k * 0.018, -0.115)], [0.004, 0.004], hd, {"sides": 4, "per": 1})
+				slab(hs, hp, Vector3(0.052 * side, hy - 0.025, -0.11), Vector3(0.105, 0.17, 0.016), Basis(Vector3.UP, -0.62 * side) * Basis(Vector3.RIGHT, 0.12), 0.25, 0.0)
+				hs.tube([Vector3(0.016 * side, hy - 0.004, -0.152), Vector3(0.05 * side, hy + 0.012, -0.135), Vector3(0.088 * side, hy + 0.03, -0.11)], [0.011, 0.012, 0.008], hd, {"sides": 5, "per": 2})
+				eyes.append(Vector3(0.05 * side, hy + 0.012, -0.14))
+				hs.tube([Vector3(0.02 * side, hy + 0.03, -0.158), Vector3(0.1 * side, hy + 0.065, -0.105)], [0.013, 0.009], hp, {"sides": 5, "per": 1})
+			hs.tube([Vector3(0, hy + 0.07, -0.145), Vector3(0, hy - 0.02, -0.168), Vector3(0, hy - 0.115, -0.15)], [0.012, 0.015, 0.01], hp, {"sides": 5, "per": 2})
+			hs.blob(Vector3(0, hy - 0.075, -0.142), Vector3(0.06, 0.018, 0.018), hd, {"lat": 4, "lon": 8})
+			for k in range(8):
+				var x := -0.05 + k * (0.1 / 7.0)
+				var l := 0.05 if k == 1 or k == 6 else 0.025
+				hs.crystal(Vector3(x, hy - 0.062, -0.15 + absf(x) * 0.4), Vector3(0, -1, -0.15), l, 0.006, hp, 3)
 			hs.blob(Vector3(0, hy - 0.11, -0.03), Vector3(0.115, 0.07, 0.11), hp, {"lat": 7, "lon": 12})
 			hs.tube([Vector3(0, hy - 0.05, 0.13), Vector3(0, hy - 0.07, 0.2)], [0.012, 0.01], hp, {"sides": 5, "per": 1})
 			hs.tube([Vector3(0, hy - 0.07, 0.195), Vector3(0, hy - 0.07, 0.215)], [0.05, 0.05], hp, {"sides": 12, "per": 1, "flat": 0.2, "side": Vector3.BACK})
 	steel_part(head, "Helm", hs)
 	var es := Sculpt.new(); var ew := es.add_painter(func (p, n, v, w): return Color.WHITE)
-	for e: Vector3 in eyes: es.blob(e, Vector3(0.016, 0.008, 0.006), ew, {"lat": 4, "lon": 6})
+	for e: Vector3 in eyes:
+		if black:
+			var sd := signf(e.x)
+			es.tube([Vector3(0.02 * sd, hy - 0.002, -0.15), Vector3(0.05 * sd, hy + 0.012, -0.136), Vector3(0.082 * sd, hy + 0.027, -0.113)], [0.006, 0.007, 0.004], ew, {"sides": 5, "per": 2})
+		else: es.blob(e, Vector3(0.016, 0.008, 0.006), ew, {"lat": 4, "lon": 6})
 	var core := part(head, "GhostEyes", es, glow); core.material_override = glow
 	if black:
-		# A tall plume of black feathers tipped violet, rising from a holder on the crown.
-		var ps := Sculpt.new(); var pp := ps.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#0c0a10").lerp(Color("#6a3a8a"), smoothstep(0.55, 1.0, v)))
-		var holder := Vector3(0, hy + 0.13, 0.08)
-		for k in range(9):
-			var a := lerpf(-0.6, 0.6, k / 8.0)
-			var dir := Vector3(sin(a) * 0.5, 1.0, 0.5 + 0.25 * cos(a * 3.0)).normalized()
-			var l := 0.32 + 0.08 * cos(a * 2.0)
-			ps.tube([holder, holder + dir * l * 0.5 + Vector3(0, 0, 0.04), holder + dir * l + Vector3(0, -0.06, 0.14)], [0.03, 0.045, 0.004], pp, {"sides": 6, "per": 3, "flat": 0.25, "side": Vector3(cos(a), 0, -sin(a)), "cap1": false})
-		part(head, "Plume", ps, cloth_mat)
+		# Great backswept horns from the temples, and a crown of iron thorns round the brow.
+		var hn := Sculpt.new(); var hnp := hn.add_painter(horn); var tn := hn.add_painter(black_steel)
+		for side: float in [-1.0, 1.0]:
+			var pts: Array = []; var rr: Array = []
+			for k in range(10):
+				var t := k / 9.0
+				pts.append(Vector3((0.1 + 0.13 * t - 0.04 * t * t) * side, hy + 0.06 + 0.34 * t - 0.1 * t * t, -0.01 + 0.08 * t + 0.32 * t * t))
+				rr.append(lerpf(0.036, 0.003, pow(t, 0.8)))
+			hn.tube(pts, rr, hnp, {"sides": 8, "per": 2, "cap1": false, "ridges": 0})
+		for k in range(13):
+			var a := TAU * k / 13.0
+			var at := Vector3(sin(a) * 0.128, hy + 0.075, 0.01 + cos(a) * 0.145)
+			hn.crystal(at, Vector3(sin(a) * 0.4, 1.0, cos(a) * 0.4).normalized(), 0.07 + 0.04 * (k % 2), 0.014, tn, 4)
+		steel_part(head, "Horns", hn)
+		# A torn black mourning veil hanging from the crown down the back.
+		var vl := Sculpt.new(); var vp := vl.add_painter(black_cloth)
+		var tops: Array = []
+		for k in range(7): tops.append(Vector3(0.11 * (k - 3) / 3.0, hy + 0.06, 0.1 + 0.03 * (1.0 - absf(k - 3) / 3.0)))
+		drape(vl, vp, tops, 0.62, Vector3(0, 0, 1), 0.04, 5.0)
+		part(head, "Veil", vl, cloth_mat)
+		# Ghost-fire streaming back from the eye sockets.
+		var ef := Sculpt.new(); var efp := ef.add_painter(ghost_fire)
+		for e: Vector3 in eyes:
+			var sd := signf(e.x)
+			var trail: Array = []; var tr: Array = []
+			for j in range(8):
+				var t := j / 7.0
+				trail.append(e + Vector3(sd * (0.02 + 0.07 * t + 0.012 * sin(t * 9.0)), 0.01 + 0.08 * t * t + 0.015 * sin(t * 7.0), 0.02 + 0.32 * t)); tr.append(lerpf(0.02, 0.002, t))
+			ef.tube(trail, tr, efp, {"sides": 7, "per": 2, "cap1": false})
+		part(head, "EyeFire", ef, fire_mat)
 	if gothic:
 		# Mourning crape: long black streamers tied at the back of the helm.
 		var cr := Sculpt.new(); var crp := cr.add_painter(black_cloth)
@@ -431,6 +509,11 @@ func _knight() -> Node3D:
 				us.tube([Vector3((0.22 + k * 0.01) * side, ly, 0), Vector3((0.36 - k * 0.012) * side, ly - 0.03, 0)], [0.085 - k * 0.01, 0.08 - k * 0.01], up, {"sides": 14, "per": 1, "flat": 1.2})
 			us.tube([Vector3(0.14 * side, sh_at.y + 0.08, -0.07), Vector3(0.15 * side, sh_at.y + 0.13, 0.0), Vector3(0.14 * side, sh_at.y + 0.08, 0.07)], [0.012, 0.014, 0.012], up, {"sides": 5, "per": 2})
 			if gothic: rim(us, ub, sh_at + Vector3(0.12 * side, -0.07, 0), Vector3(side, -0.5, 0), 0.085, 8)
+			if black:
+				# Thorn-spikes raking up off the pauldron, and a jagged edge to every lame.
+				for k in range(3):
+					us.crystal(sh_at + Vector3((0.06 + k * 0.035) * side, 0.08 - k * 0.012, -0.03 + k * 0.03), Vector3(side * (0.3 + k * 0.2), 1.0, 0.2).normalized(), 0.15 - k * 0.03, 0.025, up, 4)
+				for k in range(3): rim(us, up, Vector3((0.3 - k * 0.002) * side, sh_at.y - 0.05 - k * 0.04, 0), Vector3(side, -0.3, 0), 0.08 - k * 0.01, 7, 0.4)
 			# The rerebrace down the upper arm.
 			var ro := {"sides": 14, "per": 2}
 			if gothic: ro["ridges"] = 6; ro["ridge"] = 0.07
@@ -452,7 +535,10 @@ func _knight() -> Node3D:
 		if hand_kind == "open":
 			# A gauntleted hand hanging relaxed, fingers half curled.
 			fs.blob(fc, Vector3(0.035, 0.055, 0.045), fp, {"lat": 6, "lon": 9})
-			for k in range(4): fs.tube([fc + Vector3(-0.01 * side, -0.04, -0.03 + k * 0.02), fc + Vector3(-0.025 * side, -0.08, -0.03 + k * 0.02), fc + Vector3(-0.04 * side, -0.09, -0.035 + k * 0.02)], [0.011, 0.01, 0.008], fp, {"sides": 5, "per": 1})
+			for k in range(4):
+				fs.tube([fc + Vector3(-0.01 * side, -0.04, -0.03 + k * 0.02), fc + Vector3(-0.025 * side, -0.08, -0.03 + k * 0.02), fc + Vector3(-0.04 * side, -0.09, -0.035 + k * 0.02)], [0.011, 0.01, 0.008], fp, {"sides": 5, "per": 1})
+				# Long clawed fingertips on the black knight's gauntlet.
+				if black: fs.crystal(fc + Vector3(-0.04 * side, -0.09, -0.035 + k * 0.02), Vector3(-0.5 * side, -1.0, -0.1).normalized(), 0.07, 0.009, fp, 4)
 		else:
 			var bh := fa.cross(fd).normalized() if side > 0.0 else fd.cross(fa).normalized()
 			if bh.length() < 0.5: bh = Vector3(side, 0, 0)
@@ -468,7 +554,21 @@ func _knight() -> Node3D:
 			if gothic: blade = 1.0; grip = 0.3; width = 0.058
 			var gc := fc
 			if gothic: gc = fc + Vector3(0, 0.05, 0)
-			sword(ss, ssp, sgp, sbp, gc, fd, e, blade, grip, width)
+			if black:
+				blade = 1.2; grip = 0.24; width = 0.06
+				ssp = ss.add_painter(black_steel)
+			sword(ss, ssp, sgp, sbp, gc, fd, e, blade, grip, width, black)
+			if black:
+				var rs := Sculpt.new(); var rp := rs.add_painter(func (p, n, v, w): return Color.WHITE)
+				var guard := gc + fd * (grip * 0.5 + 0.01)
+				var ff := fd.cross(e).normalized()
+				for sgn: float in [-1.0, 1.0]:
+					var rpts: Array = []; var rrr: Array = []
+					for k in range(16):
+						var t := 0.06 + 0.8 * k / 15.0
+						rpts.append(guard + fd * blade * t + e * width * 0.22 * sin(t * TAU * 5.5) * smoothstep(0.08, 0.2, t) * (1.0 - t * 0.6) + ff * sgn * width * 0.09); rrr.append(0.0035)
+					rs.tube(rpts, rrr, rp, {"sides": 4, "per": 1})
+				part(elbow, "Runes", rs, glow).material_override = glow
 			steel_part(elbow, "Sword", ss)
 		if crusader and side < 0.0:
 			# The heater shield on the forearm: black, strewn with silver tears, edged in steel.
@@ -548,12 +648,12 @@ func _knight() -> Node3D:
 	else:
 		# A tabard bearing a mourning hatchment: a black lozenge strewn with silver tears on violet.
 		var hatch := cs.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
-			var q := Vector2(p.x, p.y - 1.2)
+			var q := Vector2(p.x, p.y - 0.88)
 			if absf(q.x) / 0.12 + absf(q.y) / 0.16 < 1.0: return tears(Vector2(p.x, p.y), Color("#0e0c12"), 0.065)
 			if absf(q.x) / 0.12 + absf(q.y) / 0.16 < 1.12: return Color("#c8ccd4")
 			return violet_cloth(p, n, v, w))
-		panel.call(hatch, -1.0, 1.45, 0.18, 0.82, 0.15, 1.0, false)
-		panel.call(cv, 1.0, 1.45, 0.18, 0.82, 0.15, 2.0, false)
+		panel.call(hatch, -1.0, 1.1, 0.17, 0.62, 0.2, 1.0, false)
+		panel.call(cv, 1.0, 1.1, 0.17, 0.62, 0.2, 2.0, false)
 		cloak(cs, cv, 0.26, 1.48, 1.1, 1.05, 0.35)
 		# An empty scabbard hanging at the left hip.
 		var sb := cs.add_painter(leather); var sbr := cs.add_painter(brass)
@@ -563,7 +663,17 @@ func _knight() -> Node3D:
 		cs.tube([top + dirv * 0.88, top + dirv * 0.94], [0.02, 0.008], sbr, {"sides": 6, "per": 1})
 	part(root, "Cloth", cs, cloth_mat)
 
-	var scale := 1.42
+	if black:
+		# Ghost-fire smouldering round its feet and leaking from the gaps in the armour.
+		var gf := Sculpt.new(); var gfp := gf.add_painter(ghost_fire)
+		for k in range(14):
+			var a := TAU * k / 14.0
+			var at := Vector3(sin(a) * 0.22, 0.02, cos(a) * 0.2 - 0.04)
+			gf.tube([at, at + Vector3(0.02 * sin(k), 0.12, 0.02 * cos(k)), at + Vector3(0.04 * sin(k * 1.7), 0.22 + 0.06 * (k % 3), 0.0)], [0.045, 0.03, 0.002], gfp, {"sides": 6, "per": 2, "cap1": false})
+		for at: Vector3 in [Vector3(0, 1.52, 0.0), Vector3(0.24, 1.36, 0.0), Vector3(-0.24, 1.36, 0.0), Vector3(0, 0.95, 0.0)]:
+			for k in range(3): gf.tube([at, at + Vector3(0.03 * (k - 1), 0.1, 0.02), at + Vector3(0.05 * (k - 1), 0.18, 0.05)], [0.03, 0.02, 0.002], gfp, {"sides": 6, "per": 2, "cap1": false})
+		part(root, "GhostFire", gf, fire_mat)
+	var scale := 1.42 if not black else 1.55
 	var node := _finish({"head": head, "core": core, "arms": arms, "forearms": forearms, "feet": hips, "knees": knees, "leaves": []}, scale)
 	var rig: Dictionary = node.get_meta("rig_bindings")
 	rig["visual_rig"] = {"head": node.get_path_to(head), "wings": [], "wing_meshes": [], "legs": [], "knees": [], "ears": [], "tails": [], "features": {}}
