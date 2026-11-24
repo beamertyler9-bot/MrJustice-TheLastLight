@@ -55,6 +55,7 @@ const DESIGNS := {
 	"root_reaper": ["res://tools/sculpt_root_reaper.gd", "strangler"],
 	"grave_mandrake": ["res://tools/sculpt_root_reaper.gd", "mandrake"],
 	"bog_wight": ["res://tools/sculpt_root_reaper.gd", "bogoak"],
+	"wraithhart": ["res://tools/sculpt_wraithhart.gd", "skull"],
 	"dust_devil": ["res://tools/sculpt_sandwraith.gd", "dustdevil"],
 	"linen_revenant": ["res://tools/sculpt_sandwraith.gd", "mummy"],
 }

@@ -87,6 +87,7 @@ const SIZES = {"cocoa_knight": {"radius": 0.6, "height": 2.6, "reach": 2.6}, "fu
 	"root_reaper": {"radius": 0.75, "height": 2.9, "reach": 2.4},
 	"grave_mandrake": {"radius": 0.75, "height": 2.9, "reach": 2.4, "hp": 7},
 	"bog_wight": {"radius": 0.75, "height": 3.1, "reach": 2.4},
+	"wraithhart": {"radius": 0.7, "height": 2.6, "reach": 2.6, "hp": 7, "front_max": 2.0},
 	"cerberus": {"radius": 0.75, "height": 1.8, "hp": 10, "damage": 2, "front_max": 1.9},
 	"glass_anubid": {"radius": 0.75, "height": 3.7, "reach": 11.0, "hp": 30, "attack": "ranged", "beam": true, "beam_fan": 3, "windup": 1.2, "front_max": 2.4},
 	"dust_devil": {"radius": 0.55, "height": 2.4},

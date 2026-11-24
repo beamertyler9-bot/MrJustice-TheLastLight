@@ -104,3 +104,9 @@ monster should stand clearly bigger than him.
 - Root Reaper: built on the strangler fig, whose aerial roots wrap a host tree and fuse where they touch until the host rots away and leaves a hollow lattice.
 - Grave Mandrake: the mandrake of folklore, a forked man-shaped root. The real plant has a rosette of large wrinkled leaves and round yellow-orange fruit.
 - Bog Wight: built on bog oak, black oak preserved for centuries in peat. It is hung with Spanish moss, has bracket fungi on its shoulders, and glows with foxfire, the bioluminescent fungus of rotting wood.
+
+## Wraithhart (Hollowmourn)
+- Built on the red deer stag, dead and still walking. A deer skull is long and tapered, with a nasal opening along the top of the snout, round eye sockets set on the sides behind a raised bony rim, and a cheekbone arch running back beneath them.
+- Deer have no upper front teeth; the cheek teeth (premolars and molars) sit in rows along the back of the jaw.
+- The withers are high because the vertebrae over the shoulders have tall spines. The pelvis wings and the shoulder blades show through a starving animal's hide.
+- The antlers follow a "royal" red-deer head (brow, bez and trez tines, then a crown). Stags shed the velvet in late summer and it peels off in long, bloody strips.
