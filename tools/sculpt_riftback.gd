@@ -177,63 +177,181 @@ func _columns() -> Node3D:
 
 # ------------------------------------------------------------------ B: basalt pangolin
 
+## A pangolin scale: a broad, rounded shingle growing from `base` back along `along`, thin
+## across `out`, its tip lifted a little off the scale beneath, its face grooved lengthwise
+## like a real pangolin's.
+func shingle(s: Sculpt, painter: int, base: Vector3, along: Vector3, out: Vector3, length: float, width: float, lift := 0.03) -> void:
+	var a := along.normalized(); var o := out.normalized()
+	var tip := base + a * length + o * lift
+	s.tube([base - a * length * 0.05, base.lerp(tip, 0.45) + o * lift * 0.5, tip], [width * 0.65, width, width * 0.2], painter, {"sides": 6, "per": 1, "flat": 0.16, "side": o, "ridges": 3, "ridge": 0.08, "cap_len": 0.5, "cap_rings": 1})
+
+
+## Pangolin scales in basalt: near-black, finely grooved, worn pale at the free edge.
+static func scale_paint(p: Vector3, n: Vector3, v: float, w: float) -> Color:
+	var c := basalt(p, n, v, w).lerp(Color("#2b292c"), 0.35)
+	c = c.darkened(clampf(-w, 0.0, 1.0) * 0.3).lightened(clampf(w, 0.0, 1.0) * 0.06)
+	return c.lerp(Color("#7f7b78"), smoothstep(0.75, 1.0, v) * 0.55)
+
+
+## The bare skin of the belly, inner legs and face: ashy grey with a pinkish tinge.
+static func belly(p: Vector3, n: Vector3, _v: float, _w: float) -> Color:
+	return Color("#3e3836").lerp(Color("#5e504c"), clampf(Sculpt.fbm(p * 8.0) * 0.4 + 0.3 - n.y * 0.3, 0.0, 1.0)).darkened(smoothstep(0.6, 0.75, Sculpt.noise(p * 60.0)) * 0.2)
+
+
+## A point along a spine path (t from 0 to 1): {centre, radius, direction}.
+static func along_spine(spine: Array, rads: Array, t: float) -> Array:
+	if t < 0.0:
+		var d: Vector3 = (spine[1] as Vector3) - spine[0]
+		return [(spine[0] as Vector3) + d * t * (spine.size() - 1), float(rads[0]) * (1.0 + t * 2.0), d.normalized()]
+	var seg := clampf(t, 0.0, 0.999) * (spine.size() - 1); var k := int(seg)
+	var ctr: Vector3 = (spine[k] as Vector3).lerp(spine[k + 1], seg - k)
+	return [ctr, lerpf(rads[k], rads[k + 1], seg - k), ((spine[k + 1] as Vector3) - spine[k]).normalized()]
+
+
+## A glowing crack across the face of a scale.
+func scale_crack(s: Sculpt, painter: int, base: Vector3, along: Vector3, out: Vector3, length: float, side: Vector3) -> void:
+	var o := out.normalized() * 0.022
+	s.tube([base + o + along * length * 0.15, base + o * 1.5 + along * length * 0.45 + side * 0.02, base + o * 1.4 + along * length * 0.7 - side * 0.015, base + o * 1.1 + along * length * 0.9], [0.006, 0.01, 0.009, 0.003], painter, {"sides": 4, "per": 1, "cap_rings": 1})
+
+
+# ------------------------------------------------------------------ B: basalt pangolin
+
 func _pangolin() -> Node3D:
-	var body := Sculpt.new(); var bp := body.add_painter(hide); var sp := body.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return basalt(p, n, v, w).lightened(smoothstep(0.7, 1.0, v) * 0.25))
-	# An arched body, the scales overlapping from neck to rump like roof tiles.
-	var spine := [Vector3(0, 0.55, -0.55), Vector3(0, 0.68, -0.25), Vector3(0, 0.72, 0.1), Vector3(0, 0.66, 0.45), Vector3(0, 0.52, 0.7)]
-	var rads := [0.24, 0.32, 0.34, 0.31, 0.22]
-	body.tube(spine, rads, bp, {"sides": 16, "per": 3, "flat": 0.9})
-	var glow_s := Sculpt.new(); var gw := glow_s.add_painter(func (p, n, v, w): return Color.WHITE)
-	for i in range(12):
-		var t := i / 11.0
-		var seg := t * 4.0; var k := mini(int(seg), 3)
-		var ctr: Vector3 = (spine[k] as Vector3).lerp(spine[k + 1], seg - k)
-		var rad: float = lerpf(rads[k], rads[k + 1], seg - k) * 1.04
-		var along: Vector3 = ((spine[k + 1] as Vector3) - spine[k]).normalized()
-		var count := 7 + int(4.0 * sin(PI * t))
-		# Lava glowing in the seam under this row of scales.
+	# Built from the real animal: a small smooth tapered head running straight into a round,
+	# arched body (highest over the hips); about eighteen rows of big overlapping scales that
+	# point backwards and cover the back, flanks, the outsides of the legs and the whole top of
+	# the tail, but not the face, belly or the inside of the legs; no external ears; tiny
+	# heavy-lidded eyes; a very long sticky tongue; huge curved digging claws on the front feet
+	# (the middle one biggest), folded so it walks on their outer edges; broad flat-soled hind
+	# feet with short blunt claws; and a long, broad, flattened tail scaled to the tip.
+	var body := Sculpt.new(); var bp := body.add_painter(belly); var sp := body.add_painter(scale_paint)
+	var lava := Sculpt.new(); var lw := lava.add_painter(func (p, n, v, w): return Color.WHITE)
+	var spine := [Vector3(0, 0.5, -0.58), Vector3(0, 0.64, -0.32), Vector3(0, 0.78, 0.0), Vector3(0, 0.84, 0.3), Vector3(0, 0.74, 0.6)]
+	var rads := [0.19, 0.29, 0.35, 0.35, 0.26]
+	body.tube(spine, rads.map(func (x): return float(x) * 0.95), bp, {"sides": 18, "per": 3})
+	var rows := 18
+	for i in range(-2, rows):
+		var t := (i + 0.3) / float(rows)
+		var sp_at: Array = along_spine(spine, rads, t)
+		var ctr: Vector3 = sp_at[0]; var rad: float = sp_at[1]; var along: Vector3 = sp_at[2]
+		var k2 := 0.78 + 0.4 * sin(PI * t)
+		var count := 11 + int(round(5.0 * sin(PI * t)))
+		var reach := 2.55 if t < 0.85 else 2.2
+		# Lava under the lifted edges of the row in front.
 		var arc: Array = []; var ar: Array = []
 		for j in range(9):
-			var a := lerpf(-1.9, 1.9, j / 8.0)
-			arc.append(ctr + Vector3(sin(a) * rad * 0.9, cos(a) * rad, 0) * 1.0); ar.append(0.016)
-		glow_s.tube(arc, ar, gw, {"sides": 5, "per": 2})
+			var a := lerpf(-reach - 0.05, reach + 0.05, j / 8.0)
+			arc.append(ctr + Vector3(sin(a), cos(a), 0) * rad * 1.035); ar.append(0.026)
+		if i >= 1: lava.tube(arc, ar, lw, {"sides": 4, "per": 1, "cap_rings": 1})
 		for j in range(count):
-			var a := lerpf(-2.0, 2.0, (j + 0.5 * (i % 2)) / float(count))
-			if absf(a) < 0.16: continue
-			var out := Vector3(sin(a) * 0.9, cos(a), 0).normalized()
-			var at := ctr + Vector3(sin(a) * rad * 0.9, cos(a) * rad, 0)
-			var bz := Basis(out.cross(along).normalized(), out, along.normalized())
-			# A broad shingle with a pointed tip, lying back over the row behind it.
-			var k2 := 0.85 + 0.35 * sin(PI * t)
-			var base := at + out * 0.01
-			var tip := base + along * 0.17 * k2 + out * 0.035
-			var side_dir := out.cross(along).normalized()
-			body.tube([base, base.lerp(tip, 0.45) + out * 0.025, tip], [0.075 * k2, 0.07 * k2, 0.006], sp, {"sides": 8, "per": 2, "flat": 0.22, "side": out, "cap1": false})
-	# The rift: lava glowing along the spine where the two sides of the armour part.
-	var ridge: Array = []; var rdg: Array = []
-	for k in range(spine.size()):
-		ridge.append((spine[k] as Vector3) + Vector3(0, float(rads[k]) * 1.0, 0)); rdg.append(0.03 if k in [0, 4] else 0.045)
-	glow_s.tube(ridge, rdg, gw, {"sides": 7, "per": 4, "lump": 0.3})
+			var a := lerpf(-reach, reach, (j + 0.5 * (i % 2)) / float(count))
+			var out := Vector3(sin(a), cos(a), 0)
+			var base := ctr + out * rad
+			# Lie along the surface (which rises steeply over the shoulders), not the spine.
+			var ahead: Array = along_spine(spine, rads, t + 0.03)
+			var slope := ((ahead[0] as Vector3) + out * float(ahead[1]) - base).normalized() + out * 0.08
+			shingle(body, sp, base, slope, out, 0.17 * k2, 0.075 * k2, 0.06)
+			if (i * 7 + j * 3) % 5 == 0: scale_crack(lava, lw, base, slope.normalized(), out, 0.17 * k2, out.cross(along).normalized())
 	part(root, "Body", body)
-	part(root, "Lava", glow_s, glow).material_override = glow
-	# A small cone head with a long tapering snout, scaled over the crown.
-	var head := joint(root, "Head", Vector3(0, 0.55, -0.6))
-	var hs := Sculpt.new(); var hp := hs.add_painter(hide); var hsp := hs.add_painter(basalt)
-	hs.tube([Vector3(0, 0.55, -0.6), Vector3(0, 0.5, -0.78), Vector3(0, 0.44, -0.95), Vector3(0, 0.4, -1.06)], [0.17, 0.12, 0.07, 0.04], hp, {"sides": 12, "per": 3, "cap_len": 0.5})
-	for j in range(5):
-		var z := -0.62 - j * 0.07
-		hs.blob(Vector3(0, 0.62 - j * 0.03, z), Vector3(0.09 - j * 0.012, 0.02, 0.06), hsp, {"lat": 4, "lon": 8, "basis": Basis(Vector3.RIGHT, -0.4)})
-	var core := _eyes(head, [Vector3(-0.08, 0.56, -0.75), Vector3(0.08, 0.56, -0.75)], 0.016)
+
+	# The head: small, smooth and tapering into a long snout, scaled over the crown.
+	var head := joint(root, "Head", Vector3(0, 0.5, -0.6))
+	var hs := Sculpt.new(); var hp := hs.add_painter(belly); var hsp := hs.add_painter(scale_paint)
+	var nose := hs.add_painter(func (p, n, v, w): return Color("#1e1716").lightened(clampf(n.y, 0.0, 1.0) * 0.15))
+	hs.tube([Vector3(0, 0.5, -0.55), Vector3(0, 0.46, -0.74), Vector3(0, 0.41, -0.9), Vector3(0, 0.37, -1.03)], [0.18, 0.125, 0.075, 0.045], hp, {"sides": 14, "per": 3, "cap_len": 0.5})
+	hs.blob(Vector3(0, 0.368, -1.07), Vector3(0.035, 0.028, 0.022), nose, {"lat": 5, "lon": 8})
+	for row in range(7):
+		var z := -0.46 - row * 0.06
+		var yc := 0.5 + (z + 0.55) * (0.21 if z < -0.55 else 0.5); var rc := 0.18 + (z + 0.55) * (0.29 if z < -0.55 else 0.5)
+		var n := 8 - row
+		for j in range(n):
+			var a := lerpf(-1.5, 1.5, (j + 0.5 * (row % 2)) / float(n)) * (1.0 - row * 0.06)
+			var out := Vector3(sin(a), cos(a), 0)
+			shingle(hs, hsp, Vector3(sin(a) * rc * 1.04, yc + cos(a) * rc * 1.04, z), Vector3(0, 0.55, 1), out, 0.13 - row * 0.01, 0.065 - row * 0.006, 0.03)
+	for side: float in [-1.0, 1.0]:
+		# Heavy lids over small eyes.
+		hs.blob(Vector3(0.075 * side, 0.5, -0.79), Vector3(0.03, 0.018, 0.03), hp, {"lat": 4, "lon": 7})
+	var core := _eyes(head, [Vector3(-0.077, 0.487, -0.8), Vector3(0.077, 0.487, -0.8)], 0.014)
 	part(head, "Head", hs)
-	var jaw := joint(head, "Jaw", Vector3(0, 0.47, -0.8))
-	var js := Sculpt.new(); var jt := js.add_painter(func (p, n, v, w): return Color("#7a2a2a"))
-	js.tube([Vector3(0, 0.41, -1.05), Vector3(0, 0.38, -1.15), Vector3(0, 0.33, -1.2)], [0.012, 0.009, 0.004], jt, {"sides": 5, "per": 2})
+	var jaw := joint(head, "Jaw", Vector3(0, 0.38, -0.9))
+	var js := Sculpt.new(); var jt := js.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#8a2c2a").lerp(Color("#c4524a"), v))
+	js.tube([Vector3(0, 0.36, -1.04), Vector3(0, 0.33, -1.16), Vector3(0.02, 0.26, -1.24), Vector3(0.0, 0.2, -1.27)], [0.012, 0.01, 0.007, 0.003], jt, {"sides": 6, "per": 3})
 	part(jaw, "Tongue", js)
-	var legs := stout_legs(hide, 0.24, -0.38, 0.45, 0.5, 0.95, 3, 0.16)
-	# A long, thick tail armoured in scales, curling down to the ground.
-	var tails := ringed_tail(Vector3(0, 0.5, 0.75), 6, Vector3(0, -0.06, 0.17), 0.2, func (p, n, v, w): return basalt(p, n, v, w), true)
-	var node := _finish({"head": head, "core": core, "arms": [], "forearms": [], "feet": legs.hips, "knees": legs.knees, "leaves": []}, 1.4)
-	return _rig(node, head, legs.hips, legs.knees, jaw, tails)
+
+	# Legs: the front ones short with three great folded digging claws; the hind ones thick,
+	# flat-soled, with five short blunt claws. Scales over the outside of each leg.
+	var hips: Array = []; var knees: Array = []
+	for row in [["Front", -0.32, true], ["Hind", 0.36, false]]:
+		for side: float in [-1.0, 1.0]:
+			var z: float = row[1]; var front: bool = row[2]
+			var x := (0.21 if front else 0.23) * side
+			var top := Vector3(x, 0.55 if front else 0.66, z)
+			var hip := joint(root, str(row[0]) + ("Left" if side < 0 else "Right") + "Leg", top)
+			var us := Sculpt.new(); var up := us.add_painter(belly); var usp := us.add_painter(scale_paint)
+			var knee_at := Vector3(x * 1.15, 0.3 if front else 0.34, z + (-0.04 if front else -0.04))
+			us.tube([top + Vector3(0, 0.08, 0), top.lerp(knee_at, 0.5), knee_at], [0.13 if front else 0.17, 0.11 if front else 0.14, 0.085], up, {"sides": 12, "per": 3})
+			for k in range(6):
+				var ang := (0.35 if k % 2 == 0 else -0.45)
+				var out := Vector3(side * cos(ang), 0, sin(ang))
+				var at := top.lerp(knee_at, 0.05 + int(k / 2) * 0.3) + out * (0.11 if k < 2 else 0.09)
+				shingle(us, usp, at, Vector3(0, -1, 0.15), out, 0.14, 0.07, 0.025)
+			part(hip, "Upper", us)
+			var knee := joint(hip, "Knee", knee_at)
+			var ls := Sculpt.new(); var lp := ls.add_painter(belly); var lsp := ls.add_painter(scale_paint); var cp := ls.add_painter(claw)
+			if front:
+				var wrist := Vector3(x * 1.2, 0.1, z - 0.06)
+				ls.tube([knee_at, wrist], [0.08, 0.075], lp, {"sides": 12, "per": 2})
+				for k in range(2):
+					shingle(ls, lsp, knee_at + Vector3(0.065 * side, -0.02, -0.03 + k * 0.05), Vector3(0, -1, 0.2), Vector3(side, 0, -0.3 + k * 0.5), 0.13, 0.06, 0.02)
+				ls.blob(wrist + Vector3(0, -0.035, -0.02), Vector3(0.08, 0.06, 0.08), lp, {"lat": 6, "lon": 9})
+				for c in range(3):
+					var off := c - 1.0
+					var L := 0.22 if c == 1 else 0.15
+					var at := wrist + Vector3(off * 0.04 * side, -0.01, -0.07)
+					ls.tube([at, at + Vector3(off * 0.01, -0.02, -L * 0.5), at + Vector3(off * 0.015, -0.075, -L * 0.75), at + Vector3(off * 0.015, -0.09, -L * 0.55)], [0.026, 0.02, 0.01, 0.002], cp, {"sides": 7, "per": 3, "cap1": false})
+			else:
+				var heel := Vector3(x * 1.15, 0.07, z + 0.02)
+				ls.tube([knee_at, heel + Vector3(0, 0.06, 0)], [0.09, 0.08], lp, {"sides": 12, "per": 2})
+				ls.blob(Vector3(x * 1.15, 0.05, z - 0.08), Vector3(0.085, 0.05, 0.16), lp, {"lat": 6, "lon": 10})
+				for c in range(5):
+					var off := c - 2.0
+					var at := Vector3(x * 1.15 + off * 0.03, 0.035, z - 0.22 + absf(off) * 0.025)
+					ls.tube([at, at + Vector3(off * 0.008, -0.015, -0.04), at + Vector3(off * 0.01, -0.035, -0.06)], [0.016, 0.011, 0.003], cp, {"sides": 6, "per": 2, "cap1": false})
+			part(knee, "Lower", ls)
+			hips.append(hip); knees.append(knee)
+
+	# The tail: long, broad and flat, scaled on top to the very tip with a saw-edge of scales
+	# down each side, bare underneath, curving down to the ground.
+	var tails: Array = []; var parent: Node3D = root; var at := Vector3(0, 0.72, 0.62)
+	var steps := [Vector3(0, -0.03, 0.17), Vector3(0, -0.06, 0.17), Vector3(0, -0.08, 0.16), Vector3(0, -0.09, 0.15), Vector3(0, -0.08, 0.15), Vector3(0, -0.06, 0.14), Vector3(0, -0.04, 0.13)]
+	for k in range(steps.size()):
+		var node := joint(parent, "Tail" if k == 0 else "TailSegment", at)
+		var ts := Sculpt.new(); var tp := ts.add_painter(belly); var tsp := ts.add_painter(scale_paint)
+		var tl := Sculpt.new(); var tlw := tl.add_painter(func (p, n, v, w): return Color.WHITE)
+		var dir: Vector3 = steps[k]; var next := at + dir
+		var ra := lerpf(0.21, 0.05, float(k) / steps.size()); var rb := lerpf(0.21, 0.05, float(k + 1) / steps.size())
+		ts.tube([at - dir * 0.15, at.lerp(next, 0.5), next + dir * 0.1], [ra, (ra + rb) * 0.5, rb], tp, {"sides": 12, "per": 2, "flat": 1.6, "cap1": k == steps.size() - 1})
+		var r := (ra + rb) * 0.5
+		for half in range(2):
+			var mid := at.lerp(next, 0.05 + half * 0.5)
+			var across := 6 if k < 4 else 4
+			for j in range(across):
+				var a := lerpf(-1.3, 1.3, (j + 0.5 * ((k * 2 + half) % 2)) / float(across))
+				var out := Vector3(sin(a), cos(a), 0)
+				shingle(ts, tsp, mid + Vector3(sin(a) * r * 1.5, cos(a) * r * 0.8, 0), dir + out * 0.1, out, 0.15 * (1.0 - k * 0.08), 0.06 * (1.0 - k * 0.07), 0.03)
+		for side: float in [-1.0, 1.0]:
+			shingle(ts, tsp, at.lerp(next, 0.4) + Vector3(side * r * 1.55, -0.01, 0), dir + Vector3(side * 0.6, -0.05, 0), Vector3(side * 0.2, 1, 0), 0.13 * (1.0 - k * 0.08), 0.055, 0.02)
+		var arc: Array = []; var ar: Array = []
+		for j in range(7):
+			var a := lerpf(-1.3, 1.3, j / 6.0)
+			arc.append(at + Vector3(sin(a) * ra * 1.5, cos(a) * ra * 0.78, 0)); ar.append(0.012)
+		tl.tube(arc, ar, tlw, {"sides": 5, "per": 2})
+		part(node, "Segment", ts)
+		part(node, "Lava", tl, glow).material_override = glow
+		tails.append(node); parent = node; at = next
+	part(root, "Lava", lava, glow).material_override = glow
+	var node := _finish({"head": head, "core": core, "arms": [], "forearms": [], "feet": hips, "knees": knees, "leaves": []}, 1.45)
+	return _rig(node, head, hips, knees, jaw, tails)
 
 
 # ------------------------------------------------------------------ C: volcano tortoise
@@ -262,13 +380,26 @@ func _tortoise() -> Node3D:
 	part(root, "Shell", body)
 	var lava := Sculpt.new(); var lw := lava.add_painter(func (p, n, v, w): return Color.WHITE)
 	lava_cap(lava, lw, c, r, 1.45, 0.975)
-	# A small vent on the crown of the shell, glowing inside.
-	lava.lathe(c + Vector3(0, r.y + 0.08, 0), [Vector2(0, 0.0), Vector2(0.06, 0.0), Vector2(0.065, -0.02), Vector2(0, -0.02)], lw, {"sides": 10})
+	# A volcano on the crown of the shell: a cone of basalt with a pool of lava in its crater,
+	# lava spilling over the rim and running down between the scutes, and a column of smoke.
+	var top := c + Vector3(0, r.y, 0)
+	lava.lathe(top + Vector3(0, 0.2, 0), [Vector2(0, 0.0), Vector2(0.1, 0.0), Vector2(0.105, -0.02), Vector2(0, -0.02)], lw, {"sides": 12})
+	for k in range(4):
+		var th := TAU * (k + 0.5) / 5.0 + 0.2
+		var pts: Array = []; var pr: Array = []
+		for j in range(7):
+			var phi := lerpf(0.18, 1.32 - 0.12 * (k % 2), j / 6.0)
+			var pt: Array = on_dome(c, r, phi, th + 0.12 * sin(j * 1.7 + k))
+			pts.append((pt[0] as Vector3) + (pt[1] as Vector3) * 0.045); pr.append(lerpf(0.035, 0.018, j / 6.0))
+		lava.tube(pts, pr, lw, {"sides": 6, "per": 2, "lump": 0.25})
+		lava.blob((pts[-1] as Vector3) + Vector3(0, -0.03, 0), Vector3(0.025, 0.04, 0.025), lw, {"lat": 4, "lon": 6})
 	part(root, "Lava", lava, glow).material_override = glow
 	var vs := Sculpt.new(); var vp := vs.add_painter(basalt)
-	vs.lathe(c + Vector3(0, r.y + 0.06, 0), [Vector2(0.07, 0.04), Vector2(0.1, 0.03), Vector2(0.18, -0.06), Vector2(0.12, -0.08), Vector2(0.06, 0.0)], vp, {"sides": 12, "wobble": 0.4})
-	var smoke := vs.add_painter(func (p, n, v, w): return Color("#6d6863").lerp(Color("#b0aaa3"), clampf(n.y * 0.5 + 0.3, 0.0, 1.0)))
-	for k in range(3): vs.blob(c + Vector3(0.02 * k, r.y + 0.14 + k * 0.09, 0.04 * k), Vector3.ONE * (0.05 + 0.025 * k), smoke, {"lat": 5, "lon": 8, "lump": 0.4})
+	vs.lathe(top + Vector3(0, 0.21, 0), [Vector2(0.11, 0.0), Vector2(0.15, 0.015), Vector2(0.3, -0.2), Vector2(0.36, -0.27), Vector2(0.0, -0.28)], vp, {"sides": 14, "wobble": 0.5})
+	var smoke := vs.add_painter(func (p, n, v, w): return Color("#36322f").lerp(Color("#77716b"), clampf(n.y * 0.4 + 0.2, 0.0, 1.0)))
+	for k in range(3):
+		var drift := Vector3(0.05 * k, 0.0, 0.12 * k)
+		vs.blob(top + Vector3(0, 0.32 + k * 0.13, 0) + drift, Vector3(1.0, 0.8, 1.1) * (0.08 + 0.04 * k), smoke, {"lat": 6, "lon": 9, "lump": 0.6})
 	part(root, "Vent", vs)
 	# A long leathery neck and a beaked head.
 	var head := joint(root, "Head", Vector3(0, 0.5, -0.72))
@@ -283,6 +414,16 @@ func _tortoise() -> Node3D:
 	js.tube([Vector3(0, 0.57, -1.04), Vector3(0, 0.555, -1.13)], [0.05, 0.02], jp, {"sides": 8, "per": 2, "cap_len": 0.6})
 	part(jaw, "Jaw", js)
 	var legs := stout_legs(func (p, n, v, w): return hide(p, n, v, w).darkened(smoothstep(0.6, 0.8, Sculpt.noise(p * 25.0)) * 0.3), 0.36, -0.4, 0.42, 0.4, 1.3, 5, 0.06)
+	# Big horny scales over the fronts of the forelegs, like a giant tortoise's, here in basalt.
+	for k in range(2):
+		var knee: Node3D = legs.knees[k]
+		var side := -1.0 if k == 0 else 1.0
+		var ks := Sculpt.new(); var kp := ks.add_painter(basalt)
+		var kat := _world(knee)
+		for j in range(6):
+			var at := kat + Vector3(0.02 * side * (j % 2), -0.05 - j * 0.045, -0.12)
+			ks.crystal(at, Vector3(0.3 * side, 0.4, -1.0), 0.06 + 0.02 * (j % 2), 0.035, kp, 5)
+		part(knee, "Spurs", ks)
 	var tails := ringed_tail(Vector3(0, 0.38, 0.72), 2, Vector3(0, -0.03, 0.1), 0.06, hide, false)
 	var node := _finish({"head": head, "core": core, "arms": [], "forearms": [], "feet": legs.hips, "knees": legs.knees, "leaves": []}, 1.4)
 	return _rig(node, head, legs.hips, legs.knees, jaw, tails)
