@@ -18,6 +18,9 @@ var kind := "hyena"
 var ember_mat: StandardMaterial3D
 var iron_mat: StandardMaterial3D
 var o: Dictionary = {}
+## The glow in the throat and the colour of the claw tips (embers by default; others may cool them).
+var throat_paint: Callable
+var claw_tip := Color("#ffb060")
 
 
 func _init() -> void:
@@ -29,6 +32,7 @@ func _init() -> void:
 	iron_mat = StandardMaterial3D.new()
 	iron_mat.vertex_color_use_as_albedo = true
 	iron_mat.metallic = 0.7; iron_mat.roughness = 0.45
+	throat_paint = ember
 
 
 func build(variant: String) -> Node3D:
@@ -134,7 +138,7 @@ func head_sculpts(skin: Callable, hy: float, hz: float, hk: float) -> Dictionary
 			var at := jtip.lerp(Vector3(0.04 * side * hk, hy - 0.07 * hk, hz - 0.03), 0.25 + k * 0.2) + Vector3(0.012 * side * hk, 0.025 * hk, 0)
 			js.crystal(at, Vector3(0, 1, 0), 0.02 * hk, 0.007 * hk, jf, 4)
 	# The fire of its throat, glowing between the jaws.
-	var fs := Sculpt.new(); var fp := fs.add_painter(ember)
+	var fs := Sculpt.new(); var fp := fs.add_painter(throat_paint)
 	fs.blob(Vector3(0, hy - 0.05 * hk, (hz + tip.z) * 0.5 + 0.03), Vector3(0.035 * hk, 0.03 * hk, mz * 0.4), fp, {"lat": 5, "lon": 8})
 	var es := Sculpt.new(); var white := es.add_painter(func (p, n, v, w): return Color.WHITE)
 	for side: float in [-1.0, 1.0]:
@@ -200,7 +204,7 @@ func canid(skin: Callable, glow_paws: bool) -> Dictionary:
 			us.tube([top + Vector3(0, 0.1, 0.02), top.lerp(knee_at, 0.5), knee_at], [0.1 * L, 0.075 * L, 0.05 * L] if front else [0.13 * L, 0.095 * L, 0.055 * L], up, {"sides": 11, "per": 3})
 			part(hip, "Upper", us)
 			var knee := joint(hip, "Elbow" if front else "Knee", knee_at)
-			var ls := Sculpt.new(); var lp := ls.add_painter(skin); var cp := ls.add_painter(func (p, n, v, w): return Color("#2a1a12").lerp(Color("#ffb060"), v))
+			var ls := Sculpt.new(); var lp := ls.add_painter(skin); var cp := ls.add_painter(func (p, n, v, w): return Color("#2a1a12").lerp(claw_tip, v))
 			var paw := Vector3(x * 1.05, 0.04, z - 0.04)
 			if front:
 				ls.tube([knee_at, Vector3(x * 1.05, 0.14, z - 0.01), paw + Vector3(0, 0.03, 0.02)], [0.048 * L, 0.04 * L, 0.04 * L], lp, {"sides": 10, "per": 3})
