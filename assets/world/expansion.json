@@ -11760,7 +11760,15 @@
       "region": 13,
       "kind": "hostile",
       "boss": false,
-      "hook": "Sooty layered feathers and ember eyes; spreads its wings before gust attacks."
+      "hook": "A vulture-winged hag of the ash clouds, burning eyes in a gaunt bony face and smouldering hair; spreads its fingered wings before gust attacks."
+    },
+    {
+      "id": "cinder_vulture",
+      "name": "Cinder Vulture",
+      "region": 13,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "A huge lappet-faced vulture whose bare head is charred and cracked with glowing coals; spreads its burnt, ember-tipped wings before beating up a gust of ash."
     },
     {
       "id": "embermaw",

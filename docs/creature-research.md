@@ -94,3 +94,8 @@ monster should stand clearly bigger than him.
 
 ## Slag Crawler (Ashfall Caldera)
 - A giant hermit crab in a turban-like spiralled shell, with one big crushing claw and one smaller claw, eyes on stalks, long antennae and two pairs of big walking legs. The shell and armour are slag: the glassy, rust-streaked crust that forms on cooling molten rock.
+
+## Ash Harpy and Cinder Vulture (Ashfall Caldera)
+- Ash Harpy: the harpy of Greek myth, with a vulture's body and wings and a gaunt hag's face.
+- Cinder Vulture: built on the lappet-faced vulture. It has a bare head with folds of skin on the cheeks, a massive horn-coloured hooked beak, a ruff at the base of the neck, and long broad wings whose primaries spread like fingers at the tips.
+- Both use vulture wings: about seven separated primary "fingers", long secondaries and layered coverts.

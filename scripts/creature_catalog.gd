@@ -13,7 +13,7 @@ const FORMS = {
 	"ashen_raven": "bird", "pallid_moth": "moth", "gravemoss_snail": "snail", "prismhart": "deer", "opaline_otter": "otter", "chimewing_manta": "manta", "geode_tortoise": "tortoise", "faceted_finch": "bird", "quartz_hare": "hare",
 	"cliffwarden": "golem", "stonejaw_wyrm": "wyrm", "fudge_golem": "golem", "cocoa_knight": "knight", "chocobar_croc": "crawler", "wrapper_mimic": "mimic", "pretzel_crawler": "crawler", "cola_sloshback": "frog", "sugarspike_wasp": "winged", "grand_confectioner": "knight",
 	"windwhistle_stalker": "cat", "thistle_jackal": "hound", "grassland_colossus": "golem", "kiteclaw_raptor": "winged", "stormhorn_matriarch": "boar", "storm_bison": "boar", "thunder_rhino": "boar", "stormcloud_muskox": "boar", "stormfrill": "boar", "thunderclub": "boar", "dune_maw": "wyrm", "pit_antlion": "crawler", "dune_monitor": "wyrm", "thorn_devil": "lizard", "sunken_sentinel": "knight", "pharaoh_guardian": "knight", "lion_warden": "knight", "sandwraith": "wraith", "dust_devil": "wraith", "linen_revenant": "wraith", "obelisk_scorpion": "scorpion", "glass_anubid": "knight",
-	"riftback": "armored", "volcano_tortoise": "armored", "furnace_hound": "hound", "cerberus": "hound", "bone_hound": "hound", "slag_crawler": "crawler", "ash_harpy": "winged", "root_reaper": "reaper", "wraithhart": "deer", "hollow_hound": "hound", "grave_creeper": "crawler", "veil_moth": "winged", "thorn_widow": "spider", "mourning_knight": "knight", "pale_watcher": "wraith", "blackthorn_regent": "knight",
+	"riftback": "armored", "volcano_tortoise": "armored", "furnace_hound": "hound", "cerberus": "hound", "bone_hound": "hound", "slag_crawler": "crawler", "ash_harpy": "winged", "cinder_vulture": "winged", "root_reaper": "reaper", "wraithhart": "deer", "hollow_hound": "hound", "grave_creeper": "crawler", "veil_moth": "winged", "thorn_widow": "spider", "mourning_knight": "knight", "pale_watcher": "wraith", "blackthorn_regent": "knight",
 	"shard_sentinel": "knight", "prismstalker": "cat", "geode_mimic": "mimic", "resonance_wyrm": "wyrm", "glasswing_reaver": "winged", "aurora_custodian": "wraith"}
 static var roster: Array = []
 static var lookup: Dictionary = {}
@@ -35,7 +35,7 @@ static func hostiles_for(region: int) -> Array:
 	return entries().filter(func (e): return e.region == region and e.kind == "hostile" and not e.boss).map(func (e): return enemy_id(e.id))
 ## Big storm beasts roam the plains but are a rare sight: each is picked this often compared
 ## with an ordinary hostile (1.0).
-const RARITY = {"storm_bison": 0.2, "thunder_rhino": 0.2, "stormcloud_muskox": 0.2, "stormfrill": 0.2, "thunderclub": 0.2, "pit_antlion": 0.35, "dune_monitor": 0.35, "pharaoh_guardian": 0.35, "lion_warden": 0.35, "dust_devil": 0.35, "linen_revenant": 0.35, "volcano_tortoise": 0.35, "cerberus": 0.25, "bone_hound": 0.35}
+const RARITY = {"storm_bison": 0.2, "thunder_rhino": 0.2, "stormcloud_muskox": 0.2, "stormfrill": 0.2, "thunderclub": 0.2, "pit_antlion": 0.35, "dune_monitor": 0.35, "pharaoh_guardian": 0.35, "lion_warden": 0.35, "dust_devil": 0.35, "linen_revenant": 0.35, "volcano_tortoise": 0.35, "cerberus": 0.25, "bone_hound": 0.35, "cinder_vulture": 0.35}
 ## Picks one of `options` from `seed`, the same every time for the same seed, with rare
 ## species weighted down.
 static func pick_hostile(options: Array, seed: int) -> String:
@@ -82,6 +82,8 @@ const SIZES = {"cocoa_knight": {"radius": 0.6, "height": 2.6, "reach": 2.6}, "fu
 	"furnace_hound": {"radius": 0.6, "height": 1.8, "hp": 6, "front_max": 1.8},
 	"bone_hound": {"radius": 0.6, "height": 1.7, "hp": 6, "front_max": 1.8},
 	"slag_crawler": {"radius": 0.7, "height": 1.8, "reach": 2.4, "hp": 7, "front_max": 1.9},
+	"ash_harpy": {"radius": 0.6, "height": 2.0, "front_max": 1.9},
+	"cinder_vulture": {"radius": 0.65, "height": 2.0, "hp": 6, "front_max": 2.0},
 	"cerberus": {"radius": 0.75, "height": 1.8, "hp": 10, "damage": 2, "front_max": 1.9},
 	"glass_anubid": {"radius": 0.75, "height": 3.7, "reach": 11.0, "hp": 30, "attack": "ranged", "beam": true, "beam_fan": 3, "windup": 1.2, "front_max": 2.4},
 	"dust_devil": {"radius": 0.55, "height": 2.4},
