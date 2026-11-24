@@ -129,7 +129,8 @@ static func royal_purple(p: Vector3, n: Vector3, v: float, _w: float) -> Color:
 
 
 static func moss_rag(p: Vector3, n: Vector3, v: float, _w: float) -> Color:
-	var c := Color("#0e100c").lerp(Color("#2a3220"), clampf(0.4 + 0.3 * sin(p.x * 30.0 + p.z * 26.0) + n.y * 0.2 + Sculpt.fbm(p * 6.0) * 0.4, 0.0, 1.0))
+	var c := Color("#0b0a09").lerp(Color("#24221c"), clampf(0.4 + 0.3 * sin(p.x * 30.0 + p.z * 26.0) + n.y * 0.2 + Sculpt.fbm(p * 6.0) * 0.4, 0.0, 1.0))
+	c = c.lerp(Color("#1e2a16"), smoothstep(0.3, 0.7, Sculpt.noise(p * 7.0) + n.y * 0.3) * 0.5)
 	return c.lerp(Color("#2a241e"), smoothstep(0.7, 1.0, v) * 0.6)
 
 
@@ -358,6 +359,61 @@ func blackthorn(s: Sculpt, path: Array, thick: float, flowers := 3) -> void:
 		s.blob(sa + Vector3(0, -0.014, 0), Vector3.ONE * 0.015, sl, {"lat": 4, "lon": 6})
 
 
+## A gnarled blackthorn branch growing from `start` along `dir`, bending as it goes, studded with
+## long spines, forking `depth` more times, white blossom and blue-black sloes at its tips.
+## `rise` pulls it upward (negative to droop); `ground` keeps it lying along the ground.
+func thorn_branch(s: Sculpt, start: Vector3, dir: Vector3, length: float, thick: float, depth: int, seed: float, rise := 0.08, ground := false) -> void:
+	if not has_meta("tb_paint") or (get_meta("tb_sculpt") as Object) != s:
+		var bark := s.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+			var c := Color("#0c0908").lerp(Color("#2e2420"), clampf(n.y * 0.25 + 0.3 + Sculpt.noise(p * 50.0) * 0.35, 0.0, 1.0))
+			return c.lerp(Color("#4a5a3a"), smoothstep(0.72, 0.9, Sculpt.noise(p * 17.0)) * 0.5))
+		var spine := s.add_painter(func (p, n, v, w): return Color("#100c0a").lerp(Color("#9a8a72"), v * v))
+		var petal := s.add_painter(func (p, n, v, w): return Color("#e6e0d6").lerp(Color("#fffcf6"), clampf(n.y, 0.0, 1.0)))
+		var heart := s.add_painter(func (p, n, v, w): return Color("#c8a040"))
+		var sloe := s.add_painter(func (p, n, v, w): return Color("#10142a").lerp(Color("#7a88b8"), clampf(n.y * 0.6 + 0.1, 0.0, 1.0)))
+		set_meta("tb_paint", [bark, spine, petal, heart, sloe]); set_meta("tb_sculpt", s)
+	var P: Array = get_meta("tb_paint")
+	var pts: Array = []; var rr: Array = []
+	var d := dir.normalized(); var p := start
+	var n := 7
+	for k in range(n + 1):
+		var t := k / float(n)
+		pts.append(p); rr.append(lerpf(thick, thick * 0.22, t))
+		var wob := Vector3(sin(seed * 3.1 + k * 1.7), cos(seed * 2.3 + k * 2.1) * (0.15 if ground else 0.6), sin(seed * 1.3 + k * 2.9))
+		d = (d + wob * 0.38 + Vector3(0, rise, 0)).normalized()
+		if ground: d.y = clampf(d.y, -0.05, 0.12); d = d.normalized()
+		p += d * length / n
+		if ground: p.y = maxf(p.y, 0.012)
+	s.tube(pts, rr, P[0], {"sides": 6, "per": 1, "lump": 0.3, "cap1": false})
+	# Knots where it bends, and long spines off every side (blackthorn's spines are short
+	# side-shoots grown into points).
+	for k in range(1, n):
+		var a: Vector3 = pts[k]; var dd: Vector3 = ((pts[k + 1] as Vector3) - (pts[k - 1] as Vector3)).normalized()
+		var sd := dd.cross(Vector3.UP if absf(dd.y) < 0.9 else Vector3.RIGHT).normalized().rotated(dd, seed + k * 2.4)
+		s.crystal(a, (sd + dd * 0.35).normalized(), float(rr[k]) * 2.2 + 0.03, float(rr[k]) * 0.45, P[1], 4)
+		if k % 3 == 1: s.blob(a, Vector3.ONE * float(rr[k]) * 1.35, P[0], {"lat": 4, "lon": 6, "lump": 0.3})
+	if depth > 0:
+		for b in range(1 if depth == 1 and fposmod(seed, 3.0) < 1.0 else 2):
+			var k := 2 + b * 2 + int(fposmod(seed, 2.0))
+			var at: Vector3 = pts[mini(k, n - 1)]
+			var dd: Vector3 = ((pts[mini(k + 1, n)] as Vector3) - at).normalized()
+			var sd := dd.cross(Vector3.UP if absf(dd.y) < 0.9 else Vector3.RIGHT).normalized().rotated(dd, seed * 1.7 + b * PI)
+			thorn_branch(s, at, (dd + sd * 0.9).normalized(), length * 0.55, float(rr[k]) * 0.85, depth - 1, seed * 1.37 + b * 5.1 + 1.0, rise, ground)
+	# Blossom at the tip, and a sloe hanging below it.
+	var tip: Vector3 = pts[n]
+	if not ground and depth == 0 and fposmod(seed * 7.3, 2.0) < 1.2:
+		for f in range(1):
+			var fc := tip + Vector3(0.02 * sin(seed + f * 2.0), 0.012 + 0.01 * f, 0.02 * cos(seed + f * 2.0))
+			for pt in range(5):
+				var a := TAU * pt / 5.0 + seed
+				s.blob(fc + Vector3(cos(a) * 0.016, 0.0, sin(a) * 0.016), Vector3(0.014, 0.005, 0.014), P[2], {"lat": 3, "lon": 5})
+			s.blob(fc + Vector3(0, 0.004, 0), Vector3.ONE * 0.006, P[3], {"lat": 3, "lon": 4})
+	if not ground and depth == 0 and fposmod(seed * 5.1, 3.0) < 1.0:
+		var mid: Vector3 = pts[n - 2]
+		s.tube([mid, mid + Vector3(0, -0.04, 0)], [0.003, 0.003], P[0], {"sides": 4, "per": 1})
+		s.blob(mid + Vector3(0, -0.055, 0), Vector3(0.02, 0.022, 0.02), P[4], {"lat": 5, "lon": 7})
+
+
 # ------------------------------------------------------------------ the knight
 
 func _knight() -> Node3D:
@@ -365,7 +421,12 @@ func _knight() -> Node3D:
 	var regent := kind in ["royal", "thorn", "crest"]
 	var plate_paint: Callable = black_steel if black else steel
 	if kind == "royal": plate_paint = gilt_black
-	if kind == "thorn": plate_paint = func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return steel(p, n, v, w).darkened(0.35).lerp(Color("#3a4a2a"), smoothstep(0.65, 0.9, Sculpt.noise(p * 9.0) + n.y * 0.15) * 0.4)
+	if kind == "thorn": plate_paint = func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+		# Old iron left out for a century: near-black, rusted through in patches, moss in the hollows.
+		var c := steel(p, n, v, w).darkened(0.55)
+		c = c.lerp(Color("#4a2414"), smoothstep(0.55, 0.78, Sculpt.noise(p * 7.0)) * 0.6)
+		c = c.lerp(Color("#6a3a1a"), smoothstep(0.7, 0.85, Sculpt.noise(p * 23.0)) * 0.3)
+		return c.lerp(Color("#1a2212"), smoothstep(0.65, 0.95, n.y * 0.6 + Sculpt.noise(p * 11.0) * 0.5) * 0.3)
 	var fl := 9 if gothic else 0
 
 	# ---- torso
@@ -503,7 +564,7 @@ func _knight() -> Node3D:
 	if regent:
 		# A gold crown round the helm, and a stag's antlers branching up out of it (for the
 		# thorn-grown king, blackthorn branches in their place).
-		var cr := Sculpt.new(); var gp := cr.add_painter(brass); var jp := cr.add_painter(func (p, n, v, w): return Color("#7a1a3a").lightened(clampf(n.y, 0.0, 1.0) * 0.3))
+		var cr := Sculpt.new(); var gp := cr.add_painter(brass if kind != "thorn" else func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return brass(p, n, v, w).darkened(0.5).lerp(Color("#3e7a5e"), smoothstep(-0.1, 0.35, Sculpt.noise(p * 14.0)) * 0.75)); var jp := cr.add_painter(func (p, n, v, w): return Color("#7a1a3a").lightened(clampf(n.y, 0.0, 1.0) * 0.3))
 		var ctop := hy + (0.12 if kind == "crest" else 0.1)
 		var cr_r := 0.14 if kind == "crest" else 0.132
 		var ring: Array = []; var rr: Array = []
@@ -519,7 +580,11 @@ func _knight() -> Node3D:
 		var wood := cr.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#120e0c").lerp(Color("#3a2e26"), clampf(n.y * 0.3 + 0.3 + Sculpt.noise(p * 30.0) * 0.3, 0.0, 1.0)))
 		var ant := cr.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#5a4a38").lerp(Color("#d8ccb0"), clampf(v * 0.9 + n.y * 0.1, 0.0, 1.0)))
 		var ap: int = wood if kind == "thorn" else ant
-		for side: float in [-1.0, 1.0]:
+		if kind == "thorn":
+			# Antlers of blackthorn: gnarled black branches forking up out of the crown.
+			for side: float in [-1.0, 1.0]:
+				thorn_branch(cr, Vector3(0.09 * side, ctop + 0.01, 0.0), Vector3(0.6 * side, 1.0, 0.15), 0.6, 0.034, 1, 1.3 + side, 0.12)
+		for side: float in ([] if kind == "thorn" else [-1.0, 1.0]):
 			var base := Vector3(0.1 * side, ctop + 0.01, 0.0)
 			var beam: Array = []; var br: Array = []
 			for k in range(9):
@@ -532,11 +597,6 @@ func _knight() -> Node3D:
 				var d: Vector3 = (tk[1] as Vector3).normalized()
 				var l: float = tk[2]
 				cr.tube([at, at + d * l * 0.6 + Vector3(0, 0.02, 0), at + d * l + Vector3(0, 0.04, 0)], [0.014, 0.01, 0.003], ap, {"sides": 6, "per": 2, "cap1": false})
-			if kind == "thorn":
-				var thp := cr.add_painter(func (p, n, v, w): return Color("#1a1210").lerp(Color("#8a7a62"), v))
-				for k in range(10):
-					var at: Vector3 = beam[1 + k % 7]
-					cr.crystal(at, Vector3(sin(k * 2.1), 0.5, cos(k * 1.7)).normalized(), 0.05, 0.008, thp, 4)
 		steel_part(head, "Crown", cr)
 	if black:
 		# Great backswept horns from the temples, and a crown of iron thorns round the brow.
@@ -735,7 +795,7 @@ func _knight() -> Node3D:
 			fl2.blob(fcen, Vector3(0.03, 0.05, 0.03), flp, {"lat": 5, "lon": 8})
 			fl2.crystal(fcen + Vector3(0, 0.03, 0), Vector3.UP, 0.06, 0.022, flp, 5)
 			part(elbow, "LanternFlame", fl2, glow).material_override = glow
-			var ll := OmniLight3D.new(); ll.name = "LanternLight"; ll.light_color = glow.emission; ll.light_energy = 0.8; ll.omni_range = 2.2
+			var ll := OmniLight3D.new(); ll.name = "LanternLight"; ll.light_color = glow.emission if kind != "thorn" else Color("#e8f0d8"); ll.light_energy = 0.8 if kind != "thorn" else 0.35; ll.omni_range = 2.2 if kind != "thorn" else 1.2
 			elbow.add_child(ll); ll.position = fcen - _world(elbow)
 		if crusader and side < 0.0:
 			# The heater shield on the forearm: black, strewn with silver tears, edged in steel.
@@ -827,7 +887,7 @@ func _knight() -> Node3D:
 				cloth_sheet(cs, cs.add_painter(ermine), tops, outs, lens, func (i: int, t: float, yy: float) -> float: return 0.02 + 0.12 * sqrt(t), 8)
 		else:
 			# A cloak gone to moss and rags.
-			cloak(cs, cs.add_painter(moss_rag), 0.3, 1.5, 1.55, 1.55, 0.5)
+			cloak(cs, cs.add_painter(moss_rag), 0.3, 1.5, 1.55, 1.2, 0.5)
 			panel.call(cs.add_painter(moss_rag), -1.0, 1.0, 0.17, 0.5, 0.5, 1.0, false)
 	else:
 		# A tabard bearing a mourning hatchment: a black lozenge strewn with silver tears on violet.
@@ -863,32 +923,62 @@ func _knight() -> Node3D:
 			for k in range(3): gf.tube([at, at + Vector3(0.03 * (k - 1), 0.1, 0.02), at + Vector3(0.05 * (k - 1), 0.18, 0.05)], [0.03, 0.02, 0.002], gfp, {"sides": 6, "per": 2, "cap1": false})
 		part(root, "GhostFire", gf, fire_mat)
 	if kind == "thorn":
-		# Blackthorn grown through the armour: thorny branches round the limbs, white blossom,
-		# blue-black sloes.
-		var limbs: Array = []
-		for k in range(arms.size()): limbs.append([arms[k], forearms[k]])
-		for k in range(hips.size()): limbs.append([hips[k], knees[k]])
-		for pair: Array in limbs:
-			for j in range(2):
-				var nd: Node3D = pair[j]
-				var c0 := _world(nd)
-				var c1 := _world(pair[1]) if j == 0 else c0 + Vector3(0, -0.3, -0.05)
-				var bs := Sculpt.new()
-				var path: Array = []
-				for q in range(9):
-					var t := q / 8.0
-					var a := t * TAU * 1.2 + j
-					path.append(c0.lerp(c1, t) + Vector3(cos(a) * 0.075, 0, sin(a) * 0.075))
-				blackthorn(bs, path, 0.018, 4)
-				part(nd, "Blackthorn", bs)
+		# Blackthorn has grown up through the empty armour and out of every gap in it.
+		# The breastplate burst open from inside: a ragged hole, its torn plate curling outward,
+		# a will-o'-the-wisp glow at its heart and branches thrusting out of it.
+		var hole := Vector3(0.03, 1.26, -0.18)
+		var bp_ := Sculpt.new(); var hbp := bp_.add_painter(plate_paint); var hdk := bp_.add_painter(func (p, n, v, w): return Color("#050404"))
+		bp_.blob(hole + Vector3(0, 0, 0.01), Vector3(0.085, 0.1, 0.03), hdk, {"lat": 6, "lon": 10, "lump": 0.25})
+		for k in range(7):
+			var a := TAU * k / 7.0 + 0.3
+			var e := hole + Vector3(cos(a) * 0.085, sin(a) * 0.1, -0.005)
+			bp_.crystal(e, (Vector3(cos(a), sin(a), -1.2)).normalized(), 0.08 + 0.04 * (k % 2), 0.035, hbp, 3)
+		steel_part(root, "BurstPlate", bp_)
+		var hg := Sculpt.new(); var hgp := hg.add_painter(func (p, n, v, w): return Color.WHITE)
+		hg.blob(hole + Vector3(0, 0, -0.012), Vector3(0.035, 0.045, 0.012), hgp, {"lat": 5, "lon": 8})
+		part(root, "WispHeart", hg, glow).material_override = glow
 		var tb := Sculpt.new()
-		var tpath: Array = []
-		for q in range(14):
-			var t := q / 13.0
-			var a := t * TAU * 2.0
-			tpath.append(Vector3(cos(a) * 0.22, lerpf(0.95, 1.45, t), sin(a) * 0.16))
-		blackthorn(tb, tpath, 0.02, 8)
+		for k in range(3):
+			var a := TAU * k / 3.0 + 0.9
+			thorn_branch(tb, hole + Vector3(cos(a) * 0.04, sin(a) * 0.05, 0.0), Vector3(cos(a) * 0.9, sin(a) * 0.6 + 0.25, -0.9), 0.36 + 0.06 * (k % 2), 0.026, 0, 3.0 + k * 1.9, 0.06)
+		# Up out of the neck behind the helm and spreading round its back: a thorny mantle.
+		for k in range(3):
+			var x := (k - 1) * 0.1
+			thorn_branch(tb, Vector3(x, 1.5, 0.1), Vector3(x * 4.5, 1.0, 0.8), 0.7, 0.03, 1, 11.0 + k * 2.3, 0.05)
+		# Out of the fauld at the waist.
+		for side: float in [-1.0, 1.0]:
+			thorn_branch(tb, Vector3(0.18 * side, 0.92, -0.04), Vector3(side, 0.15, -0.2), 0.28, 0.018, 0, 21.0 + side, 0.02)
 		part(root, "Blackthorn", tb)
+		# Out of the pauldrons, elbows and knees, on their own joints so they move with the limbs.
+		for k in range(arms.size()):
+			var sh: Node3D = arms[k]; var fa: Node3D = forearms[k]
+			var sd := signf(_world(sh).x)
+			var s1 := Sculpt.new()
+			thorn_branch(s1, _world(sh) + Vector3(0.1 * sd, 0.0, 0.0), Vector3(sd, 0.8, 0.15), 0.4, 0.024, 1, 31.0 + sd, 0.06)
+			part(sh, "Blackthorn", s1)
+			var s2 := Sculpt.new()
+			thorn_branch(s2, _world(fa) + Vector3(0.04 * sd, 0.0, 0.03), Vector3(sd, -0.3, 0.6), 0.25, 0.016, 0, 41.0 + sd, -0.02)
+			part(fa, "Blackthorn", s2)
+			var mss := Sculpt.new(); var mmp := mss.add_painter(moss_rag)
+			var drips: Array = []
+			for q in range(7): drips.append(_world(sh) + Vector3((0.04 + q * 0.025) * sd, -0.06, -0.07 + q * 0.025))
+			hanging(mss, mmp, drips, 0.28, 0.012, Vector3.ZERO)
+			part(sh, "Moss", mss, cloth_mat)
+		for k in range(hips.size()):
+			var kn: Node3D = knees[k]
+			var sd := signf(_world(kn).x)
+			var s3 := Sculpt.new()
+			thorn_branch(s3, _world(kn) + Vector3(0.05 * sd, 0.0, -0.03), Vector3(sd, 0.4, -0.5), 0.25, 0.016, 0, 51.0 + sd, 0.04)
+			# Roots spreading from the sabatons across the ground.
+			for q in range(2):
+				var a := lerpf(-0.8, 0.8, q) + (0.0 if sd > 0 else PI)
+				thorn_branch(s3, Vector3(0.11 * sd, 0.04, -0.02), Vector3(cos(a), -0.1, sin(a) * 0.8 + 0.2), 0.45, 0.024, 0, 61.0 + q * 2.1 + sd, 0.0, true)
+			part(kn, "Blackthorn", s3)
+		# Little twigs creeping out of the visor's sight.
+		var vs := Sculpt.new()
+		for side: float in [-1.0, 1.0]: thorn_branch(vs, Vector3(0.08 * side, 1.71, -0.11), Vector3(side, 0.35, -0.4), 0.17, 0.008, 0, 71.0 + side, 0.05)
+		part(head, "Blackthorn", vs)
+		remove_meta("tb_paint"); remove_meta("tb_sculpt")
 	var scale := 1.42 if not black else 1.55
 	if regent: scale = 1.8
 	var node := _finish({"head": head, "core": core, "arms": arms, "forearms": forearms, "feet": hips, "knees": knees, "leaves": []}, scale)
