@@ -33,6 +33,19 @@ static func wildlife_for(region: int) -> Array:
 	return entries().filter(func (e): return e.region == region and e.kind == "wildlife").map(func (e): return e.id)
 static func hostiles_for(region: int) -> Array:
 	return entries().filter(func (e): return e.region == region and e.kind == "hostile" and not e.boss).map(func (e): return enemy_id(e.id))
+## Big storm beasts roam the plains but are a rare sight: each is picked this often compared
+## with an ordinary hostile (1.0).
+const RARITY = {"storm_bison": 0.2, "thunder_rhino": 0.2, "stormcloud_muskox": 0.2, "stormfrill": 0.2, "thunderclub": 0.2}
+## Picks one of `options` from `seed`, the same every time for the same seed, with rare
+## species weighted down.
+static func pick_hostile(options: Array, seed: int) -> String:
+	var total := 0.0
+	for id in options: total += float(RARITY.get(id, 1.0))
+	var roll := float(posmod(seed, 10007)) / 10007.0 * total
+	for id in options:
+		roll -= float(RARITY.get(id, 1.0))
+		if roll < 0.0: return id
+	return options[-1]
 static func flying(id: String) -> bool: return entry(id).get("form", "") in ["moth", "bee", "bird", "manta"]
 ## Size, hitbox and reach for regional enemies that have been re-sculpted, so they stand at
 ## their intended size beside Mr. Justice (who is 1.22 m tall).

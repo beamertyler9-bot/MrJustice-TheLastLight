@@ -149,7 +149,7 @@ func species_at(point: Vector3, victim_id: String) -> String:
 		regional.erase("chocobar_croc")
 		# Now and then a "chest" lying out in the open is a Chest Mimic.
 		if posmod(hash(victim_id + ":mimic"), 9) == 0: return "chest_mimic"
-		return regional[posmod(hash(victim_id), regional.size())]
+		return Creatures.pick_hostile(regional, hash(victim_id))
 	var choices: Array
 	match region:
 		9: choices = ["moss_guardian", "rootling_sentinel", "thorn_wolf"]

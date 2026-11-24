@@ -371,7 +371,7 @@ func _encounters() -> void:
 		var options = Creatures.hostiles_for(int(S.site(active_id).region))
 		# Crocs only lurk in the cola caves.
 		if not str(S.site(active_id).get("name", "")).contains("Cola"): options = options.filter(func (o): return o != "chocobar_croc")
-		var actor = Enemy.new(); actor.configure_species(options[posmod(hash(active_id) + i, options.size())])
+		var actor = Enemy.new(); actor.configure_species(Creatures.pick_hostile(options, hash(active_id) + i * 7919))
 		actor.id = key; actor.game = game; actor.position = S.point(active_id, room.p, int(room.level)) - S.origin(active_id) + Vector3(2, 0, 0); actor.home = S.origin(active_id) + actor.position; live.add_child(actor)
 	# Half the caves and ruins keep a Chest Mimic among their treasure.
 	var mimic_key = "site_mimic_" + active_id
