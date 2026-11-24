@@ -153,3 +153,9 @@ monster should stand clearly bigger than him.
 - Blackthorn (Prunus spinosa): black bark; short side-shoots that harden into long spines; white five-petalled blossom (which opens before the leaves); round blue-black sloes. It forms dense, impenetrable thickets.
 - The king died in his armour and blackthorn grew up through it, bursting out of the breastplate and every gap in the plate. His antlers are blackthorn branches.
 - Considered but not used: a king in black parade armour etched with gold (like the Emperor Maximilian's), with an ermine tippet; a great-helmed tournament king.
+
+## Shard Sentinel (Prismere)
+- Built on selenite (crystalline gypsum) as found in the Cave of the Crystals at Naica, Mexico, where beams reach over 11 m long. Selenite crystals are long, flat-sided prisms of roughly rectangular section that end in slanted, chisel-like faces. They are pearly and translucent with fine lengthwise striations, and they grow out of dark cave rock crusted orange and black with iron and manganese oxides.
+- The head is a split geode: a rock shell whose hollow is lined with crystals pointing inward.
+- A maul is held with both hands on the haft, well apart, the head carried over the shoulder; its head is set across the haft in the plane of the swing.
+- Considered but not used: rock-crystal quartz (six-sided prisms with six-faced points, in druses on granite, with amethyst); bismuth hopper crystals (stair-stepped hollow squares with iridescent oxide).
