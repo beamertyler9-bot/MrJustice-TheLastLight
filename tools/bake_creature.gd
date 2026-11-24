@@ -65,6 +65,7 @@ const DESIGNS := {
 	"thorn_widow": ["res://tools/sculpt_thorn_widow.gd", "bark"],
 	"spiny_orbweaver": ["res://tools/sculpt_thorn_widow.gd", "spiny"],
 	"mourning_knight": ["res://tools/sculpt_mourning_knight.gd", "blackknight"],
+	"pale_watcher": ["res://tools/sculpt_pale_watcher.gd", "veiled"],
 	"dust_devil": ["res://tools/sculpt_sandwraith.gd", "dustdevil"],
 	"linen_revenant": ["res://tools/sculpt_sandwraith.gd", "mummy"],
 }

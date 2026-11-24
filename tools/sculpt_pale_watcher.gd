@@ -205,12 +205,12 @@ func _veiled() -> Node3D:
 	var hs := Sculpt.new(); var fp := hs.add_painter(marble); var dk := hs.add_painter(func (p, n, v, w): return Color("#0a0a10"))
 	var eyes := mask(hs, fp, dk, Vector3(0, 2.18, -0.03), 1.15)
 	part(head, "Mask", hs)
-	var vs := Sculpt.new(); var vp := vs.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: var c := marble(p, n, v, w); return Color(c.r, c.g, c.b, 0.62))
+	var vs := Sculpt.new(); var vp := vs.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: var c := marble(p, n, v, w); return Color(c.r, c.g, c.b, 0.5))
 	vs.blob(Vector3(0, 2.2, 0.0), Vector3(0.16, 0.19, 0.15), vp, {"lat": 12, "lon": 16, "lump": 0.05})
 	vs.tube([Vector3(0, 2.3, 0.04), Vector3(0, 2.0, 0.08), Vector3(0, 1.75, 0.1)], [0.15, 0.24, 0.3], vp, {"sides": 26, "per": 3, "ridges": 9, "ridge": 0.1, "cap0": false, "cap1": false})
 	part(head, "Veil", vs, veil_mat)
 	var es := Sculpt.new(); var ew := es.add_painter(func (p, n, v, w): return Color.WHITE)
-	for e: Vector3 in eyes: es.blob(e, Vector3(0.012, 0.008, 0.006), ew, {"lat": 4, "lon": 6})
+	for e: Vector3 in eyes: es.blob(e, Vector3(0.018, 0.011, 0.008), ew, {"lat": 4, "lon": 6})
 	var core := part(head, "Gaze", es, glow); core.material_override = glow
 	launch_point(head, Vector3(0, 2.2, -0.3))
 	# A halo of tarnished gold behind the head, little bells hanging all round it.

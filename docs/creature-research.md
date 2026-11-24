@@ -142,3 +142,8 @@ monster should stand clearly bigger than him.
 - Posing anything held: build the palm as a block first, set the object through it, then wrap the fingers round it with pressure on the inside of the grip. A held weapon should look as if it has weight; it shouldn't look glued on or floating free of the arm.
 - Sources: Wikipedia, "List of medieval armour components" and "Heater shield"; swordfight.uk, "Gripping the sword"; ARMA, "The Basic Guards of Medieval Longsword"; PoseMyArt, "Drawing weapon-holding poses".
 - Chosen design: the black knight, pushed toward fantasy. Its grotesque visor follows real grotesque-mask helmets such as Henry VIII's horned helmet of 1512, and its sword is a flamberge (a real wavy-bladed sword). The ram's-curl horns sweep back and down rather than up, so the head doesn't read as cat ears.
+
+## Pale Watcher (Hollowmourn boss)
+- Built on cemetery angel statues and the "veiled" marbles of 18th- and 19th-century Italy (Giuseppe Sanmartino's Veiled Christ in Naples; Giovanni Strazza's Veiled Virgin). In those, a thin carved veil lies over a face you can still make out beneath it. The figure has deep-folded robes, folded wings, a halo, and a handbell held by its handle.
+- Its gaze is a pale beam fired from the mask's eyes behind the veil.
+- Considered but not used: a cracked bronze church bell with a hooded figure in a Venetian bauta mask rising from it; and the ophanim of Ezekiel 1:18 (wheels whose "rims were full of eyes round about") with the six wings of Isaiah's seraphim.
