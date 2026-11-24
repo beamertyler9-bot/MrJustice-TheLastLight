@@ -80,6 +80,8 @@ const DATA = {
 	"pharaoh_guardian": ["march", "spear_guard", "thrust", 5.7, 0.28, 0.68, Vector3(0.1, 0.21, 0.05), Vector3(0.03, 0.09, 0), 0.25],
 	"lion_warden": ["march", "spear_guard", "thrust", 5.7, 0.28, 0.68, Vector3(0.1, 0.21, 0.05), Vector3(0.03, 0.09, 0), 0.25],
 	"sandwraith": ["float", "sand_condense", "condense", 3.2, 0.21, 0.11, Vector3(0.18, 0.24, 0.13), Vector3(0.21, 0.31, 0.06), -0.11],
+	"dust_devil": ["float", "sand_condense", "condense", 3.2, 0.21, 0.11, Vector3(0.18, 0.24, 0.13), Vector3(0.21, 0.31, 0.06), -0.11],
+	"linen_revenant": ["float", "sand_condense", "condense", 3.2, 0.21, 0.11, Vector3(0.18, 0.24, 0.13), Vector3(0.21, 0.31, 0.06), -0.11],
 	"obelisk_scorpion": ["six", "chisel_claw", "tail_sting", 8.4, 0.28, 0.6, Vector3(0.14, 0.1, 0.08), Vector3(0.08, 0.18, -0.12), 0.2],
 	"glass_anubid": ["digitigrade", "prism_lock", "beam", 6.2, 0.3, 0.72, Vector3(0.13, 0.25, 0.045), Vector3(0.11, 0.18, 0.06), -0.07],
 	"riftback": ["amble", "basalt_brace", "brace", 4.8, 0.24, 0.94, Vector3(0.19, 0.11, 0.12), Vector3(0.06, 0.14, 0.08), 0.12],

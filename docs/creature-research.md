@@ -74,3 +74,8 @@ monster should stand clearly bigger than him.
 - [Harpy Eagle (San Diego Zoo)](https://animals.sandiegozoo.org/node/120)
 - [Scorpion anatomy (Invertebrate Anatomy OnLine)](https://lanwebs.lander.edu/faculty/rsfox/invertebrates/vaejovis.html)
 - [Antlion (Britannica)](https://www.britannica.com/animal/antlion)
+
+## Sandwraith, Dust Devil and Linen Revenant (Sunspire Dunes)
+- Sandwraith: the face veil is modelled on the indigo tagelmust worn by desert travellers, wound so only an eye slit shows. The robe dissolves into a spinning column of sand, and it has a torn chest with a burning heart, gold cuffs and a brooch.
+- Dust Devil: in Arabian folklore a whirling dust devil (zawba'a) is a djinn passing by. Its heart is a fulgurite, the glassy tube that lightning leaves when it strikes sand.
+- Linen Revenant: a mummy in linen wrappings stained with resin. It has a gilded cartonnage funeral mask, a broad bead collar in gold, lapis and turquoise, and a heart scarab over the heart, as placed in real burials.

@@ -11616,7 +11616,23 @@
       "region": 12,
       "kind": "hostile",
       "boss": false,
-      "hook": "Ragged dune-colored shroud and swirling lower body; condenses visibly before striking."
+      "hook": "Tall hooded robe veiled in indigo, burning heart showing through a tear; its hem whirls away into sand as it gathers a blast."
+    },
+    {
+      "id": "dust_devil",
+      "name": "Dust Devil",
+      "region": 12,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "A whirlwind of sand pulled into a hooded shape, fire in its cracks and a lightning-glass heart; debris spins faster before it strikes."
+    },
+    {
+      "id": "linen_revenant",
+      "name": "Linen Revenant",
+      "region": 12,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "Hooded mummy behind a broken gold mask, its heart scarab glowing through torn wrappings; sand pours from it as it gathers a blast."
     },
     {
       "id": "obelisk_scorpion",

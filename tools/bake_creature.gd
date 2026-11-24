@@ -42,6 +42,9 @@ const DESIGNS := {
 	"sunken_sentinel": ["res://tools/sculpt_sunken_sentinel.gd", "sunken"],
 	"pharaoh_guardian": ["res://tools/sculpt_sunken_sentinel.gd", "pharaoh"],
 	"lion_warden": ["res://tools/sculpt_sunken_sentinel.gd", "lion"],
+	"sandwraith": ["res://tools/sculpt_sandwraith.gd", "shroud"],
+	"dust_devil": ["res://tools/sculpt_sandwraith.gd", "dustdevil"],
+	"linen_revenant": ["res://tools/sculpt_sandwraith.gd", "mummy"],
 }
 
 

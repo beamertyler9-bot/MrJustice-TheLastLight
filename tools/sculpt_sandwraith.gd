@@ -214,10 +214,12 @@ func _wraith_rig(node: Node3D, head: Node3D, plumes: Array) -> Node3D:
 func _shroud() -> Node3D:
 	var robe_paint := cloth(CLOTH, CLOTH_DARK)
 	var body := Sculpt.new(); var rp := body.add_painter(robe_paint)
-	var dark := body.add_painter(func (p, n, v, w): return VOID)
-	# A long robe hanging in deep vertical folds, its hem trailing back in the wind.
-	body.tube([Vector3(0, 1.5, 0.02), Vector3(0, 1.25, 0.04), Vector3(0, 0.95, 0.07), Vector3(0, 0.65, 0.13), Vector3(0, 0.4, 0.21)], [0.2, 0.27, 0.32, 0.39, 0.46], rp, {"sides": 34, "per": 4, "ridges": 9, "ridge": 0.1, "flat": 1.12, "cap1": false, "lump": 0.05})
-	body.lathe(Vector3(0, 0.43, 0.21), [Vector2(0, 0.3), Vector2(0.4, 0.02), Vector2(0, 0.0)], dark, {"sides": 16})
+	var dark := body.add_painter(func (p, n, v, w): return VOID); var bn := body.add_painter(bone)
+	var sp := body.add_painter(sand()); var sg := body.add_painter(blown(SAND)); var rag := body.add_painter(blown(CLOTH.darkened(0.1)))
+	# A long robe hanging in deep vertical folds. It has no legs: below the hem it comes apart
+	# into a whirl of sand that spins down to a point (from the Dust Devil).
+	body.tube([Vector3(0, 1.5, 0.02), Vector3(0, 1.25, 0.04), Vector3(0, 0.95, 0.07), Vector3(0, 0.7, 0.12), Vector3(0, 0.5, 0.18)], [0.2, 0.27, 0.32, 0.37, 0.42], rp, {"sides": 34, "per": 4, "ridges": 9, "ridge": 0.1, "flat": 1.12, "cap1": false, "lump": 0.05})
+	body.tube([Vector3(0, 0.66, 0.17), Vector3(0.01, 0.42, 0.22), Vector3(0.03, 0.24, 0.26), Vector3(0.03, 0.1, 0.29), Vector3(0.02, 0.0, 0.3)], [0.37, 0.27, 0.17, 0.085, 0.035], sp, {"sides": 24, "per": 5, "ridges": 5, "ridge": 0.25, "twist": 9.0, "cap0": false, "lump": 0.04})
 	# A shoulder mantle over it, its lower edge torn into points.
 	body.tube([Vector3(0, 1.6, 0.02), Vector3(0, 1.44, 0.03), Vector3(0, 1.22, 0.06)], [0.16, 0.33, 0.38], rp, {"sides": 28, "per": 3, "ridges": 7, "ridge": 0.12, "flat": 1.15, "cap1": false, "lump": 0.1})
 	for k in range(11):
@@ -225,9 +227,34 @@ func _shroud() -> Node3D:
 		var out := Vector3(cos(ang), 0, sin(ang))
 		var at := Vector3(cos(ang) * 0.4, 1.23, sin(ang) * 0.36 + 0.06)
 		body.tube([at + Vector3(0, 0.03, 0), at + out * 0.02 + Vector3(0, -0.07, 0.02), at + out * 0.03 + Vector3(0, -0.15 - 0.04 * (k % 3), 0.04)], [0.06, 0.04, 0.004], rp, {"sides": 6, "per": 2, "cap1": false, "flat": 0.35, "side": out})
+	# Sand streaming back off the shoulders.
+	for side: float in [-1.0, 1.0]:
+		ribbon(body, sg, sg, [Vector3(0.3 * side, 1.47, 0.12), Vector3(0.36 * side, 1.47, 0.32), Vector3(0.4 * side, 1.4, 0.56), Vector3(0.42 * side, 1.3, 0.8)], 0.06, Vector3.UP, 0.4, 7)
+	# The robe is torn open over the chest (from the Revenant): inside, a hollow of old ribs
+	# with the wraith's burning heart between them.
+	body.blob(Vector3(-0.05, 1.04, -0.222), Vector3(0.085, 0.125, 0.045), dark, {"lat": 7, "lon": 10})
+	for j in range(4):
+		var y := 1.12 - j * 0.05
+		body.tube([Vector3(-0.13, y + 0.02, -0.235), Vector3(-0.07, y - 0.004, -0.262), Vector3(0.01, y + 0.012, -0.258)], [0.009, 0.011, 0.009], bn, {"sides": 6, "per": 2, "cap_rings": 1})
+	body.tube([Vector3(0.012, 1.15, -0.258), Vector3(0.016, 0.94, -0.252)], [0.012, 0.01], bn, {"sides": 6, "per": 2})
+	var torn: Array = []
+	for k in range(12):
+		var a := TAU * k / 12.0
+		torn.append(Vector3(-0.05 + cos(a) * (0.085 + 0.012 * Sculpt.noise(Vector3(k, 0, 1) * 1.9)), 1.04 + sin(a) * 0.125, -0.248 + 0.02 * absf(cos(a))))
+	loop(body, rp, torn, 0.016, 6)
+	for j in range(3):
+		var at := Vector3(-0.05 + (j - 1) * 0.06, 0.92 + absf(j - 1) * 0.015, -0.255)
+		ribbon(body, rag, sg, [at, at + Vector3(0.01, -0.08, -0.02), at + Vector3(0.02 * (j - 1), -0.19, -0.01)], 0.03, Vector3.BACK, 0.25, 3)
 	part(root, "Robe", body)
+	# Light from the heart: the heart itself and threads of fire creeping out through the cloth.
+	var ls := Sculpt.new(); var lw := ls.add_painter(func (p, n, v, w): return Color.WHITE)
+	ls.blob(Vector3(-0.055, 1.03, -0.255), Vector3(0.042, 0.05, 0.022), lw, {"lat": 6, "lon": 8})
+	crack(ls, lw, Vector3(-0.13, 1.1, -0.245), Vector3(-0.24, 1.2, -0.2), 0.012, Vector3(0.6, 1, 0))
+	crack(ls, lw, Vector3(0.03, 0.96, -0.255), Vector3(0.14, 0.86, -0.24), 0.012, Vector3(0.6, 1, 0))
+	var heart := part(root, "Heart", ls, glow); heart.material_override = glow
 
-	# The hood: deep, its brim jutting over the face, its point hanging down the back.
+	# The hood: deep, its brim jutting over the face; sand blows off its point like the crest
+	# of a dune.
 	var head := joint(root, "Head", Vector3(0, 1.5, 0))
 	var hs := Sculpt.new(); var hp := hs.add_painter(cloth(CLOTH, CLOTH_DARK, 0.0)); var hv := hs.add_painter(func (p, n, v, w): return VOID)
 	var veil := hs.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
@@ -235,9 +262,13 @@ func _shroud() -> Node3D:
 		c = c.darkened(smoothstep(0.6, 1.0, sin(p.y * 62.0 + p.x * 14.0 * signf(p.y - 1.71))) * 0.55)
 		return c.lerp(SAND, smoothstep(0.3, 0.7, Sculpt.fbm(p * 4.0 + Vector3(3, 3, 3))) * 0.25))
 	var tail := hs.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return INDIGO.lerp(Color("#0d1028"), clampf(-n.y * 0.4 + 0.3, 0.0, 1.0)).lerp(CLOTH, smoothstep(0.3, 0.8, v)).lerp(SAND, smoothstep(0.8, 1.0, v)))
-	var gp := hs.add_painter(blown(SAND))
+	var gp := hs.add_painter(blown(SAND)); var hrag := hs.add_painter(blown(CLOTH))
+	var gold := hs.add_painter(gilt()); var turq := hs.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#3fb8a8").lightened(clampf(n.y, 0.0, 1.0) * 0.2))
 	hs.blob(Vector3(0, 1.74, 0.05), Vector3(0.25, 0.27, 0.27), hp, {"lat": 12, "lon": 16, "lump": 0.08})
-	hs.tube([Vector3(0, 1.93, 0.12), Vector3(0, 1.99, 0.26), Vector3(0, 1.93, 0.4), Vector3(0, 1.78, 0.48)], [0.12, 0.08, 0.04, 0.005], hp, {"sides": 10, "per": 3, "cap1": false})
+	hs.tube([Vector3(0, 1.92, 0.12), Vector3(0, 1.98, 0.24), Vector3(0, 1.97, 0.34)], [0.12, 0.08, 0.04], hp, {"sides": 10, "per": 3, "cap1": false})
+	ribbon(hs, hrag, gp, [Vector3(0, 1.97, 0.3), Vector3(0, 1.97, 0.46), Vector3(0, 1.9, 0.66), Vector3(0, 1.8, 0.86)], 0.05, Vector3.RIGHT, 0.4, 7)
+	for side: float in [-1.0, 1.0]:
+		ribbon(hs, gp, gp, [Vector3(0.09 * side, 1.9, 0.2), Vector3(0.12 * side, 1.89, 0.42), Vector3(0.15 * side, 1.83, 0.62), Vector3(0.16 * side, 1.73, 0.82)], 0.035, Vector3.UP, 0.4, 7)
 	hs.blob(Vector3(0, 1.69, -0.14), Vector3(0.165, 0.2, 0.11), hv, {"lat": 8, "lon": 12})
 	brim(hs, hp, Vector3(0, 1.7, -0.245), Vector2(0.175, 0.22), 0.07, 0.05)
 	# The veil, wound round the head so only a slit is left for the eyes.
@@ -253,6 +284,10 @@ func _shroud() -> Node3D:
 			var half := 0.14 * sqrt(maxf(1.0 - pow((y - 1.69) / 0.175, 2.0), 0.05))
 			arc.append(Vector3(-cos(a) * half * 1.03, y + tilt * cos(a), -0.185 - sin(a) * 0.088))
 		hs.tube(arc, [0.008, 0.013, 0.015, 0.015, 0.015, 0.013, 0.008], veil, {"sides": 6, "per": 2})
+	# A gold brooch set with turquoise pins the end of the veil (gold from the Revenant).
+	hs.blob(Vector3(-0.155, 1.6, -0.2), Vector3(0.034, 0.034, 0.014), gold, {"lat": 6, "lon": 10, "basis": Basis(Vector3.UP, 0.7)})
+	hs.blob(Vector3(-0.163, 1.6, -0.21), Vector3(0.016, 0.016, 0.01), turq, {"lat": 5, "lon": 8, "basis": Basis(Vector3.UP, 0.7)})
+	ribbon(hs, tail, gp, [Vector3(-0.16, 1.58, -0.18), Vector3(-0.22, 1.5, -0.08), Vector3(-0.26, 1.4, 0.12), Vector3(-0.27, 1.3, 0.34)], 0.045, Vector3.RIGHT, 0.3, 4)
 	ribbon(hs, tail, gp, [Vector3(0.1, 1.64, 0.2), Vector3(0.17, 1.52, 0.38), Vector3(0.22, 1.38, 0.58), Vector3(0.2, 1.26, 0.8)], 0.06, Vector3.RIGHT, 0.3, 5)
 	part(head, "Hood", hs)
 	var es := Sculpt.new(); var ew := es.add_painter(func (p, n, v, w): return Color.WHITE)
@@ -260,7 +295,8 @@ func _shroud() -> Node3D:
 		es.blob(Vector3(0.05 * side, 1.71, -0.272), Vector3(0.03, 0.0095, 0.008), ew, {"lat": 4, "lon": 8, "basis": Basis(Vector3.BACK, -0.25 * side)})
 	var core := part(head, "Eyes", es, glow); core.material_override = glow
 
-	# Arms: sleeves hanging from the shoulders, wide at the cuff, with bone hands reaching out.
+	# Arms: sleeves hanging from the shoulders, wide at the cuff, with bone hands reaching out
+	# and gold cuffs on the wrists.
 	var arms: Array = []; var forearms: Array = []
 	var sleeve := func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return (robe_paint.call(p, n, v, w) as Color).lerp(VOID, smoothstep(0.9, 0.97, v))
 	for side: float in [1.0, -1.0]:
@@ -270,30 +306,56 @@ func _shroud() -> Node3D:
 		part(sh, "Sleeve", us)
 		var el := joint(sh, "Elbow", Vector3(0.38 * side, 1.12, -0.05))
 		var fs := Sculpt.new(); var fp := fs.add_painter(sleeve); var bp := fs.add_painter(bone); var cp := fs.add_painter(func (p, n, v, w): return Color("#2a2219").lerp(BONE, v * 0.6))
-		var rag := fs.add_painter(blown(CLOTH.darkened(0.1))); var sg := fs.add_painter(blown(SAND))
+		var frag := fs.add_painter(blown(CLOTH.darkened(0.1))); var fsg := fs.add_painter(blown(SAND))
+		var fg := fs.add_painter(gilt()); var ft := fs.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#3fb8a8") if fposmod(atan2(p.z + 0.38, p.y - 0.99) * 6.0 / PI, 2.0) < 0.6 else GOLD.darkened(clampf(-n.y * 0.4, 0.0, 0.4)))
 		fs.tube([Vector3(0.38 * side, 1.14, -0.05), Vector3(0.4 * side, 1.06, -0.19), Vector3(0.42 * side, 1.0, -0.33)], [0.085, 0.11, 0.15], fp, {"sides": 12, "per": 3, "cap_len": 0.25, "lump": 0.14})
 		for j in range(3):
 			var at := Vector3((0.42 + (j - 1) * 0.07) * side, 0.89, -0.3 + j * 0.02)
-			ribbon(fs, rag, sg, [at, at + Vector3(0.01 * side, -0.14, 0.05), at + Vector3(0.02 * side, -0.3 - 0.04 * j, 0.14)], 0.045, Vector3.FORWARD, 0.35, 3)
+			ribbon(fs, frag, fsg, [at, at + Vector3(0.01 * side, -0.14, 0.05), at + Vector3(0.02 * side, -0.3 - 0.04 * j, 0.14)], 0.045, Vector3.FORWARD, 0.35, 3)
 		fs.tube([Vector3(0.42 * side, 1.0, -0.33), Vector3(0.425 * side, 0.985, -0.42)], [0.035, 0.03], bp, {"sides": 7, "per": 2})
+		fs.tube([Vector3(0.421 * side, 0.996, -0.36), Vector3(0.424 * side, 0.99, -0.395)], [0.045, 0.043], ft, {"sides": 16, "per": 2, "cap_len": 0.3})
 		bone_hand(fs, bp, cp, Vector3(0.425 * side, 0.98, -0.42), Vector3(0.06 * side, -0.25, -1.0), side, 1.85)
 		part(el, "Forearm", fs)
 		if side > 0: launch_point(el, Vector3(0.46, 0.9, -0.74))
 		arms.append(sh); forearms.append(el)
 
-	# The hem frays into ribbons of cloth that turn to blown sand, streaming back.
+	# The hem frays into short ribbons of cloth that turn to blown sand.
 	var tatters: Array = []
-	for k in range(20):
-		var ang := TAU * k / 20.0 + 0.13
+	for k in range(12):
+		var ang := TAU * k / 12.0 + 0.13
 		var out := Vector3(cos(ang), 0, sin(ang))
 		var back := 1.0 + maxf(0.0, sin(ang)) * 1.6
-		var at := Vector3(cos(ang) * 0.46 * 1.12, 0.41, sin(ang) * 0.46 + 0.21)
+		var at := Vector3(cos(ang) * 0.42 * 1.12, 0.51, sin(ang) * 0.42 + 0.18)
 		var node := joint(root, "Tatter%d" % k, at)
 		var ts := Sculpt.new(); var tp := ts.add_painter(blown(CLOTH.darkened(0.15))); var tg := ts.add_painter(blown(SAND))
-		var drop := 0.24 + 0.08 * ((k * 7) % 4)
-		var curl := out.cross(Vector3.UP) * 0.05 * (1.0 if k % 2 == 0 else -1.0)
-		ribbon(ts, tp, tg, [at + Vector3(0, 0.06, 0), at + out * 0.04 + Vector3(0, -drop * 0.45, 0.05 * back) + curl, at + out * 0.07 + Vector3(0, -drop * 0.8, 0.14 * back) - curl, at + out * 0.09 + Vector3(0, -drop, 0.28 * back)], 0.1, out, 0.16, 6)
+		var drop := 0.18 + 0.06 * ((k * 7) % 4)
+		var curl := out.cross(Vector3.UP) * 0.04 * (1.0 if k % 2 == 0 else -1.0)
+		ribbon(ts, tp, tg, [at + Vector3(0, 0.06, 0), at + out * 0.03 + Vector3(0, -drop * 0.45, 0.05 * back) + curl, at + out * 0.04 + Vector3(0, -drop * 0.8, 0.13 * back) - curl, at + out * 0.03 + Vector3(0, -drop, 0.25 * back)], 0.1, out, 0.16, 5)
 		part(node, "Tatter", ts)
+		tatters.append(node)
+	# Ribbons of sand spiralling round the whirl beneath it, carrying grit and an old bone.
+	for i in range(3):
+		var node := joint(root, "Swirl%d" % i, Vector3(0, 0.35, 0.24))
+		var ws := Sculpt.new(); var wp := ws.add_painter(blown(SAND_DEEP)); var wg := ws.add_painter(blown(SAND))
+		var pts: Array = []; var r: Array = []
+		var phase := TAU * i / 3.0
+		for j in range(10):
+			var t := j / 9.0
+			var rad := lerpf(0.1, 0.48, t) + 0.06
+			var a := phase + t * TAU * 1.0
+			pts.append(Vector3(cos(a) * rad * 1.1, 0.04 + t * 0.56, sin(a) * rad + 0.24)); r.append(0.004 + 0.035 * sin(PI * t))
+		ws.tube(pts, r, wp, {"sides": 7, "per": 2, "flat": 0.45, "side": Vector3(cos(phase), 0, sin(phase)), "lump": 0.3})
+		for j in range(12):
+			var t := (j + 0.5) / 12.0
+			var a := phase + 0.5 + t * TAU
+			var rad := lerpf(0.1, 0.48, t) + 0.12
+			ws.rock(Vector3(cos(a) * rad * 1.1, 0.06 + t * 0.56, sin(a) * rad + 0.24), Vector3.ONE * (0.011 + 0.005 * (j % 3)), wg, {"lat": 3, "lon": 4})
+		if i == 1:
+			var at := Vector3(cos(phase + 2.0) * 0.5, 0.3, sin(phase + 2.0) * 0.45 + 0.24)
+			var bpp := ws.add_painter(bone)
+			ws.tube([at - Vector3(0.06, 0.02, 0), at + Vector3(0.06, 0.02, 0)], [0.011, 0.011], bpp, {"sides": 6})
+			for e in [-1.0, 1.0]: ws.blob(at + Vector3(0.065, 0.022, 0) * e, Vector3(0.02, 0.015, 0.015), bpp, {"lat": 4, "lon": 6})
+		part(node, "Swirl", ws)
 		tatters.append(node)
 	return _wraith_rig(_finish({"head": head, "core": core, "arms": arms, "forearms": forearms, "feet": [], "knees": [], "leaves": tatters}, 1.15), head, tatters)
 
