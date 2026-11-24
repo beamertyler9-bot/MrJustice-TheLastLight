@@ -44,7 +44,7 @@ func build(variant: String) -> Node3D:
 			crystal_mat.metallic = 0.85; crystal_mat.roughness = 0.2; crystal_mat.emission = Color("#3a2a3a")
 		"selenite":
 			glow.albedo_color = Color("#fff0c8").darkened(0.2); glow.emission = Color("#ffe8b0")
-			crystal_mat.emission = Color("#6a6050"); crystal_mat.roughness = 0.25
+			crystal_mat.emission = Color("#8a7a5a"); crystal_mat.emission_energy_multiplier = 0.45; crystal_mat.roughness = 0.18; crystal_mat.rim = 0.8
 		_: return null
 	glow.emission_energy_multiplier = 2.2
 	return _sentinel()
@@ -91,9 +91,19 @@ static func bismuth(p: Vector3, n: Vector3, v: float, _w: float) -> Color:
 
 ## Selenite: pearly and translucent, faint gold, with fine lengthwise striations.
 static func selenite(p: Vector3, n: Vector3, v: float, _w: float) -> Color:
-	var stria := absf(sin((p.x * 3.0 + p.z * 5.0 + p.y * 0.4) * 90.0))
-	var c := Color("#c8b898").lerp(Color("#f6f0e2"), clampf(0.55 + n.y * 0.15 + v * 0.25 - stria * 0.12, 0.0, 1.0))
-	return c
+	var stria := absf(sin((p.x * 3.0 + p.z * 5.0 + p.y * 0.4) * 70.0))
+	var c := Color("#a89878").lerp(Color("#f8f2e4"), clampf(0.45 + v * 0.45 + n.y * 0.1 - stria * 0.1, 0.0, 1.0))
+	c = c.lerp(Color("#ffffff"), smoothstep(0.55, 0.9, Sculpt.noise(p * 9.0)) * 0.2)
+	# The roots of the beams stained orange-brown with iron oxide, as at Naica.
+	return c.lerp(Color("#9a6a3a"), smoothstep(0.18, 0.0, v) * 0.6)
+
+
+## Naica's cave walls: dark brown rock crusted orange and black with iron and manganese oxides.
+static func naica_rock(p: Vector3, n: Vector3, _v: float, w: float) -> Color:
+	var c := Color("#2a1c14").lerp(Color("#6a4a30"), clampf(n.y * 0.2 + 0.35 + Sculpt.fbm(p * 5.0) * 0.45, 0.0, 1.0))
+	c = c.lerp(Color("#a8582a"), smoothstep(0.5, 0.75, Sculpt.noise(p * 8.0)) * 0.55)
+	c = c.lerp(Color("#0e0a08"), smoothstep(0.65, 0.8, Sculpt.noise(p * 19.0 + Vector3(5, 0, 0))) * 0.6)
+	return c.darkened(clampf(-w, 0.0, 1.0) * 0.35)
 
 
 # ------------------------------------------------------------------ crystal growths
@@ -106,7 +116,7 @@ func shard(s: Sculpt, p: int, at: Vector3, dir: Vector3, length: float, r: float
 		"bismuth":
 			hopper(s, p, at, dir, r * 3.2, 4 + int(fposmod(seed * 3.0, 2.0)), seed)
 		"selenite":
-			s.crystal(at, dir, length * 1.5, r * 0.85, p, 4, PI * 0.25 + seed * 0.2)
+			beam(s, p, at, dir, length * 1.25, r * 2.6, r * 1.9, seed * 1.3)
 
 
 ## A bismuth hopper crystal: a stair-stepped square spiral of frames, hollow in the middle,
@@ -128,6 +138,29 @@ func hopper(s: Sculpt, p: int, at: Vector3, up: Vector3, size: float, steps: int
 			box(s, p, c + off, Basis(along.cross(u).normalized(), u, along), Vector3(t * 0.5, h * 0.5, half))
 
 
+## A selenite beam: a long flat-sided prism of rectangular section (`w` wide, `t` thick) growing
+## from `at` along `dir`, its end cut off at a slant like a chisel, as gypsum crystals end.
+func beam(s: Sculpt, p: int, at: Vector3, dir: Vector3, length: float, w: float, t: float, roll: float) -> void:
+	var d := dir.normalized()
+	var a := d.cross(Vector3.UP if absf(d.y) < 0.9 else Vector3.RIGHT).normalized().rotated(d, roll)
+	var b := d.cross(a)
+	var first := s._i.size(); var base := s._v.size()
+	var corners := [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]
+	for end in range(2):
+		for c: Vector2 in corners:
+			var l := 0.0 if end == 0 else length * (1.0 if c.x > 0.0 else 0.72)
+			s._v.append(at + a * c.x * w * 0.5 + b * c.y * t * 0.5 + d * l); s._along.append(0.0 if end == 0 else l / length); s._ridge.append(0.0); s._painter.append(p)
+	var faces := [[0, 1, 2, 3], [4, 7, 6, 5], [0, 4, 5, 1], [1, 5, 6, 2], [2, 6, 7, 3], [3, 7, 4, 0]]
+	var mid := at + d * length * 0.45
+	for f: Array in faces:
+		var i0: int = base + f[0]; var i1: int = base + f[1]; var i2: int = base + f[2]; var i3: int = base + f[3]
+		var nrm := (s._v[i1] - s._v[i0]).cross(s._v[i2] - s._v[i0])
+		var fc := (s._v[i0] + s._v[i2]) * 0.5
+		if nrm.dot(fc - mid) > 0.0: s._i.append_array(PackedInt32Array([i0, i2, i1, i0, i3, i2]))
+		else: s._i.append_array(PackedInt32Array([i0, i1, i2, i0, i2, i3]))
+	s._facets.append(Vector2i(first, s._i.size()))
+
+
 ## A flat-faced box centred on `c`, oriented by `b`, with half-extents `e`.
 func box(s: Sculpt, p: int, c: Vector3, b: Basis, e: Vector3) -> void:
 	var first := s._i.size()
@@ -140,7 +173,7 @@ func box(s: Sculpt, p: int, c: Vector3, b: Basis, e: Vector3) -> void:
 		var a0: int = base + f[0]; var a1: int = base + f[1]; var a2: int = base + f[2]; var a3: int = base + f[3]
 		var nrm := (s._v[a1] - s._v[a0]).cross(s._v[a2] - s._v[a0])
 		var mid := (s._v[a0] + s._v[a2]) * 0.5
-		if nrm.dot(mid - c) < 0.0: s._i.append_array(PackedInt32Array([a0, a2, a1, a0, a3, a2]))
+		if nrm.dot(mid - c) > 0.0: s._i.append_array(PackedInt32Array([a0, a2, a1, a0, a3, a2]))
 		else: s._i.append_array(PackedInt32Array([a0, a1, a2, a0, a2, a3]))
 	s._facets.append(Vector2i(first, s._i.size()))
 
@@ -149,6 +182,7 @@ func box(s: Sculpt, p: int, c: Vector3, b: Basis, e: Vector3) -> void:
 func cluster(s: Sculpt, p: int, at: Vector3, normal: Vector3, count: int, length: float, r: float, seed: float, spread := 0.55, alt := -1) -> void:
 	var nrm := normal.normalized()
 	var a := nrm.cross(Vector3.UP if absf(nrm.y) < 0.9 else Vector3.RIGHT).normalized(); var b := nrm.cross(a)
+	if kindc == "selenite": count = maxi(2, int(round(count * 0.55)))
 	for k in range(count):
 		var ang := TAU * k / count + seed
 		var t := 0.4 + 0.6 * fposmod(k * 0.618 + seed, 1.0)
@@ -165,14 +199,14 @@ func _sentinel() -> Node3D:
 	var cpaint: Callable = quartz
 	match kindc:
 		"bismuth": stone = slag; cpaint = bismuth
-		"selenite": stone = cave_rock; cpaint = selenite
+		"selenite": stone = naica_rock; cpaint = selenite
 	var cs := Sculpt.new(); var cp := cs.add_painter(cpaint)
 	var ap := cs.add_painter(amethyst) if kindc == "quartz" else -1
 	var crystals_root := cs
 
 	# ---- the stone core: a heavy torso, a waist, a pelvis
 	var body := Sculpt.new(); var sp := body.add_painter(stone)
-	body.tube([Vector3(0, 0.84, 0.0), Vector3(0, 1.0, 0.0), Vector3(0, 1.22, -0.01), Vector3(0, 1.46, 0.0)], [0.18, 0.13, 0.25, 0.29], sp, {"sides": 14, "per": 2, "flat": 0.72, "side": Vector3.BACK, "lump": 0.12})
+	body.tube([Vector3(0, 0.84, 0.0), Vector3(0, 1.0, 0.0), Vector3(0, 1.22, -0.01), Vector3(0, 1.46, 0.0)], [0.18, 0.13, 0.25, 0.29 if kindc != "selenite" else 0.24], sp, {"sides": 14, "per": 2, "flat": 0.72, "side": Vector3.BACK, "lump": 0.12})
 	body.rock(Vector3(0, 0.84, 0.0), Vector3(0.22, 0.12, 0.17), sp, {"seed": 1})
 	body.rock(Vector3(0, 1.52, 0.0), Vector3(0.16, 0.08, 0.13), sp, {"seed": 2})
 	steel_part(root, "Core", body)
@@ -185,7 +219,14 @@ func _sentinel() -> Node3D:
 		for k in range(n):
 			var x := lerpf(-0.17, 0.17, k / float(n - 1)) * (0.8 + row * 0.15)
 			var z := -0.13 - row * 0.03 - 0.04 * (1.0 - absf(x) / 0.25)
-			shard(plates, pp if (k + row) % 5 != 2 or pa < 0 else pa, Vector3(x, yy, z), Vector3(x * 1.4, 1.0, -0.55), 0.3, 0.05, row * 1.3 + k)
+			var pd := Vector3(x * 1.4, 1.0, -0.55) if kindc != "selenite" else Vector3(x * 0.7, 1.0, -0.22)
+			shard(plates, pp if (k + row) % 5 != 2 or pa < 0 else pa, Vector3(x, yy - (0.05 if kindc == "selenite" else 0.0), z), pd, 0.3 if kindc != "selenite" else 0.2, 0.05, row * 1.3 + k)
+	if kindc == "selenite":
+		# A gorget of short beams round the base of the neck, over the collarbones.
+		for k in range(10):
+			var ang := lerpf(-2.3, 2.3, k / 9.0)
+			var b0 := Vector3(sin(ang) * 0.22, 1.47, -cos(ang) * 0.18)
+			beam(plates, pp, b0, Vector3(sin(ang) * 0.7, 1.0, -cos(ang) * 0.5), 0.16 + 0.04 * float(k % 2), 0.09, 0.05, ang)
 	# A great ridge of crystal standing up the back.
 	cluster(plates, pp, Vector3(0, 1.32, 0.17), Vector3(0, 0.9, 1.0), 9, 0.5, 0.06, 2.1, 0.7, pa)
 	cluster(plates, pp, Vector3(0, 1.05, 0.15), Vector3(0, 0.4, 1.0), 5, 0.3, 0.045, 7.1, 0.6, pa)
@@ -201,19 +242,33 @@ func _sentinel() -> Node3D:
 	# ---- head: a small stone head sunk between the shoulders, a crown of crystal, a glowing sight
 	var head := joint(root, "Head", Vector3(0, 1.56, 0.0))
 	var hd := Sculpt.new(); var hp := hd.add_painter(stone); var hk := hd.add_painter(func (p, n, v, w): return Color("#08080a"))
-	hd.rock(Vector3(0, 1.64, -0.02), Vector3(0.11, 0.11, 0.12), hp, {"seed": 5})
-	hd.rock(Vector3(0, 1.6, -0.1), Vector3(0.09, 0.06, 0.06), hp, {"seed": 6})
-	hd.tube([Vector3(-0.08, 1.685, -0.12), Vector3(0, 1.678, -0.14), Vector3(0.08, 1.685, -0.12)], [0.014, 0.016, 0.014], hk, {"sides": 5, "per": 2})
+	var hy := 1.68 if kindc != "selenite" else 1.78
+	if kindc == "selenite": hd.tube([Vector3(0, 1.5, 0.0), Vector3(0, 1.7, -0.01)], [0.09, 0.07], hp, {"sides": 8, "per": 1, "lump": 0.15})
+	hd.rock(Vector3(0, hy - 0.04, -0.02), Vector3(0.11, 0.11, 0.12) * (0.85 if kindc == "selenite" else 1.0), hp, {"seed": 5})
+	hd.rock(Vector3(0, hy - 0.08, -0.1), Vector3(0.09, 0.06, 0.06) * (0.8 if kindc == "selenite" else 1.0), hp, {"seed": 6})
+	hd.tube([Vector3(-0.07, hy + 0.005, -0.11), Vector3(0, hy - 0.002, -0.13), Vector3(0.07, hy + 0.005, -0.11)], [0.014, 0.016, 0.014], hk, {"sides": 5, "per": 2})
 	steel_part(head, "Head", hd)
 	var crown := Sculpt.new(); var crp := crown.add_painter(cpaint)
-	# A helm of crystal: long points sweeping back over the skull from the brow, like a crest.
-	for k in range(7):
+	if kindc == "selenite":
+		# A face-plate of clear selenite over the stone, the eyes glowing through it, and great
+		# beams sweeping back from the brow and temples like a crest.
+		# A helm of selenite: beams standing round the skull and leaning in to a point above it,
+		# open in front where the stone face glares out; two long beams swept back behind.
+		var apex := Vector3(0, hy + 0.3, 0.03)
+		for k in range(9):
+			var a := lerpf(0.65, TAU - 0.65, k / 8.0)
+			var b0 := Vector3(sin(a) * 0.12, hy - 0.1, -cos(a) * 0.12 - 0.02)
+			beam(crown, crp, b0, (apex - b0).normalized(), (apex - b0).length() * (0.95 - 0.12 * float(k % 2)), 0.075, 0.045, a)
+		for side: float in [-1.0, 1.0]:
+			beam(crown, crp, Vector3(0.05 * side, hy + 0.08, 0.06), Vector3(side * 0.35, 0.55, 1.0), 0.45, 0.07, 0.05, side)
+			beam(crown, crp, Vector3(0.1 * side, hy - 0.06, -0.08), Vector3(side * 0.5, 0.15, -0.6), 0.14, 0.05, 0.035, side * 2.0)
+	for k in range(7 if kindc != "selenite" else 0):
 		var x := (k - 3) * 0.035
 		shard(crown, crp, Vector3(x, 1.71 + 0.01 * (3 - absf(k - 3)), -0.1 + absf(k - 3) * 0.015), Vector3(x * 2.0, 0.65, 1.0), 0.32 - absf(k - 3) * 0.04, 0.035, k * 0.9)
-	for side: float in [-1.0, 1.0]: shard(crown, crp, Vector3(0.1 * side, 1.62, -0.04), Vector3(side, 0.2, 0.6), 0.16, 0.03, side)
+	for side: float in ([-1.0, 1.0] if kindc != "selenite" else []): shard(crown, crp, Vector3(0.1 * side, 1.62, -0.04), Vector3(side, 0.2, 0.6), 0.16, 0.03, side)
 	part(head, "Crown", crown, crystal_mat)
 	var eg := Sculpt.new(); var egp := eg.add_painter(func (p, n, v, w): return Color.WHITE)
-	for side: float in [-1.0, 1.0]: eg.blob(Vector3(0.035 * side, 1.68, -0.145), Vector3(0.022, 0.009, 0.006), egp, {"lat": 4, "lon": 6})
+	for side: float in [-1.0, 1.0]: eg.blob(Vector3(0.035 * side, hy, -0.135), Vector3(0.022, 0.009, 0.006), egp, {"lat": 4, "lon": 6})
 	part(head, "Eyes", eg, glow).material_override = glow
 
 	# ---- arms. Both hands on the maul's haft: the right hand near the head, the left near the
@@ -235,6 +290,9 @@ func _sentinel() -> Node3D:
 		var pc := Sculpt.new(); var pcp := pc.add_painter(cpaint)
 		cluster(pc, pcp, sh_at + Vector3(0.08 * side, 0.08, 0.0), Vector3(side * 0.8, 1.0, 0.1), 8, 0.48, 0.06, 5.0 + side, 0.65, pc.add_painter(amethyst) if kindc == "quartz" else -1)
 		for k in range(3): shard(pc, pcp, sh_at.lerp(elbow_at, 0.3 + k * 0.22) + Vector3(0.07 * side, 0, 0), Vector3(side * 0.6, 0.9, 0.1), 0.24, 0.045, k * 2.0 + side)
+		if kindc == "selenite":
+			var ua := (elbow_at - sh_at).normalized()
+			beam(pc, pcp, sh_at + Vector3(0.075 * side, -0.04, 0.0), ua, (elbow_at - sh_at).length() * 0.85, 0.075, 0.05, 0.3 * side)
 		part(shoulder, "Pauldron", pc, crystal_mat)
 		var elbow := joint(shoulder, "Forearm", elbow_at)
 		var fs := Sculpt.new(); var fp := fs.add_painter(stone)
@@ -250,6 +308,10 @@ func _sentinel() -> Node3D:
 		if outv.length() < 0.5: outv = Vector3(side, 0, 0)
 		for k in range(4):
 			shard(fcs, fcp, elbow_at.lerp(wrist, 0.15 + k * 0.22) + outv * 0.06, (outv * 0.6 - fa * 0.8).normalized(), 0.24 - k * 0.03, 0.045, k + side)
+		if kindc == "selenite":
+			# Vambraces: long beams lying along the forearm on its outer and upper sides.
+			var upv := fa.cross(outv).normalized()
+			for q in range(2): beam(fcs, fcp, elbow_at + fa * 0.03 + (outv * 0.07 if q == 0 else upv * -0.07), fa, (wrist - elbow_at).length() * 0.95, 0.07, 0.05, q * 0.8)
 		part(elbow, "Shards", fcs, crystal_mat)
 		# The joint seam that brightens before a blow.
 		var gj := Sculpt.new(); var gjp := gj.add_painter(func (p, n, v, w): return Color.WHITE)
@@ -269,9 +331,13 @@ func _sentinel() -> Node3D:
 			for sgn: float in [-1.0, 1.0]: ms.tube([hc - across * 0.13 * sgn, hc - across * 0.17 * sgn], [0.09, 0.09], mi, {"sides": 8, "per": 1})
 			steel_part(elbow, "Maul", ms)
 			var mc := Sculpt.new(); var mcp := mc.add_painter(cpaint)
-			for sgn: float in [-1.0, 1.0]:
+			if kindc == "selenite":
+				# The maul's head is one great selenite beam set crosswise through the stone block.
+				beam(mc, mcp, hc - across * 0.42, across, 0.84, 0.2, 0.15, 0.0)
+				beam(mc, mcp, hc + across * 0.42, -across, 0.84, 0.2, 0.15, PI * 0.5)
+			for sgn: float in ([-1.0, 1.0] if kindc != "selenite" else []):
 				cluster(mc, mcp, hc + across * 0.2 * sgn, across * sgn, 7, 0.32, 0.07, 9.0 + sgn, 0.45, mc.add_painter(amethyst) if kindc == "quartz" else -1)
-			cluster(mc, mcp, hc + hd_dir * 0.14, hd_dir, 5, 0.24, 0.05, 12.0, 0.5)
+			if kindc != "selenite": cluster(mc, mcp, hc + hd_dir * 0.14, hd_dir, 5, 0.24, 0.05, 12.0, 0.5)
 			part(elbow, "MaulHead", mc, crystal_mat)
 		if side > 0.0:
 			arms.push_front(shoulder); forearms.push_front(elbow)
