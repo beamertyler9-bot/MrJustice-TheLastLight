@@ -11808,7 +11808,23 @@
       "region": 14,
       "kind": "hostile",
       "boss": false,
-      "hook": "Lanky faceless root body and long wooden fingers; creaks and uncurls before stalking forward."
+      "hook": "A lanky faceless thing of fused strangler-fig roots, grave-light glowing in its hollow chest; creaks and uncurls its long wooden fingers before stalking forward."
+    },
+    {
+      "id": "grave_mandrake",
+      "name": "Grave Mandrake",
+      "region": 14,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "A man-shaped mandrake root torn from a grave, wilted leaves and orange fruit on its head and shoulders, its mouth stretched in a silent scream; creaks and uncurls before stalking forward."
+    },
+    {
+      "id": "bog_wight",
+      "name": "Bog Wight",
+      "region": 14,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "A gaunt figure of black bog oak hung with grey moss, foxfire glowing through the split in its face; creaks and uncurls before stalking forward."
     },
     {
       "id": "wraithhart",

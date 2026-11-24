@@ -52,6 +52,9 @@ const DESIGNS := {
 	"slag_crawler": ["res://tools/sculpt_slag_crawler.gd", "hermit"],
 	"ash_harpy": ["res://tools/sculpt_ash_harpy.gd", "harpy"],
 	"cinder_vulture": ["res://tools/sculpt_ash_harpy.gd", "vulture"],
+	"root_reaper": ["res://tools/sculpt_root_reaper.gd", "strangler"],
+	"grave_mandrake": ["res://tools/sculpt_root_reaper.gd", "mandrake"],
+	"bog_wight": ["res://tools/sculpt_root_reaper.gd", "bogoak"],
 	"dust_devil": ["res://tools/sculpt_sandwraith.gd", "dustdevil"],
 	"linen_revenant": ["res://tools/sculpt_sandwraith.gd", "mummy"],
 }

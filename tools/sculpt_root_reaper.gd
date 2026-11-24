@@ -111,6 +111,59 @@ func root_hairs(s: Sculpt, painter: int, at: Vector3, out: Vector3, count: int, 
 		s.tube([at, at + d * l * 0.5 + Vector3(0, -l * 0.1, 0), at + d * l + Vector3(0, -l * 0.35, 0)], [0.006, 0.004, 0.001], painter, {"sides": 4, "per": 2, "cap1": false})
 
 
+# ------------------------------------------------------------------ per-design details
+
+## Moss on the shoulders, and the details that make each design its own.
+func _extras(body: Sculpt, light: Sculpt, skin: Callable, hips_c: Vector3, chest: Vector3, neck: Vector3) -> void:
+	var mp := body.add_painter(moss)
+	var lw := light.add_painter(func (p, n, v, w): return Color.WHITE)
+	match kind:
+		"strangler":
+			# Grey-green moss on the shoulders, and aerial roots hanging in curtains from the
+			# shoulder yoke and the arms of the cage, the way a strangler fig drops them.
+			for side: float in [-1.0, 1.0]:
+				moss_clump(body, mp, Vector3(0.2 * side, 1.69, -0.1), 0.07, 4)
+				for k in range(5):
+					var at := Vector3((0.08 + k * 0.045) * side, 1.64 - k * 0.01, -0.03 + 0.02 * (k % 2))
+					var l := 0.35 + 0.25 * fposmod(k * 0.618 + side, 1.0)
+					body.tube([at, at + Vector3(0.01 * side, -l * 0.5, 0.03), at + Vector3(0.02 * side, -l, 0.05)], [0.012, 0.009, 0.002], body.add_painter(skin), {"sides": 5, "per": 2, "lump": 0.3, "cap1": false})
+			# Grave-light seeping out through cracks where the roots have split.
+			for k in range(4):
+				var a := TAU * k / 4.0 + 0.5
+				var at := hips_c.lerp(neck, 0.25 + 0.15 * k) + Vector3(cos(a) * 0.17, 0, sin(a) * 0.12)
+				light.tube([at, at + Vector3(0.0, 0.08, 0.0), at + Vector3(0.01, 0.15, -0.01)], [0.008, 0.01, 0.003], lw, {"sides": 4, "per": 1, "cap_rings": 1})
+		"mandrake":
+			# The mandrake plant: a rosette of big wilted leaves over the shoulders, with its
+			# round yellow-orange fruit (the "love apples") among them, and soil clinging on.
+			var lf := body.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#26331c").lerp(Color("#4e5a30"), clampf(n.y * 0.4 + 0.3, 0.0, 1.0)).lerp(Color("#3a2a18"), smoothstep(0.5, 1.0, v) * 0.7))
+			var fruit := body.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#c8781e").lerp(Color("#f0b040"), clampf(n.y * 0.5 + 0.4, 0.0, 1.0)))
+			for side: float in [-1.0, 1.0]:
+				for k in range(3):
+					var a := (0.3 + k * 0.5) * side
+					var base := Vector3(0.18 * side, 1.66, -0.05 + k * 0.05)
+					var d := Vector3(sin(a) * 0.9, 0.15, cos(a) * 0.4 + 0.2).normalized()
+					body.tube([base, base + d * 0.12 + Vector3(0, 0.01, 0), base + d * 0.24 + Vector3(0, -0.2, 0)], [0.02, 0.05, 0.004], lf, {"sides": 6, "per": 2, "flat": 0.2, "side": d.cross(Vector3.UP).normalized(), "cap1": false})
+				body.blob(Vector3(0.14 * side, 1.7, 0.02), Vector3.ONE * 0.035, fruit, {"lat": 6, "lon": 8})
+				body.blob(Vector3(0.1 * side, 1.69, 0.08), Vector3.ONE * 0.028, fruit, {"lat": 6, "lon": 8})
+			for k in range(6):
+				var at := Vector3(0.18 * sin(k * 2.3), 1.0 + k * 0.1, -0.12 + 0.05 * cos(k * 1.7))
+				root_hairs(body, body.add_painter(skin), at, Vector3(sin(k * 2.3), -0.3, -0.5), 3, 0.18, k * 1.3)
+		"bogoak":
+			# Curtains of grey Spanish moss hanging from the shoulders and the trunk, and
+			# spots of glowing foxfire fungus on the wood.
+			var sm := body.add_painter(spanish_moss)
+			for side: float in [-1.0, 1.0]:
+				for k in range(6):
+					var at := Vector3((0.1 + k * 0.035) * side, 1.64, -0.1 + 0.05 * (k % 3))
+					var l := 0.3 + 0.3 * fposmod(k * 0.618 + side * 0.3, 1.0)
+					body.tube([at, at + Vector3(0.02 * side, -l * 0.45, 0.03), at + Vector3(0.0, -l, 0.05)], [0.022, 0.014, 0.002], sm, {"sides": 5, "per": 2, "lump": 0.5, "cap1": false})
+			for k in range(14):
+				var t := fposmod(k * 0.618, 1.0)
+				var a := TAU * fposmod(k * 0.382, 1.0)
+				var at := hips_c.lerp(neck, t) + Vector3(cos(a) * (0.15 - t * 0.06), 0, sin(a) * 0.11)
+				light.blob(at, Vector3(0.016, 0.012, 0.016), lw, {"lat": 3, "lon": 6})
+
+
 # ------------------------------------------------------------------ the figure
 
 func _figure(skin: Callable, strands: int, twist_gap: float) -> Node3D:
@@ -178,7 +231,7 @@ func _figure(skin: Callable, strands: int, twist_gap: float) -> Node3D:
 			for side: float in [-1.0, 1.0]:
 				# Deep, drooping, sunken holes for eyes under heavy lumpy brows.
 				hs.blob(Vector3(0.058 * side, 1.94, -0.368), Vector3(0.024, 0.032, 0.022), hd, {"lat": 5, "lon": 8, "basis": Basis(Vector3.BACK, -0.5 * side)})
-				hs.blob(Vector3(0.06 * side, 1.975, -0.37), Vector3(0.048, 0.022, 0.03), hp, {"lat": 5, "lon": 7, "lump": 0.3, "basis": Basis(Vector3.BACK, 0.35 * side)})
+				hs.blob(Vector3(0.06 * side, 1.972, -0.352), Vector3(0.05, 0.02, 0.03), hp, {"lat": 5, "lon": 7, "lump": 0.4, "basis": Basis(Vector3.BACK, 0.3 * side)})
 				hs.blob(Vector3(0.075 * side, 1.89, -0.355), Vector3(0.035, 0.03, 0.025), hp, {"lat": 4, "lon": 7, "lump": 0.3})
 			# A long, twisted screaming mouth, wider at the bottom.
 			hs.blob(Vector3(0.005, 1.79, -0.355), Vector3(0.045, 0.11, 0.03), hd, {"lat": 6, "lon": 9, "basis": Basis(Vector3.BACK, 0.12)})
@@ -198,7 +251,12 @@ func _figure(skin: Callable, strands: int, twist_gap: float) -> Node3D:
 			hs.blob(Vector3(0, 1.9, -0.34), Vector3(0.04, 0.13, 0.03), hd, {"lat": 5, "lon": 8})
 			hl.blob(Vector3(0, 1.9, -0.365), Vector3(0.018, 0.1, 0.012), hlw, {"lat": 4, "lon": 6})
 			# Broken branch-stubs like antlers.
-			for side: float in [-1.0, 1.0]: hs.tube([Vector3(0.06 * side, 2.0, -0.26), Vector3(0.15 * side, 2.12, -0.22), Vector3(0.18 * side, 2.24, -0.2)], [0.03, 0.02, 0.008], hp, {"sides": 6, "per": 2, "lump": 0.25})
+			# Broken, branching branch-stubs like antlers.
+			for side: float in [-1.0, 1.0]:
+				var b0 := Vector3(0.06 * side, 2.0, -0.26); var b1 := Vector3(0.15 * side, 2.14, -0.22); var b2 := Vector3(0.19 * side, 2.3, -0.18)
+				hs.tube([b0, b1, b2], [0.032, 0.022, 0.008], hp, {"sides": 6, "per": 2, "lump": 0.25})
+				hs.tube([b1, b1 + Vector3(0.1 * side, 0.05, 0.02), b1 + Vector3(0.16 * side, 0.12, 0.03)], [0.018, 0.012, 0.004], hp, {"sides": 5, "per": 2, "lump": 0.25})
+				hs.tube([b0.lerp(b1, 0.5), b0.lerp(b1, 0.5) + Vector3(0.02 * side, 0.1, -0.06)], [0.014, 0.003], hp, {"sides": 5, "per": 1, "lump": 0.25})
 			var mp := hs.add_painter(spanish_moss)
 			for k in range(12):
 				var a := lerpf(-1.4, 1.4, k / 11.0)
@@ -266,6 +324,7 @@ func _figure(skin: Callable, strands: int, twist_gap: float) -> Node3D:
 		roots(ls, lp, ankle, dirs, 0.22, 0.03, 0.08, true)
 		part(knee, "Shin", ls)
 		hips.append(hip); knees.append(knee)
+	_extras(body, light, skin, hips_c, chest, neck)
 	part(root, "Body", body)
 	var lm := part(root, "GraveLight", light, glow); lm.material_override = glow
 	return _finish({"head": head, "core": core, "arms": arms, "forearms": forearms, "feet": hips, "knees": knees, "leaves": []}, 1.4)

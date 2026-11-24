@@ -99,3 +99,8 @@ monster should stand clearly bigger than him.
 - Ash Harpy: the harpy of Greek myth, with a vulture's body and wings and a gaunt hag's face.
 - Cinder Vulture: built on the lappet-faced vulture. It has a bare head with folds of skin on the cheeks, a massive horn-coloured hooked beak, a ruff at the base of the neck, and long broad wings whose primaries spread like fingers at the tips.
 - Both use vulture wings: about seven separated primary "fingers", long secondaries and layered coverts.
+
+## Root Reaper, Grave Mandrake and Bog Wight (Hollowmourn)
+- Root Reaper: built on the strangler fig, whose aerial roots wrap a host tree and fuse where they touch until the host rots away and leaves a hollow lattice.
+- Grave Mandrake: the mandrake of folklore, a forked man-shaped root. The real plant has a rosette of large wrinkled leaves and round yellow-orange fruit.
+- Bog Wight: built on bog oak, black oak preserved for centuries in peat. It is hung with Spanish moss, has bracket fungi on its shoulders, and glows with foxfire, the bioluminescent fungus of rotting wood.

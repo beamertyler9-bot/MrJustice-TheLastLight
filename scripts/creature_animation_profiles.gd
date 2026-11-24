@@ -93,6 +93,8 @@ const DATA = {
 	"ash_harpy": ["flight", "feather_shake", "gust", 6.4, 0.46, 0.39, Vector3(0.18, 0.26, 0.14), Vector3(0.12, 0.19, -0.06), 0.23],
 	"cinder_vulture": ["flight", "feather_shake", "gust", 6.4, 0.46, 0.39, Vector3(0.18, 0.26, 0.14), Vector3(0.12, 0.19, -0.06), 0.23],
 	"root_reaper": ["stalk", "wood_uncurl", "uncurl", 4.8, 0.34, 0.42, Vector3(0.25, 0.17, 0.14), Vector3(0.06, 0.16, 0.06), -0.18],
+	"grave_mandrake": ["stalk", "wood_uncurl", "uncurl", 4.8, 0.34, 0.42, Vector3(0.25, 0.17, 0.14), Vector3(0.06, 0.16, 0.06), -0.18],
+	"bog_wight": ["stalk", "wood_uncurl", "uncurl", 4.8, 0.34, 0.42, Vector3(0.25, 0.17, 0.14), Vector3(0.06, 0.16, 0.06), -0.18],
 	"wraithhart": ["pronk", "antler_moon", "antler", 6.9, 0.38, 0.25, Vector3(0.31, 0.22, 0.06), Vector3(0.19, 0.25, -0.08), 0.2],
 	"hollow_hound": ["stalk", "fog_growl", "growl_lunge", 7.2, 0.39, 0.18, Vector3(0.24, 0.23, 0.09), Vector3(0.16, 0.32, -0.14), -0.14],
 	"grave_creeper": ["six", "stone_unfold", "unfold", 6.7, 0.37, 0.57, Vector3(0.21, 0.18, 0.15), Vector3(0.07, 0.13, 0), 0.26],
