@@ -125,4 +125,4 @@ monster should stand clearly bigger than him.
 - Death's-head hawkmoth (Acherontia atropos): a skull-like pale pattern on the thorax, narrow dark mottled forewings, yellow hindwings with black bands, and a yellow-and-black banded abdomen with a blue-grey stripe down the back. It squeaks when disturbed and raids beehives for honey.
 - Giant silk moths (the polyphemus moth, Automeris io and the owl moths) flash big eyespots on their hindwings to startle predators. The rings run black, gold and pale blue around a dark pupil with a pale highlight. The males have broad feathery (bipectinate) antennae.
 - Moon moths (the luna moth Actias luna and the comet moth Argema mittrei) are pale green with long twisting hindwing tails, which confuse bats' echolocation, and small eyespot "windows". The luna moth has a dusky purple-brown leading edge on each forewing.
-- Veil Moth: all three combined.
+- The combined Veil Moth was tried and removed; the Death's-head Moth takes its place.

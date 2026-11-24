@@ -11867,14 +11867,6 @@
       "hook": "A praying mantis whose folded wings are slabs of lichened grave stone, a carved cross on its shoulders and a stone crest on its head; gravestones scrape before it unfolds its spiked forelegs."
     },
     {
-      "id": "veil_moth",
-      "name": "Veil Moth",
-      "region": 14,
-      "kind": "hostile",
-      "boss": false,
-      "hook": "A moth as wide as a cart with a skull on its back, staring eyespots on its wings and hindwings that fade into a ghostly veil trailing long tails; folds its wings before a disorienting gust."
-    },
-    {
       "id": "deathshead_moth",
       "name": "Death's-head Moth",
       "region": 14,

@@ -60,7 +60,6 @@ const DESIGNS := {
 	"shadow_wolf": ["res://tools/sculpt_hollow_hound.gd", "shadow"],
 	"grave_creeper": ["res://tools/sculpt_grave_creeper.gd", "assassin"],
 	"grave_mantis": ["res://tools/sculpt_grave_creeper.gd", "mantis"],
-	"veil_moth": ["res://tools/sculpt_veil_moth.gd", "veil"],
 	"deathshead_moth": ["res://tools/sculpt_veil_moth.gd", "deathshead"],
 	"ghost_moon_moth": ["res://tools/sculpt_veil_moth.gd", "moon"],
 	"dust_devil": ["res://tools/sculpt_sandwraith.gd", "dustdevil"],
