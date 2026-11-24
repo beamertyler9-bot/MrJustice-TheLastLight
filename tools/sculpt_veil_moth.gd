@@ -11,6 +11,10 @@ extends "res://tools/sculpt_sugarspike_wasp.gd"
 ##   moon      - the ghost of a moon moth (the luna moth and the comet moth), pale as a shroud
 ##               and half see-through, with long twisting tails trailing from its hindwings
 ##               and small glowing window-spots
+##   veil      - all three in one: the death's-head's skull, banded body and dark mottled
+##               forewings, the silk moth's staring eyespots and feathery antennae, and
+##               hindwings that fade from bone-yellow into a see-through ghostly veil trailing
+##               the moon moth's long tails
 
 var kind := "deathshead"
 var wing_solid: StandardMaterial3D
@@ -40,6 +44,7 @@ func build(variant: String) -> Node3D:
 		"deathshead": return _moth(Color("#ffd27a"))
 		"eyespot": return _moth(Color("#c8e8ff"))
 		"moon": return _moth(Color("#d0ffe0"))
+		"veil": return _moth(Color("#d0ffe0"))
 	return null
 
 
@@ -136,6 +141,17 @@ static func moon_wing(p: Vector3, xy: Vector2, t: float) -> Color:
 	return Color(c.r, c.g, c.b, clampf(0.4 + 0.3 * (1.0 - t) - Sculpt.noise(p * 9.0) * 0.1, 0.2, 0.85))
 
 
+## The veil moth's hindwing: bone-yellow banded black at the root, a great staring eyespot, then
+## fading out into a pale see-through veil.
+static func veil_hind(p: Vector3, xy: Vector2, t: float) -> Color:
+	var c := dh_hind(p, xy, minf(t, 0.7))
+	c = eye_ring(xy, Vector2(0.27, 0.25), 0.15, c)
+	var ghost := moon_wing(p, xy, t)
+	var g := smoothstep(0.6, 0.86, t)
+	var out := c.lerp(ghost, g)
+	return Color(out.r, out.g, out.b, lerpf(1.0, ghost.a, g))
+
+
 # ------------------------------------------------------------------ the moth
 
 func _moth(eye: Color) -> Node3D:
@@ -144,7 +160,7 @@ func _moth(eye: Color) -> Node3D:
 	var furry := func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color.WHITE
 	var abd := Callable(); var thx := Callable(); var leg_c := Color("#2a2420")
 	match kind:
-		"deathshead":
+		"deathshead", "veil":
 			thx = func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#1c1816").lerp(Color("#4a4440"), clampf(Sculpt.fbm(p * 12.0) * 0.6 + 0.3 + n.y * 0.2, 0.0, 1.0))
 			abd = func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
 				var c := Color("#c8b468").lerp(Color("#a08a40"), clampf(Sculpt.fbm(p * 10.0) * 0.5 + 0.3, 0.0, 1.0))
@@ -172,7 +188,7 @@ func _moth(eye: Color) -> Node3D:
 		var at := Vector3(sin(a) * 0.16, y + cos(a) * 0.15, z)
 		fur_spots.append(at); fur_dirs.append((Vector3(sin(a), cos(a), 0) * 0.6 + Vector3(0, 0, 0.5)).normalized())
 	tufts(bs, tp, fur_spots, fur_dirs, 0.08, 0.025)
-	if kind == "deathshead":
+	if kind == "deathshead" or kind == "veil":
 		# The skull on its back: a pale skull with dark sockets on the top of the thorax.
 		var bone := bs.add_painter(func (p, n, v, w): return Color("#e0d4b0").lerp(Color("#a89870"), clampf(Sculpt.fbm(p * 20.0) * 0.6, 0.0, 1.0)))
 		var dark := bs.add_painter(func (p, n, v, w): return Color("#0c0808"))
@@ -210,9 +226,12 @@ func _moth(eye: Color) -> Node3D:
 	var trr: Array = []
 	for k in range(tongue.size()): trr.append(0.007)
 	hs.tube(tongue, trr, ant, {"sides": 4, "per": 1})
-	part(head, "Head", hs)
 	var es := Sculpt.new(); var ew := es.add_painter(func (p, n, v, w): return Color.WHITE)
-	for e: Vector3 in eyes: es.blob(e, Vector3(0.042, 0.048, 0.042), ew, {"lat": 6, "lon": 9})
+	var ce := hs.add_painter(func (p, n, v, w): return Color("#100c0c").lerp(Color("#3a3430"), clampf(n.y * 0.5 + 0.3, 0.0, 1.0)))
+	for e: Vector3 in eyes:
+		hs.blob(e, Vector3(0.048, 0.054, 0.048), ce, {"lat": 6, "lon": 9})
+		es.blob(e + Vector3(0.022 * signf(e.x), 0.0, -0.028), Vector3(0.022, 0.026, 0.016), ew, {"lat": 5, "lon": 8})
+	part(head, "Head", hs)
 	var core := part(head, "CompoundEyes", es, glow); core.material_override = glow
 
 	# Four wings, each on its own joint: left fore, right fore, left hind, right hind.
@@ -226,6 +245,7 @@ func _moth(eye: Color) -> Node3D:
 				var xy := wing_xy(p, root_at, side)
 				match kind:
 					"deathshead": return dh_fore(p, xy, v) if pair == 0 else dh_hind(p, xy, v)
+					"veil": return eye_ring(xy, Vector2(0.52, 0.12), 0.06, dh_fore(p, xy, v)) if pair == 0 else veil_hind(p, xy, v)
 					"eyespot":
 						var base := silk_wing(p, xy, v)
 						if pair == 0: return eye_ring(xy, Vector2(0.46, 0.2), 0.06, base)
@@ -233,28 +253,30 @@ func _moth(eye: Color) -> Node3D:
 				return moon_wing(p, xy, v)
 			var wp := ws.add_painter(paint)
 			var seed := pair * 3.0 + side * 1.7 + 0.4
-			var mat: Material = wing_ghost if kind == "moon" else wing_solid
+			var mat: Material = wing_ghost if kind == "moon" or (kind == "veil" and pair == 1) else wing_solid
 			if pair == 0:
-				var flen := 1.15 if kind == "deathshead" else 1.05
-				var a0 := -0.42 if kind == "deathshead" else -0.32
+				var flen := 1.15 if kind == "deathshead" or kind == "veil" else 1.05
+				var a0 := -0.42 if kind == "deathshead" or kind == "veil" else -0.32
 				wing_sheet(ws, wp, root_at, side, a0, 0.95, fore_outline, flen, seed)
 			else:
 				var hlen := 0.62 if kind == "deathshead" else 0.78
 				wing_sheet(ws, wp, root_at, side, 0.25, 1.5, hind_outline, hlen, seed)
-				if kind == "moon":
+				if kind == "moon" or kind == "veil":
 					# The long twisting tail trailing from the hindwing, ragged at the end.
 					var tail: Array = []; var tr: Array = []
 					var t0 := root_at + Vector3(0.36 * side, 0.03, 0.55)
 					for k in range(9):
 						var t := k / 8.0
 						tail.append(t0 + Vector3(0.12 * side * sin(t * 2.4), -0.05 * t, 0.85 * t)); tr.append(lerpf(0.07, 0.03, t) * (1.0 - 0.5 * absf(sin(t * 9.0)) * t))
-					ws.tube(tail, tr, wp, {"sides": 6, "per": 2, "flat": 0.12, "side": Vector3.UP, "twist": 1.2, "cap1": false})
+					var tpp := wp if kind == "moon" else ws.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return moon_wing(p, wing_xy(p, root_at, side), 0.3 + v * 0.6))
+					ws.tube(tail, tr, tpp, {"sides": 6, "per": 2, "flat": 0.12, "side": Vector3.UP, "twist": 1.2, "cap1": false})
 			part(node, "Wing", ws, mat)
 			# Glowing eyes on the wings: the eyespot moth's pupils stare, the moon moth's windows shine.
 			var gs := Sculpt.new(); var gw := gs.add_painter(func (p, n, v, w): return Color.WHITE)
 			var spot := Vector2.ZERO; var sr := 0.0
 			if kind == "eyespot": spot = Vector2(0.3, 0.3) if pair == 1 else Vector2(0.46, 0.2); sr = 0.05 if pair == 1 else 0.016
 			elif kind == "moon": spot = Vector2(0.4, 0.22) if pair == 0 else Vector2(0.32, 0.3); sr = 0.03
+			elif kind == "veil": spot = Vector2(0.27, 0.25) if pair == 1 else Vector2(0.52, 0.12); sr = 0.042 if pair == 1 else 0.016
 			if sr > 0.0:
 				var at := root_at + Vector3(spot.x * side, 0.0, spot.y)
 				var lift_y := 0.06 * pow((Vector2(spot.x, spot.y).length()) / 0.9, 2.0)
