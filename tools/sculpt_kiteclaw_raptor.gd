@@ -40,11 +40,11 @@ func _eyes(color: Color) -> void:
 
 
 ## A flat feather from `base` along `dir`, thin along `normal`.
-func feather(s: Sculpt, painter: int, base: Vector3, dir: Vector3, length: float, width: float, normal: Vector3, curl := 0.0) -> void:
+func feather(s: Sculpt, painter: int, base: Vector3, dir: Vector3, length: float, width: float, normal: Vector3, curl := 0.0, per := 2) -> void:
 	var d := dir.normalized()
 	var mid := base + d * length * 0.5 + normal * length * curl * 0.3
 	var tip := base + d * length + normal * length * curl
-	s.tube([base, mid, tip], [width * 0.45, width, 0.003], painter, {"sides": 5, "per": 2, "flat": 0.12, "side": normal, "cap_rings": 1, "cap1": false})
+	s.tube([base, mid, tip], [width * 0.45, width, 0.003], painter, {"sides": 5 if per > 1 else 4, "per": per, "flat": 0.12, "side": normal, "cap_rings": 1, "cap1": false})
 
 
 ## Feather colours: a base colour barred with a lighter one along each feather, with a dark tip.
@@ -98,7 +98,7 @@ func _close(head: Node3D, core: Node3D, wings: Array, hips: Array, knees: Array,
 
 
 ## Legs tucked back in flight, ending in clawed feet hanging ready to strike.
-func hanging_legs(skin: Callable, scale_paint: Callable, hip_y: float, hip_z: float, length: float, sickle: bool) -> Array:
+func hanging_legs(skin: Callable, scale_paint: Callable, hip_y: float, hip_z: float, length: float, sickle: bool, trousers := Callable()) -> Array:
 	var hips: Array = []; var knees: Array = []
 	for side in [-1.0, 1.0]:
 		var hip_at := Vector3(0.12 * side, hip_y, hip_z)
@@ -106,6 +106,13 @@ func hanging_legs(skin: Callable, scale_paint: Callable, hip_y: float, hip_z: fl
 		var hip := joint(root, ("Left" if side < 0 else "Right") + "Leg", hip_at)
 		var us := Sculpt.new(); var up := us.add_painter(skin)
 		us.tube([hip_at, knee_at], [0.085, 0.06], up, {"sides": 8, "per": 2})
+		if trousers.is_valid():
+			# Feathered "trousers": layers of feathers hanging back off the thigh.
+			var tp := us.add_painter(trousers)
+			for k in range(9):
+				var ang := (k - 4) * 0.42
+				var base := hip_at.lerp(knee_at, 0.25 + (k % 3) * 0.2) + Vector3(sin(ang) * 0.06 * side, 0.0, -cos(ang) * 0.04)
+				feather(us, tp, base, Vector3(sin(ang) * 0.4 * side, -0.7, 0.75), 0.15, 0.04, Vector3(side, 0, 0), 0.05)
 		part(hip, "Thigh", us)
 		var knee := joint(hip, ("Left" if side < 0 else "Right") + "Knee", knee_at)
 		var ls := Sculpt.new(); var lp := ls.add_painter(scale_paint); var cp := ls.add_painter(func (p, n, v, w): return TALON.lightened(v * 0.15))
@@ -119,7 +126,8 @@ func hanging_legs(skin: Callable, scale_paint: Callable, hip_y: float, hip_z: fl
 			ls.tube([toe_end, toe_end + (dir + Vector3(0, -0.8, 0)).normalized() * 0.06, toe_end + Vector3(0, -0.09, 0) + dir.normalized() * 0.02], [0.013, 0.008, 0.002], cp, {"sides": 5, "per": 2, "cap_rings": 1})
 		if sickle:
 			var inner := ankle + Vector3(-0.02 * side, 0.02, -0.04)
-			ls.tube([inner, inner + Vector3(0, 0.06, -0.08), inner + Vector3(0, -0.02, -0.15)], [0.016, 0.012, 0.002], cp, {"sides": 6, "per": 2, "cap_rings": 1})
+			# The big curved sickle claw on the second toe, held raised.
+			ls.tube([inner, inner + Vector3(0, 0.05, -0.05), inner + Vector3(0, 0.07, -0.12), inner + Vector3(0, 0.02, -0.19), inner + Vector3(0, -0.04, -0.2)], [0.022, 0.02, 0.015, 0.008, 0.002], cp, {"sides": 7, "per": 2, "flat": 0.6, "side": Vector3.RIGHT, "cap_rings": 1})
 		part(knee, "Foot", ls)
 		hips.append(hip); knees.append(knee)
 	return [hips, knees]
@@ -129,59 +137,97 @@ func hanging_legs(skin: Callable, scale_paint: Callable, hip_y: float, hip_z: fl
 
 func _raptor() -> Node3D:
 	_eyes(Color("#ffb52e"))
+	# Mottled ochre and umber plumage, darker along the back, cream underneath.
 	var body_paint := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
-		var streak := smoothstep(0.55, 0.85, sin(p.z * 34.0 + Sculpt.noise(p * 6.0) * 3.0))
-		var c := Color("#b07a3e").lerp(Color("#5c3d22"), streak * 0.7 * smoothstep(-0.2, 0.6, n.y))
-		return c.lerp(Color("#e7d6b0"), smoothstep(-0.3, -0.8, n.y))
-	var scale_paint := func (p, n, v, w): return Color("#4e4636").lerp(Color("#7a6a4c"), Sculpt.noise(p * 30.0) * 0.5 + 0.3)
+		var mottle := smoothstep(0.15, 0.45, Sculpt.noise(p * 11.0))
+		var c := Color("#a8743a").lerp(Color("#4e3420"), clampf(n.y * 0.6 + mottle * 0.45, 0.0, 1.0) * 0.8)
+		return c.lerp(Color("#e2cfa6"), smoothstep(-0.25, -0.75, n.y))
+	var scale_paint := func (p, n, v, w): return Color("#3e372c").lerp(Color("#6e6048"), Sculpt.noise(p * 30.0) * 0.5 + 0.3)
+	var contour := barred(Color("#8a5a2e"), Color("#c99a5a"), Color("#3a2716"), 1.0)
+	var down := func (p, n, v, w): return Color("#c9a978").lerp(Color("#8a6236"), v * 0.5)
+	var blue := barred(Color("#3d5a6e"), Color("#a9c8d4"), Color("#141c22"), 4.0)
 	var body := Sculpt.new(); var bp := body.add_painter(body_paint)
 	body.tube([Vector3(0, 1.0, 0.42), Vector3(0, 1.04, 0.15), Vector3(0, 1.05, -0.15), Vector3(0, 1.08, -0.35)], [0.12, 0.2, 0.22, 0.16], bp, {"sides": 13, "per": 3, "flat": 0.85, "lump": 0.05})
-	body.tube([Vector3(0, 1.1, -0.35), Vector3(0, 1.22, -0.48), Vector3(0, 1.3, -0.62)], [0.12, 0.08, 0.07], bp, {"sides": 10, "per": 3})
-	# Fluffy feather ruff along the neck and back.
-	var plume := body.add_painter(barred(Color("#7a5530"), Color("#c99a5a"), Color("#3a2716"), 3.0))
+	body.tube([Vector3(0, 1.1, -0.35), Vector3(0, 1.22, -0.48), Vector3(0, 1.32, -0.6)], [0.12, 0.085, 0.075], bp, {"sides": 10, "per": 3})
+	# Layered contour feathers over the back and flanks, lying back toward the tail.
+	var cp := body.add_painter(contour); var dp := body.add_painter(down)
+	for row in range(8):
+		var z := -0.36 + row * 0.105
+		var radius := 0.2 - absf(z + 0.05) * 0.25
+		var y0 := 1.05 + (0.02 if z < 0.0 else -0.04 * z)
+		for k in range(9):
+			var ang := PI * (-0.55 + 1.1 * (k + (row % 2) * 0.5) / 8.0)
+			var radial := Vector3(sin(ang), cos(ang), 0)
+			var base := Vector3(0, y0, z) + Vector3(radial.x * radius * 0.85, radial.y * radius, 0)
+			feather(body, cp, base, radial * 0.25 + Vector3(0, 0, 1.0), 0.16, 0.055, radial, 0.06, 1)
+	# Soft downy feathers on the chest and belly, and a shaggy ruff down the neck.
 	for k in range(14):
-		var t := k / 13.0
-		var at := Vector3(0, 1.28 - t * 0.12 + sin(t * PI) * 0.06, -0.58 + t * 0.95)
-		feather(body, plume, at, Vector3(0, 0.55, 1.0), 0.16 - t * 0.04, 0.035, Vector3.RIGHT, 0.1)
-	var head := joint(root, "Head", Vector3(0, 1.32, -0.64))
+		var ang := PI * (0.55 + 0.9 * (k % 7) / 6.0)
+		var radial := Vector3(sin(ang), cos(ang), 0)
+		var base := Vector3(0, 1.04, -0.28 + (k / 7) * 0.18) + Vector3(radial.x * 0.17, radial.y * 0.2, 0)
+		feather(body, dp, base, radial * 0.3 + Vector3(0, -0.3, 1.0), 0.09, 0.035, radial, 0.05, 1)
+	for k in range(16):
+		var t := (k % 8) / 7.0
+		var side := -1.0 if k < 8 else 1.0
+		var at := Vector3(0.05 * side, 1.31 - t * 0.2, -0.58 + t * 0.24)
+		feather(body, cp, at, Vector3(side * 0.6, 0.15, 1.0), 0.13, 0.04, Vector3(side, 0.3, 0).normalized(), 0.08, 1)
+	var head := joint(root, "Head", Vector3(0, 1.33, -0.64))
 	var hs := Sculpt.new(); var hp := hs.add_painter(body_paint)
 	var dark := hs.add_painter(func (p, n, v, w): return Color("#120d0a"))
 	var fang := hs.add_painter(func (p, n, v, w): return FANG)
-	# A long, low snout with a row of small sharp teeth and a feathered brow.
-	hs.tube([Vector3(0, 1.36, -0.62), Vector3(0, 1.36, -0.72), Vector3(0, 1.33, -0.84), Vector3(0, 1.31, -0.92)], [0.07, 0.065, 0.045, 0.028], hp, {"sides": 11, "per": 3, "square": 0.3, "flat": 0.85, "side": Vector3.RIGHT, "cap_rings": 2})
+	# A deep skull and a long tapering snout with a ridge over the nose, a heavy brow over a
+	# fierce amber eye, sharp teeth along the jaw and a feathered face.
+	hs.blob(Vector3(0, 1.375, -0.68), Vector3(0.07, 0.075, 0.1), hp, {"lat": 8, "lon": 12})
+	hs.tube([Vector3(0, 1.375, -0.7), Vector3(0, 1.362, -0.8), Vector3(0, 1.342, -0.9), Vector3(0, 1.33, -0.95)], [0.062, 0.05, 0.034, 0.02], hp, {"sides": 11, "per": 3, "square": 0.35, "flat": 0.82, "side": Vector3.RIGHT, "cap_rings": 2})
+	hs.tube([Vector3(0, 1.42, -0.7), Vector3(0, 1.4, -0.8), Vector3(0, 1.37, -0.9)], [0.022, 0.018, 0.01], hp, {"sides": 6, "per": 2, "cap_rings": 1})
 	for side in [-1.0, 1.0]:
-		hs.blob(Vector3(0.042 * side, 1.38, -0.7), Vector3(0.022, 0.016, 0.02), dark, {"lat": 4, "lon": 6})
-		hs.blob(Vector3(0.038 * side, 1.398, -0.69), Vector3(0.026, 0.01, 0.032), hp, {"lat": 4, "lon": 6, "basis": Basis(Vector3.BACK, 0.3 * side)})
-		for k in range(6):
-			hs.crystal(Vector3(0.026 * side, 1.31, -0.77 - k * 0.025), Vector3(0, -1, -0.15), 0.022, 0.005, fang, 4)
+		hs.blob(Vector3(0.05 * side, 1.415, -0.72), Vector3(0.032, 0.012, 0.038), hp, {"lat": 4, "lon": 7, "basis": Basis(Vector3.BACK, 0.35 * side)})
+		hs.blob(Vector3(0.056 * side, 1.392, -0.715), Vector3(0.026, 0.02, 0.02), dark, {"lat": 4, "lon": 7})
+		hs.blob(Vector3(0.022 * side, 1.37, -0.93), Vector3(0.006, 0.004, 0.009), dark, {"lat": 3, "lon": 5})
+		for k in range(7):
+			hs.crystal(Vector3(0.03 * side - k * 0.0015 * side, 1.322, -0.76 - k * 0.026), Vector3(0, -1, -0.12), 0.026, 0.006, fang, 4)
 	var es := Sculpt.new(); var white := es.add_painter(func (p, n, v, w): return Color.WHITE)
-	for side in [-1.0, 1.0]: es.blob(Vector3(0.05 * side, 1.38, -0.7), Vector3(0.022, 0.016, 0.016), white, {"lat": 4, "lon": 7})
+	for side in [-1.0, 1.0]:
+		es.blob(Vector3(0.062 * side, 1.392, -0.728), Vector3(0.021, 0.016, 0.014), white, {"lat": 6, "lon": 10})
+		hs.blob(Vector3(0.064 * side, 1.392, -0.741), Vector3(0.0045, 0.013, 0.004), dark, {"lat": 3, "lon": 6})
 	var crest := hs.add_painter(barred(Color("#3d5a6e"), Color("#9cc4d6"), Color("#1d2a33"), 2.0))
-	for k in range(5):
-		feather(hs, crest, Vector3(0, 1.4, -0.66 + k * 0.03), Vector3((k - 2) * 0.15, 0.8, 1.0), 0.14 - absf(k - 2) * 0.02, 0.025, Vector3.RIGHT, 0.15)
+	var face := hs.add_painter(contour)
+	# A tall swept-back crest of blue feathers, and feathers swept back over the cheeks.
+	for k in range(7):
+		var spread := (k - 3) * 0.12
+		feather(hs, crest, Vector3(spread * 0.15, 1.43, -0.72 + absf(k - 3) * 0.02), Vector3(spread, 0.55, 1.0), 0.26 - absf(k - 3) * 0.025, 0.034, Vector3(1, 0, -spread).normalized(), 0.18)
+	for side in [-1.0, 1.0]:
+		for k in range(5):
+			var at := Vector3(0.062 * side, 1.37 - k * 0.012, -0.68 + k * 0.015)
+			feather(hs, face, at, Vector3(side * 0.4, -0.1, 1.0), 0.1, 0.03, Vector3(side, 0, 0), 0.05)
 	part(head, "Head", hs)
 	var core := part(head, "GlowingEyes", es, glow); core.material_override = glow
-	var jaw := joint(head, "Jaw", Vector3(0, 1.31, -0.68))
+	var jaw := joint(head, "Jaw", Vector3(0, 1.32, -0.7))
 	var js := Sculpt.new(); var jp := js.add_painter(body_paint); var mp := js.add_painter(func (p, n, v, w): return MOUTH); var jf := js.add_painter(func (p, n, v, w): return FANG)
-	js.tube([Vector3(0, 1.305, -0.66), Vector3(0, 1.295, -0.9)], [0.045, 0.02], jp, {"sides": 8, "per": 2, "square": 0.3, "cap_rings": 1})
-	js.blob(Vector3(0, 1.31, -0.78), Vector3(0.025, 0.006, 0.08), mp, {"lat": 3, "lon": 6})
+	js.tube([Vector3(0, 1.318, -0.68), Vector3(0, 1.31, -0.8), Vector3(0, 1.304, -0.92)], [0.05, 0.035, 0.02], jp, {"sides": 9, "per": 2, "square": 0.35, "flat": 0.82, "side": Vector3.RIGHT, "cap_rings": 1})
+	js.blob(Vector3(0, 1.325, -0.8), Vector3(0.028, 0.006, 0.1), mp, {"lat": 3, "lon": 6})
 	for side in [-1.0, 1.0]:
-		for k in range(5): js.crystal(Vector3(0.02 * side, 1.31, -0.76 - k * 0.025), Vector3(0, 1, -0.1), 0.016, 0.004, jf, 4)
+		for k in range(6): js.crystal(Vector3(0.022 * side, 1.322, -0.76 - k * 0.026), Vector3(0, 1, -0.1), 0.018, 0.005, jf, 4)
 	part(jaw, "Jaw", js)
-	# Sail-like feathered arm-wings: slate blue with pale bars and dark tips.
+	# Broad, sail-like feathered arm-wings: slate blue barred with pale blue, dark tips, with
+	# ochre coverts over the arm.
 	var wings: Array = []
 	for side in [-1.0, 1.0]:
-		wings.append(feathered_wing(side, Vector3(0.14 * side, 1.12, -0.25), 2.1, 0.62, body_paint,
-			barred(Color("#3d5a6e"), Color("#a9c8d4"), Color("#141c22"), 4.0), barred(Color("#4b6170"), Color("#a9c8d4"), Color("#1d262c"), 3.0),
-			barred(Color("#8a6236"), Color("#d2a868"), Color("#4a3018"), 2.0), 9, 0.05))
-	var legs := hanging_legs(body_paint, scale_paint, 0.98, 0.2, 0.7, true)
-	# A long stiff tail with a horizontal fan of feathers at its end.
+		wings.append(feathered_wing(side, Vector3(0.14 * side, 1.12, -0.25), 2.3, 0.8, body_paint,
+			blue, barred(Color("#4b6170"), Color("#a9c8d4"), Color("#1d262c"), 3.0),
+			barred(Color("#8a6236"), Color("#d2a868"), Color("#4a3018"), 2.0), 11, 0.05))
+	var legs := hanging_legs(body_paint, scale_paint, 0.98, 0.2, 0.7, true, contour)
+	# A long stiff tail feathered along both sides, ending in a broad fan.
 	var tail := joint(root, "Tail", Vector3(0, 1.0, 0.42))
-	var ts := Sculpt.new(); var tp := ts.add_painter(body_paint); var tf := ts.add_painter(barred(Color("#3d5a6e"), Color("#a9c8d4"), Color("#141c22"), 3.0))
+	var ts := Sculpt.new(); var tp := ts.add_painter(body_paint); var tf := ts.add_painter(blue)
 	ts.tube([Vector3(0, 1.0, 0.4), Vector3(0, 0.99, 0.9), Vector3(0, 0.98, 1.4), Vector3(0, 0.98, 1.75)], [0.1, 0.06, 0.04, 0.025], tp, {"sides": 9, "per": 3, "flat": 1.2, "side": Vector3.RIGHT})
-	for k in range(11):
-		var t := (k - 5) / 5.0
-		feather(ts, tf, Vector3(t * 0.04, 0.985, 1.25 + absf(t) * 0.1), Vector3(t * 0.7, 0.0, 1.0), 0.5 - absf(t) * 0.12, 0.07, Vector3.UP, 0.02)
+	for k in range(8):
+		var z := 0.55 + k * 0.1
+		for side in [-1.0, 1.0]:
+			feather(ts, tf, Vector3(0.03 * side, 0.99, z), Vector3(side * 0.9, 0.0, 1.0), 0.2 + k * 0.012, 0.05, Vector3.UP, 0.02, 1)
+	for k in range(13):
+		var t := (k - 6) / 6.0
+		feather(ts, tf, Vector3(t * 0.04, 0.985, 1.3 + absf(t) * 0.08), Vector3(t * 0.75, 0.0, 1.0), 0.62 - absf(t) * 0.16, 0.08, Vector3.UP, 0.02)
 	part(tail, "Tail", ts, feather_mat)
 	part(root, "Body", body)
 	return _close(head, core, wings, legs[0], legs[1], [tail], jaw, 1.0)
