@@ -11888,7 +11888,15 @@
       "region": 14,
       "kind": "hostile",
       "boss": false,
-      "hook": "Many spindly thorn legs and dark bark abdomen; web strands tremble before a pounce."
+      "hook": "A great spider like Darwin's bark spider, its knobbed, lichened abdomen dark as bark and its banded legs studded with thorns; web strands tremble before a pounce."
+    },
+    {
+      "id": "spiny_orbweaver",
+      "name": "Spiny Orb-weaver",
+      "region": 14,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "A huge spiny orb-weaver, its hard, wide abdomen ringed with long red-tipped thorns and dotted with pale spots; web strands tremble before a pounce."
     },
     {
       "id": "mourning_knight",

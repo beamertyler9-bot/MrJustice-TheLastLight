@@ -81,7 +81,8 @@ func _spider() -> Node3D:
 			ab.blob(ac, Vector3(0.3, 0.26, 0.38), ap, {"lat": 10, "lon": 14, "lump": 0.12})
 			for side: float in [-1.0, 1.0]:
 				# Two horn-like humps at the front of the abdomen, and knobs all over like bark.
-				ab.tube([ac + Vector3(0.13 * side, 0.12, -0.16), ac + Vector3(0.22 * side, 0.22, -0.12), ac + Vector3(0.28 * side, 0.25, -0.04)], [0.1, 0.07, 0.02], ap, {"sides": 8, "per": 2, "lump": 0.35})
+				ab.blob(ac + Vector3(0.17 * side, 0.17, -0.12), Vector3(0.13, 0.1, 0.12), ap, {"lat": 6, "lon": 9, "lump": 0.35})
+				ab.tube([ac + Vector3(0.2 * side, 0.22, -0.12), ac + Vector3(0.27 * side, 0.27, -0.06)], [0.05, 0.012], ap, {"sides": 7, "per": 2, "lump": 0.3})
 			for k in range(22):
 				var a := TAU * fposmod(k * 0.618, 1.0); var b := lerpf(-0.6, 1.2, fposmod(k * 0.37, 1.0))
 				var at := ac + Vector3(cos(a) * cos(b) * 0.29, sin(b) * 0.25, sin(a) * cos(b) * 0.37)
@@ -115,7 +116,7 @@ func _spider() -> Node3D:
 	# Silk trailing from the spinnerets down to the ground, and a few anchor lines.
 	var sk := Sculpt.new(); var sp := sk.add_painter(silk)
 	for k in range(4):
-		var e := st + Vector3(0.06 * (k - 1.5), -0.8 - 0.1 * k, 0.5 + 0.25 * k)
+		var e := st + Vector3(0.05 * (k - 1.5), -0.28 - 0.06 * k, 0.12 + 0.07 * k)
 		sk.tube([st, st.lerp(e, 0.5) + Vector3(0, -0.05, 0), e], [0.005, 0.004, 0.003], sp, {"sides": 3, "per": 3})
 	part(abd, "Silk", sk, silk_mat)
 	if kind == "widow":

@@ -126,3 +126,9 @@ monster should stand clearly bigger than him.
 - Giant silk moths (the polyphemus moth, Automeris io and the owl moths) flash big eyespots on their hindwings to startle predators. The rings run black, gold and pale blue around a dark pupil with a pale highlight. The males have broad feathery (bipectinate) antennae.
 - Moon moths (the luna moth Actias luna and the comet moth Argema mittrei) are pale green with long twisting hindwing tails, which confuse bats' echolocation, and small eyespot "windows". The luna moth has a dusky purple-brown leading edge on each forewing.
 - The combined Veil Moth was tried and removed; the Death's-head Moth takes its place.
+
+## Thorn Widow and Spiny Orb-weaver (Hollowmourn)
+- Spider anatomy used for both: a cephalothorax carrying eight legs, eight eyes in rows with the front middle pair largest, chelicerae with fangs, and a pair of pedipalps; a narrow waist (pedicel); the abdomen with spinnerets at its tip. Each leg runs coxa, femur, patella (the high "knee"), tibia, metatarsus and tarsus.
+- Thorn Widow: built on Darwin's bark spider (Caerostris darwini) of Madagascar. It spins the largest orb webs known, with bridge lines across whole rivers. It is bark-coloured, with a knobbly abdomen and two humps at the front.
+- Spiny Orb-weaver: built on Gasteracantha and its kin. The abdomen is a hard, wide, flat plate with six spines around the edge and pale dimples (sigilla) on top, set on a small body.
+- Considered but not used: the black widow (Latrodectus), glossy black with a red hourglass under the abdomen.

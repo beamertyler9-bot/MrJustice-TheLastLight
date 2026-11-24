@@ -103,6 +103,7 @@ const DATA = {
 	"deathshead_moth": ["flutter", "eye_fold", "fold", 8.5, 0.52, 0.09, Vector3(0.17, 0.22, 0.18), Vector3(0.13, 0.2, 0.02), -0.25],
 	"ghost_moon_moth": ["flutter", "eye_fold", "fold", 8.5, 0.52, 0.09, Vector3(0.17, 0.22, 0.18), Vector3(0.13, 0.2, 0.02), -0.25],
 	"thorn_widow": ["eight", "web_listen", "web_pounce", 9.0, 0.34, 0.32, Vector3(0.12, 0.26, 0.115), Vector3(0.08, 0.15, 0.04), 0.12],
+	"spiny_orbweaver": ["eight", "web_listen", "web_pounce", 9.0, 0.34, 0.32, Vector3(0.12, 0.26, 0.115), Vector3(0.08, 0.15, 0.04), 0.12],
 	"mourning_knight": ["march", "mourning_guard", "guard_cut", 4.7, 0.27, 0.8, Vector3(0.2, 0.13, 0.075), Vector3(0.04, 0.12, 0), -0.17],
 	"cocoa_knight": ["march", "mourning_guard", "guard_cut", 4.7, 0.27, 0.8, Vector3(0.2, 0.13, 0.075), Vector3(0.04, 0.12, 0), -0.17],
 	"pale_watcher": ["float", "mask_gaze", "gaze", 2.6, 0.17, 0.16, Vector3(0.065, 0.29, 0.105), Vector3(0.17, 0.25, 0.04), 0.08],

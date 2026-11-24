@@ -62,6 +62,8 @@ const DESIGNS := {
 	"grave_mantis": ["res://tools/sculpt_grave_creeper.gd", "mantis"],
 	"deathshead_moth": ["res://tools/sculpt_veil_moth.gd", "deathshead"],
 	"ghost_moon_moth": ["res://tools/sculpt_veil_moth.gd", "moon"],
+	"thorn_widow": ["res://tools/sculpt_thorn_widow.gd", "bark"],
+	"spiny_orbweaver": ["res://tools/sculpt_thorn_widow.gd", "spiny"],
 	"dust_devil": ["res://tools/sculpt_sandwraith.gd", "dustdevil"],
 	"linen_revenant": ["res://tools/sculpt_sandwraith.gd", "mummy"],
 }
