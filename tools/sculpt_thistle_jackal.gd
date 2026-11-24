@@ -21,6 +21,7 @@ var fur_leg := Color("#b06d3a")
 var saddle := 1.0
 var dark_legs := false
 var leg_len := 1.0
+var whiskers := true
 
 
 func _init() -> void:
@@ -127,7 +128,7 @@ func _jackal(skin: Callable) -> Dictionary:
 		hs.blob(Vector3(0.042 * side, 1.046, -0.735) + h, Vector3(0.03, 0.011, 0.02), hp, {"lat": 4, "lon": 7, "basis": Basis(Vector3.BACK, 0.35 * side)})
 		hs.blob(Vector3(0.05 * side, 1.024, -0.751) + h, Vector3(0.006, 0.006, 0.004), dark, {"lat": 3, "lon": 6})
 		hs.crystal(Vector3(0.022 * side, 0.948, -0.855) + h, Vector3(0, -1, -0.05), 0.03, 0.007, fang, 5)
-		for k in range(3):
+		for k in range(3 if whiskers else 0):
 			var from := Vector3(0.03 * side, 0.955 + k * 0.007, -0.88) + h
 			hs.tube([from, from + Vector3(0.07 * side, 0.002 - k * 0.01, 0.03), from + Vector3(0.13 * side, -0.01 - k * 0.02, 0.07)], [0.0028, 0.002, 0.001], whisk, {"sides": 3, "per": 2, "cap_rings": 1})
 	parts["head"] = head; parts["head_sculpt"] = hs; parts["head_painter"] = hp
