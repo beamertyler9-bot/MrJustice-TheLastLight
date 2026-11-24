@@ -15,6 +15,7 @@ extends "res://tools/sculpt_stormhorn_boss.gd"
 const MOON := Color("#cfe4ff")
 
 var mist_mat: StandardMaterial3D
+var wisp_mat: StandardMaterial3D
 var kind := "stag"
 
 
@@ -26,6 +27,10 @@ func _init() -> void:
 	mist_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mist_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mist_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	# Ghost-fire: additive, so it glows wherever it overlaps.
+	wisp_mat = mist_mat.duplicate()
+	wisp_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	wisp_mat.no_depth_test = false
 
 
 func build(variant: String) -> Node3D:
@@ -121,7 +126,9 @@ func _hart() -> Node3D:
 	var giant := kind == "giant"
 	var coat := Callable(ash_coat)
 	var mane := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
-		return Color("#26242a").lerp(Color("#6a6670"), clampf(Sculpt.noise(p * 12.0) * 0.4 + 0.25 + v * 0.35, 0.0, 1.0))
+		var c := Color("#26242a").lerp(Color("#6a6670"), clampf(Sculpt.noise(p * 12.0) * 0.4 + 0.25 + v * 0.35, 0.0, 1.0))
+		if kind == "skull": c = Color("#18171c").lerp(Color("#a8bede"), smoothstep(0.55, 1.0, v) * 0.8)
+		return c
 	var body := Sculpt.new(); var bp := body.add_painter(coat); var mp := body.add_painter(mane); var bn := body.add_painter(bone_c)
 	var dark := body.add_painter(func (p, n, v, w): return Color("#0b0a0c"))
 	var glow_s := Sculpt.new(); var gw := glow_s.add_painter(func (p, n, v, w): return Color.WHITE)
@@ -138,22 +145,40 @@ func _hart() -> Node3D:
 	# Ribs: showing through the gaunt hide on the stag and the giant; bare bone on the skull hart.
 	for side: float in [-1.0, 1.0]:
 		if kind == "skull":
-			body.blob(Vector3(0.07 * side, 1.08, -0.08), Vector3(0.12, 0.17, 0.25), dark, {"lat": 7, "lon": 10})
-			glow_s.blob(Vector3(0.15 * side, 1.08, -0.08), Vector3(0.035, 0.08, 0.14), gw, {"lat": 6, "lon": 8})
-		for r in range(6):
-			var z := -0.26 + r * 0.075
+			body.blob(Vector3(0.06 * side, 1.07, -0.08), Vector3(0.125, 0.19, 0.28), dark, {"lat": 7, "lon": 10})
+			# The ghost-light heart burning inside the empty rib cage.
+			glow_s.blob(Vector3(0.15 * side, 1.05, -0.07), Vector3(0.04, 0.08, 0.1), gw, {"lat": 6, "lon": 8})
+			glow_s.crystal(Vector3(0.16 * side, 1.1, -0.07), Vector3(0, 1, 0.15), 0.12, 0.04, gw, 6)
+			# Ragged hide hanging from the torn edge under the ribs and along the belly.
+			for j in range(7):
+				var z := lerpf(-0.32, 0.22, j / 6.0)
+				var l := 0.12 + 0.12 * fposmod(j * 0.618 + side, 1.0)
+				var top := Vector3(0.19 * side, 0.93 + 0.03 * sin(j * 1.7), z)
+				body.tube([top, top + Vector3(0.015 * side, -l * 0.5, 0.02), top + Vector3(0.0, -l, 0.04)], [0.035, 0.025, 0.004], bp, {"sides": 5, "per": 2, "flat": 0.25, "side": Vector3(0, 0, 1), "cap1": false, "lump": 0.4})
+		for r in range(7 if kind == "skull" else 6):
+			var z := (-0.3 + r * 0.07) if kind == "skull" else (-0.26 + r * 0.075)
 			var pts: Array = []; var rr: Array = []
 			for j in range(6):
 				var a := lerpf(0.25, 2.3, j / 5.0)
 				var rad := (0.23 if kind == "skull" else 0.215) * (1.0 - absf(z + 0.05) * 0.4)
-				pts.append(Vector3(sin(a) * rad * 0.78 * side, 1.08 + cos(a) * rad, z + j * 0.01)); rr.append(0.014 if kind == "skull" else 0.011)
+				pts.append(Vector3(sin(a) * rad * (0.9 if kind == "skull" else 0.78) * side, 1.08 + cos(a) * rad, z + j * 0.01)); rr.append(0.014 if kind == "skull" else 0.011)
 			body.tube(pts, rr, bn if kind == "skull" else bp, {"sides": 5, "per": 2, "cap_rings": 1})
 	if kind == "skull":
 		# The spine standing out along the back.
 		for j in range(12):
 			var z := lerpf(-0.42, 0.55, j / 11.0)
 			body.blob(Vector3(0, 1.3 - absf(z - 0.05) * 0.1, z), Vector3(0.035, 0.03, 0.03), bn, {"lat": 4, "lon": 6})
-			body.crystal(Vector3(0, 1.3 - absf(z - 0.05) * 0.1, z), Vector3(0, 1, 0.3), 0.06, 0.014, bn, 4)
+			body.crystal(Vector3(0, 1.3 - absf(z - 0.05) * 0.1, z), Vector3(0, 1, 0.35), lerpf(0.16, 0.05, j / 11.0), 0.016, bn, 4)
+		for j in range(6):
+			var t := j / 5.0
+			var at := Vector3(0, lerpf(1.43, 1.74, t), lerpf(-0.42, -0.7, t))
+			body.blob(at, Vector3(0.04, 0.03, 0.035), bn, {"lat": 4, "lon": 6})
+			body.crystal(at, Vector3(0, 1, 0.5), 0.05, 0.012, bn, 4)
+		for side: float in [-1.0, 1.0]:
+			# The pelvis wings breaking through the rump, the shoulder blades through the withers.
+			body.blob(Vector3(0.12 * side, 1.27, 0.38), Vector3(0.07, 0.04, 0.09), bn, {"lat": 5, "lon": 8, "basis": Basis(Vector3.BACK, 0.4 * side)})
+			body.blob(Vector3(0.07 * side, 1.29, 0.5), Vector3(0.05, 0.03, 0.06), bn, {"lat": 4, "lon": 7})
+			body.blob(Vector3(0.23 * side, 1.2, -0.3), Vector3(0.012, 0.09, 0.055), bn, {"lat": 5, "lon": 8, "basis": Basis(Vector3.RIGHT, -0.35)})
 	# A shaggy mane down the throat and along the neck.
 	for j in range(14):
 		var t := j / 13.0
@@ -165,18 +190,39 @@ func _hart() -> Node3D:
 
 	# ---- the head
 	var head := joint(root, "Head", Vector3(0, 1.62, -0.74))
-	var hs := Sculpt.new(); var hp := hs.add_painter(bone_c if kind == "skull" else coat); var horn := hs.add_painter(bark_antler)
+	var hs := Sculpt.new(); var hp := hs.add_painter(bone_c if kind == "skull" else coat)
+	var horn := hs.add_painter(bark_antler if kind != "skull" else func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return bark_antler(p, n, v, w).darkened(0.45))
 	var nose := hs.add_painter(func (p, n, v, w): return Color("#141214").lightened(clampf(n.y, 0.0, 1.0) * 0.15))
 	var black := hs.add_painter(func (p, n, v, w): return Color("#050506"))
 	hs.blob(Vector3(0, 1.68, -0.8), Vector3(0.12, 0.12, 0.14), hp, {"lat": 9, "lon": 12})
-	hs.tube([Vector3(0, 1.66, -0.86), Vector3(0, 1.58, -1.0), Vector3(0, 1.51, -1.09)], [0.095, 0.075, 0.058], hp, {"sides": 12, "per": 3, "square": 0.3, "flat": 0.88, "cap_rings": 2, "cap_len": 0.5})
+	if kind == "skull":
+		hs.tube([Vector3(0, 1.66, -0.86), Vector3(0, 1.57, -1.0), Vector3(0, 1.5, -1.12)], [0.085, 0.062, 0.042], hp, {"sides": 12, "per": 3, "square": 0.35, "flat": 0.85, "cap_rings": 2, "cap_len": 0.4})
+	else:
+		hs.tube([Vector3(0, 1.66, -0.86), Vector3(0, 1.58, -1.0), Vector3(0, 1.51, -1.09)], [0.095, 0.075, 0.058], hp, {"sides": 12, "per": 3, "square": 0.3, "flat": 0.88, "cap_rings": 2, "cap_len": 0.5})
 	var eye_pts := [Vector3(-0.11, 1.69, -0.868), Vector3(0.11, 1.69, -0.868)]
 	if kind == "skull":
+		var en := Vector3(0.8, 0.1, -0.6).normalized() * 0.03
+		eye_pts = [Vector3(-0.1, 1.69, -0.862) + Vector3(-en.x, en.y, en.z), Vector3(0.1, 1.69, -0.862) + en]
+	if kind == "skull":
 		# A bare deer skull: the nasal opening, the long toothed jaw, deep eye sockets.
-		hs.blob(Vector3(0, 1.545, -1.08), Vector3(0.03, 0.025, 0.05), black, {"lat": 4, "lon": 7})
+		hs.blob(Vector3(0, 1.545, -1.06), Vector3(0.026, 0.022, 0.07), black, {"lat": 4, "lon": 7})
+		var crack := [Vector3(0.03, 1.805, -0.7), Vector3(0.0, 1.81, -0.76), Vector3(0.025, 1.795, -0.82), Vector3(-0.01, 1.76, -0.88), Vector3(0.01, 1.7, -0.95)]
+		hs.tube(crack, [0.008, 0.007, 0.006, 0.005, 0.002], black, {"sides": 4, "per": 2})
 		for side: float in [-1.0, 1.0]:
-			hs.blob(Vector3(0.1 * side, 1.69, -0.86), Vector3(0.04, 0.038, 0.035), black, {"lat": 5, "lon": 8})
-			for t in range(5): hs.crystal(Vector3(0.04 * side, 1.5, -0.98 - t * 0.022), Vector3(0, -1, 0), 0.018, 0.007, hs.add_painter(bone_c), 4)
+			# Deep round eye sockets with a raised bony rim, a cheekbone arch beneath.
+			var sc := Vector3(0.1 * side, 1.69, -0.862)
+			var nrm := Vector3(0.8 * side, 0.1, -0.6).normalized()
+			var ua := nrm.cross(Vector3.UP).normalized(); var va := ua.cross(nrm).normalized()
+			hs.blob(sc, Vector3(0.036, 0.036, 0.03), black, {"lat": 5, "lon": 8})
+			var ring: Array = []; var rr: Array = []
+			for j in range(13):
+				var a := TAU * j / 12.0
+				ring.append(sc + nrm * 0.008 + (ua * cos(a) + va * sin(a)) * 0.042); rr.append(0.013 if sin(a) > 0.0 else 0.01)
+			hs.tube(ring, rr, hp, {"sides": 5, "per": 2, "cap0": false, "cap1": false})
+			# A heavy brow ridge slanting down over each socket, giving it a scowl.
+			hs.tube([Vector3(0.05 * side, 1.722, -0.91), Vector3(0.095 * side, 1.737, -0.89), Vector3(0.13 * side, 1.736, -0.85)], [0.009, 0.014, 0.007], hp, {"sides": 6, "per": 2})
+			hs.tube([sc + Vector3(0.0, -0.05, -0.02), Vector3(0.105 * side, 1.635, -0.8), Vector3(0.1 * side, 1.64, -0.74)], [0.016, 0.014, 0.012], hp, {"sides": 6, "per": 2})
+			for t in range(6): hs.crystal(Vector3(0.042 * side, 1.515, -0.92 - t * 0.024), Vector3(0, -1, -0.1), 0.03, 0.008, hp, 4)
 	else:
 		hs.blob(Vector3(0, 1.5, -1.13), Vector3(0.058, 0.044, 0.03), nose, {"lat": 4, "lon": 8})
 		for side: float in [-1.0, 1.0]:
@@ -189,23 +235,63 @@ func _hart() -> Node3D:
 		else: tips.append_array(royal_antler(hs, horn, base, side, 1.35))
 	if kind == "skull":
 		# Velvet peeling off the antlers in long ragged strips, hanging and swaying.
-		var vel := hs.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#5a4a44").lerp(Color("#3a1a1c"), v * 0.6))
-		for j in range(10):
-			var t: Vector3 = tips[(j * 3) % tips.size()]
+		var vel := hs.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#6a3a36").lerp(Color("#2a0e10"), v * 0.7))
+		for j in range(16):
+			var t: Vector3 = tips[(j * 5) % tips.size()]
 			var at := t.lerp(Vector3(0.1 * signf(t.x), 1.85, -0.76), 0.35 + 0.25 * fposmod(j * 0.618, 1.0))
-			var l := 0.18 + 0.15 * fposmod(j * 0.37, 1.0)
+			var l := 0.16 + 0.22 * fposmod(j * 0.37, 1.0)
 			hs.tube([at, at + Vector3(0.01, -l * 0.5, 0.02), at + Vector3(0.02, -l, 0.03)], [0.02, 0.014, 0.002], vel, {"sides": 5, "per": 2, "flat": 0.3, "side": Vector3.RIGHT, "cap1": false})
 	if giant:
 		# Moss on the palms and ghost-light running along their edges.
 		var mp2 := hs.add_painter(moss)
 		for side: float in [-1.0, 1.0]: moss_clump(hs, mp2, Vector3(1.0 * side, 2.12, -0.56), 0.1, 4)
 	var mt := Sculpt.new()
-	moon_tips(mt, tips, 0.011)
+	if kind == "skull":
+		var fp := mt.add_painter(func (pp, n, v, w): return Color.WHITE)
+		for t: Vector3 in tips:
+			mt.blob(t, Vector3.ONE * 0.012, fp, {"lat": 3, "lon": 6})
+			mt.crystal(t, Vector3(0, 1, 0.25), 0.07, 0.013, fp, 5)
+	else:
+		moon_tips(mt, tips, 0.011)
 	part(head, "MoonTips", mt, glow).material_override = glow
 	var jaw := joint(head, "Jaw", Vector3(0, 1.55, -0.88))
 	var js := Sculpt.new(); var jp := js.add_painter(bone_c if kind == "skull" else coat)
-	js.tube([Vector3(0, 1.55, -0.86), Vector3(0, 1.49, -1.04)], [0.058, 0.04], jp, {"sides": 9, "per": 2, "flat": 1.0, "cap_rings": 2})
-	var eye_sculpt := eyes(eye_pts, Vector3(0.028, 0.02, 0.02) if kind != "skull" else Vector3(0.022, 0.022, 0.02))
+	if kind == "skull":
+		for side: float in [-1.0, 1.0]:
+			js.tube([Vector3(0.06 * side, 1.6, -0.78), Vector3(0.05 * side, 1.53, -0.86), Vector3(0.036 * side, 1.49, -1.0), Vector3(0.014 * side, 1.48, -1.1)], [0.022, 0.02, 0.016, 0.014], jp, {"sides": 6, "per": 2, "flat": 0.6, "side": Vector3.RIGHT})
+			for t in range(5): js.crystal(Vector3(0.037 * side, 1.495, -0.93 - t * 0.026), Vector3(0, 1, -0.1), 0.022, 0.008, jp, 4)
+	else:
+		js.tube([Vector3(0, 1.55, -0.86), Vector3(0, 1.49, -1.04)], [0.058, 0.04], jp, {"sides": 9, "per": 2, "flat": 1.0, "cap_rings": 2})
+	var eye_sculpt := eyes(eye_pts, Vector3(0.028, 0.02, 0.02) if kind != "skull" else Vector3(0.014, 0.014, 0.014))
+	if kind == "skull":
+		var ep := eye_sculpt.add_painter(func (p, n, v, w): return Color.WHITE)
+		var fire := Sculpt.new()
+		var fpp := fire.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+			var a := (1.0 - v) * (0.45 + 0.35 * absf(n.dot(Vector3(0, 0, -1))))
+			return Color(0.55 * a, 0.75 * a, 1.0 * a, 1.0))
+		for e: Vector3 in eye_pts:
+			var sd := signf(e.x)
+			# Ghost-fire streaming back from each socket, flickering as it goes.
+			var trail: Array = []; var tr: Array = []
+			for j in range(8):
+				var t := j / 7.0
+				trail.append(e + Vector3(sd * (0.012 + 0.05 * t + 0.015 * sin(t * 9.0)), 0.015 + 0.13 * t * t + 0.02 * sin(t * 7.0 + 1.0), 0.02 + 0.36 * t)); tr.append(lerpf(0.026, 0.003, t))
+			fire.tube(trail, tr, fpp, {"sides": 8, "per": 2, "cap1": false})
+			for q2 in range(2):
+				var off := Vector3(sd * 0.02, 0.03 * (q2 * 2 - 1), 0.0)
+				var tt: Array = trail.slice(1).map(func (q): return q + off * (q.z - e.z) * 4.0)
+				fire.tube(tt, tr.slice(1).map(func (r): return r * 0.6), fpp, {"sides": 6, "per": 2, "cap1": false})
+		part(head, "EyeFire", fire, wisp_mat)
+		# Ghost-fire curling up out of the empty rib cage too.
+		var hf := Sculpt.new(); var hfp := hf.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+			var a := (1.0 - v) * 0.8
+			return Color(0.55 * a, 0.75 * a, 1.0 * a, 1.0))
+		for side: float in [-1.0, 1.0]:
+			for q2 in range(3):
+				var b := Vector3(0.19 * side, 1.0 + 0.05 * q2, -0.2 + 0.12 * q2)
+				hf.tube([b, b + Vector3(0.04 * side, 0.08, 0.03), b + Vector3(0.02 * side, 0.17, 0.08), b + Vector3(0.05 * side, 0.25, 0.1)], [0.04, 0.03, 0.016, 0.002], hfp, {"sides": 7, "per": 2, "cap1": false})
+		part(root, "HeartFire", hf, wisp_mat)
+		eye_sculpt.blob(Vector3(0, 1.5, -0.94), Vector3(0.022, 0.02, 0.06), ep, {"lat": 4, "lon": 7})
 	var ears: Array = []; var ear_sculpts: Array = []
 	for side: float in [-1.0, 1.0]:
 		var ear := joint(head, "EarLeft" if side < 0 else "EarRight", Vector3(0.1 * side, 1.73, -0.73))
@@ -215,7 +301,9 @@ func _hart() -> Node3D:
 		else:
 			xs.tube([Vector3(0.1 * side, 1.73, -0.73), Vector3(0.16 * side, 1.76, -0.71), Vector3(0.21 * side, 1.75, -0.69)], [0.025, 0.026, 0.004], xp, {"sides": 6, "per": 2, "flat": 0.3, "side": Vector3(0, 1, 0.3), "cap1": false, "lump": 0.4})
 		ears.append(ear); ear_sculpts.append(xs)
-	var leg_rig := legs(coat, 0.14, -0.36, 0.46, 1.08, 0.72, Callable(), 2, 1.62)
+	var rot := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+		return ash_coat(p, n, v, w).lerp(bone_c(p, n, v, w), smoothstep(0.4, 0.3, p.y + Sculpt.noise(p * 22.0) * 0.16) * 0.85)
+	var leg_rig := legs(coat, 0.14, -0.36, 0.46, 1.08, 0.72, rot if kind == "skull" else Callable(), 2, 1.62)
 	# Grave-mist curling round each hoof.
 	for i in range(4):
 		var front := i < 2
@@ -228,7 +316,11 @@ func _hart() -> Node3D:
 		part(leg_rig.knees[i], "Mist", ms, mist_mat)
 	var tail := joint(root, "Tail", Vector3(0, 1.14, 0.6))
 	var ts := Sculpt.new(); var tp := ts.add_painter(coat)
-	ts.tube([Vector3(0, 1.14, 0.58), Vector3(0, 1.08, 0.66), Vector3(0, 1.0, 0.68)], [0.04, 0.035, 0.02], tp, {"sides": 7, "per": 2, "cap1": false})
+	if kind == "skull":
+		var tb := ts.add_painter(bone_c)
+		for j in range(6): ts.blob(Vector3(0, 1.22 - j * 0.04, 0.58 + j * 0.03 - j * j * 0.002), Vector3(0.024, 0.018, 0.02) * (1.0 - j * 0.1), tb, {"lat": 4, "lon": 6})
+	else:
+		ts.tube([Vector3(0, 1.14, 0.58), Vector3(0, 1.08, 0.66), Vector3(0, 1.0, 0.68)], [0.04, 0.035, 0.02], tp, {"sides": 7, "per": 2, "cap1": false})
 	if kind == "skull": part(root, "GhostLight", glow_s, glow).material_override = glow
 	# Spectral mist streaming back off its shoulders and rump as if it were half made of fog.
 	var ws := Sculpt.new(); var wp := ws.add_painter(mist)
@@ -240,5 +332,9 @@ func _hart() -> Node3D:
 	var light := OmniLight3D.new(); light.name = "MoonGlow"
 	light.light_color = MOON; light.light_energy = 0.8; light.omni_range = 2.6; light.shadow_enabled = false
 	head.add_child(light); light.position = Vector3(0, 0.45, 0.05)
+	if kind == "skull":
+		var heart := OmniLight3D.new(); heart.name = "GhostHeart"
+		heart.light_color = Color("#9fd0ff"); heart.light_energy = 1.2; heart.omni_range = 1.4; heart.shadow_enabled = false
+		root.add_child(heart); heart.position = Vector3(0, 1.07, -0.07)
 	return _close({"body": body, "head": head, "head_sculpt": hs, "jaw": jaw, "jaw_sculpt": js, "eye_sculpt": eye_sculpt, "ears": ears, "ear_sculpts": ear_sculpts,
 		"hips": leg_rig.hips, "knees": leg_rig.knees, "tails": [tail], "tail_sculpts": [ts], "fronds": [], "frond_sculpts": []}, 1.55 if giant else 1.45)
