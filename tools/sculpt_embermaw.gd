@@ -45,7 +45,7 @@ func build(variant: String) -> Node3D:
 	hurt_glow = glow.duplicate(); hurt_glow.emission = Color("#ff2a10"); hurt_glow.albedo_color = Color("#a8200c")
 	crown_mat = lava_mat.duplicate(); crown_mat.emission_energy_multiplier = 3.0
 	if not variant in ["monitor", "ankylos", "thornback", "drake"]: return null
-	if variant == "drake": kinde = "monitor"; drake = true; hide_paint = crust; res = 2
+	if variant == "drake": kinde = "monitor"; drake = true; hide_paint = crust; res = 1
 	return _beast()
 
 
@@ -122,8 +122,9 @@ func vein(s: Sculpt, p: int, a: Vector3, b: Vector3, out: Vector3, jag: float, s
 func plate(s: Sculpt, sp: int, lava: Sculpt, lp: int, at: Vector3, up: Vector3, size: float, seed: int, keel := 0.0) -> void:
 	var u := up.normalized()
 	var b := Basis(Quaternion(Vector3.UP, u))
-	s.rock(at, Vector3(size, size * 0.45, size * 0.9), sp, {"seed": seed, "basis": b})
+	s.rock(at, Vector3(size, size * 0.45, size * 0.9), sp, {"seed": seed, "basis": b, "lat": 4, "lon": 6} if drake else {"seed": seed, "basis": b})
 	if keel > 0.0: s.crystal(at + u * size * 0.3, u, keel, size * 0.35, sp, 4, seed * 0.7)
+	if drake: return
 	var ring: Array = []; var rr: Array = []
 	for k in range(9):
 		var a := TAU * k / 8.0
@@ -184,7 +185,7 @@ func _beast() -> Node3D:
 	else:
 		spine = [Vector3(0, y + 0.02, -0.8), Vector3(0, y + 0.08, -0.4), Vector3(0, y + 0.1, 0.05), Vector3(0, y + 0.04, 0.5), Vector3(0, y - 0.06, 0.85)]
 		rads = [0.36, 0.62, 0.72, 0.6, 0.34]
-	bs.tube(spine, rads, sp, {"sides": 22 * res, "per": 4 * res, "flat": 0.62 if not monitor else 0.75, "side": Vector3.UP, "lump": 0.05, "cap0": false})
+	bs.tube(spine, rads, sp, {"sides": 30 if drake else 22, "per": 6 if drake else 4, "flat": 0.62 if not monitor else 0.75, "side": Vector3.UP, "lump": 0.05, "cap0": false})
 	bs.tube([spine[1] + Vector3(0, -0.18, 0), spine[3] + Vector3(0, -0.18, 0)], [rads[1] * 0.75, rads[3] * 0.75], bp, {"sides": 16, "per": 3, "flat": 0.5, "side": Vector3.UP})
 	# ---- armour along the back
 	var rng := RandomNumberGenerator.new(); rng.seed = 77
@@ -256,7 +257,7 @@ func _beast() -> Node3D:
 	var head_at: Vector3 = (spine[0] as Vector3) + (Vector3(0, 0.32, -0.42) if drake else Vector3(0, 0.05, -0.1))
 	if drake:
 		# A thick neck rising forward from the shoulders.
-		bs.tube([spine[1], spine[0], head_at + Vector3(0, -0.05, 0.12)], [rads[1] * 0.75, 0.36, 0.3], sp, {"sides": 36, "per": 6, "lump": 0.05, "bands": 8, "band": 0.05})
+		bs.tube([spine[1], spine[0], head_at + Vector3(0, -0.05, 0.12)], [rads[1] * 0.75, 0.36, 0.3], sp, {"sides": 22, "per": 4, "lump": 0.05, "bands": 8, "band": 0.05})
 	var head := joint(root, "FurnaceSkull", head_at)
 	var hs := Sculpt.new(); var hb := hs.add_painter(hide_paint); var hh := hs.add_painter(horn); var hd := hs.add_painter(func (_p, _n, _v, _w): return Color("#060404"))
 	var hl := Sculpt.new(); var hlp := hl.add_painter(molten)
@@ -265,9 +266,9 @@ func _beast() -> Node3D:
 		# A long flat skull, the snout narrowing, nostrils near the tip, heavy brows.
 		if drake:
 			# A broad, heavy skull: a domed cranium behind and a wide, flat, blunt snout in front.
-			hs.blob(head_at + Vector3(0, 0.04, -0.15), Vector3(0.3, 0.17, 0.27), hb, {"lat": 16, "lon": 22, "lump": 0.04})
-			hs.blob(head_at + Vector3(0, -0.01, -0.5), Vector3(0.3, 0.12, 0.32), hb, {"lat": 14, "lon": 22, "lump": 0.04})
-			hs.blob(head_at + Vector3(0, 0.04, -0.32), Vector3(0.22, 0.13, 0.2), hb, {"lat": 10, "lon": 16, "lump": 0.04})
+			hs.blob(head_at + Vector3(0, 0.04, -0.15), Vector3(0.3, 0.17, 0.27), hb, {"lat": 10, "lon": 14, "lump": 0.04})
+			hs.blob(head_at + Vector3(0, -0.01, -0.5), Vector3(0.3, 0.12, 0.32), hb, {"lat": 9, "lon": 14, "lump": 0.04})
+			hs.blob(head_at + Vector3(0, 0.04, -0.32), Vector3(0.22, 0.13, 0.2), hb, {"lat": 7, "lon": 10, "lump": 0.04})
 			# The upper lip line, a ridge running back from the snout's corners.
 			for sd: float in [-1.0, 1.0]:
 				hs.tube([head_at + Vector3(0.26 * sd, -0.06, -0.72), head_at + Vector3(0.3 * sd, -0.07, -0.45), head_at + Vector3(0.27 * sd, -0.06, -0.15)], [0.03, 0.035, 0.03], hb, {"sides": 8, "per": 3})
@@ -489,7 +490,7 @@ func _drake_extras(spine: Array, rads: Array, head: Node3D, head_at: Vector3, ja
 		var lines: Array = [[r0, el, wr], [r0 + Vector3(0.02 * side, -0.1, 0.1), el + Vector3(0.05 * side, -0.2, 0.05), tips[0]], [r0 + Vector3(0.03 * side, -0.18, 0.2), el + Vector3(0.07 * side, -0.36, 0.1), tips[1]], [r0 + Vector3(0.02 * side, -0.25, 0.3), el + Vector3(0.06 * side, -0.48, 0.15), tips[2]]]
 		for li in range(lines.size() - 1):
 			var la: Array = lines[li]; var lb: Array = lines[li + 1]
-			var rows := 8; var cols := 4
+			var rows := 5; var cols := 3
 			for layer in [0, 1]:
 				var base := ws._v.size()
 				for ri in range(rows + 1):
