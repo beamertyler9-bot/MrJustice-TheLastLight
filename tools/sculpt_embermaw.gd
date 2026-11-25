@@ -523,6 +523,44 @@ func _drake_extras(spine: Array, rads: Array, head: Node3D, head_at: Vector3, ja
 ## cooled-lava crust split by glowing seams, the sail's spines columns of basalt with molten
 ## rock showing through the cracked crust between them, magma dripping from its jaws, and a
 ## furnace burning in its throat.
+## Scorched bone: pale where it stands proud, charred black in the hollows and toward the
+## back of the skull where the fire is fiercest.
+static func scorched_bone(p: Vector3, n: Vector3, v: float, _w: float) -> Color:
+	var c := Color("#3a2e26").lerp(Color("#d8ccb0"), clampf(n.y * 0.4 + 0.3 + Sculpt.fbm(p * 9.0) * 0.5, 0.0, 1.0))
+	# Charred black in broad patches and in the creases.
+	c = c.lerp(Color("#0e0908"), smoothstep(-0.12, 0.25, Sculpt.noise(p * 5.0 + Vector3(3, 0, 0))) * 0.9)
+	# Hairline cracks glowing with the fire inside.
+	c = c.lerp(Color("#ff6a14"), smoothstep(0.035, 0.0, absf(Sculpt.noise(p * 11.0))) * 0.9)
+	return c.lerp(Color("#ff7a20"), smoothstep(-0.2, -0.8, n.y) * 0.3)
+
+
+func fire_material() -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.vertex_color_use_as_albedo = true; m.vertex_color_is_srgb = true
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
+	return m
+
+
+## One tongue of flame from `base`, rising along `dir` and curling with the wind `sweep`:
+## white-yellow at the root, orange, then red and fading at the tip.
+func flame(s: Sculpt, painter: int, base: Vector3, dir: Vector3, length: float, width: float, sweep: Vector3, seed: float) -> void:
+	var pts: Array = []; var rr: Array = []
+	var d := dir.normalized()
+	for k in range(6):
+		var t := k / 5.0
+		pts.append(base + d * length * t + sweep * length * t * t + Vector3(sin(seed + t * 5.0), 0, cos(seed * 1.3 + t * 4.0)) * width * 0.5 * t)
+		rr.append(width * (1.0 - t) * (0.6 + 0.4 * sin(PI * clampf(t * 1.6 + 0.2, 0.0, 1.0))) + 0.003)
+	s.tube(pts, rr, painter, {"sides": 6, "per": 2, "cap1": false})
+
+
+static func fire_paint(_p: Vector3, _n: Vector3, v: float, _w: float) -> Color:
+	var c := Color("#ffd060").lerp(Color("#ff7010"), smoothstep(0.0, 0.35, v)).lerp(Color("#c0200a"), smoothstep(0.4, 0.9, v))
+	return Color(c.r, c.g, c.b, (1.0 - smoothstep(0.45, 1.0, v)) * 0.55)
+
+
 func _spino() -> Node3D:
 	var lava := Sculpt.new(); var lp := lava.add_painter(molten)
 	var bs := Sculpt.new(); var sp := bs.add_painter(crust); var hp := bs.add_painter(horn)
@@ -587,6 +625,21 @@ func _spino() -> Node3D:
 	for k in range(4):
 		var at := along_line(spine, 0.25 + k * 0.18) + Vector3(0.05 * (k % 2 * 2 - 1), -0.43, 0)
 		lava.tube([at, at + Vector3(0, -0.1 - 0.06 * (k % 2), 0), at + Vector3(0, -0.18 - 0.08 * (k % 2), 0)], [0.025, 0.018, 0.028], lp, {"sides": 5, "per": 2})
+	# Fire burning along the crest of the sail and licking up from the seams on the back.
+	var bfire := Sculpt.new(); var bfp := bfire.add_painter(fire_paint)
+	for k in range(n):
+		var top: Vector3 = sail_top[k]
+		flame(bfire, bfp, top, Vector3(0, 1, 0.25), 0.2 + 0.16 * sin(PI * k / float(n - 1)), 0.045, Vector3(0, 0.2, 0.8), k * 1.1)
+	for k in range(10):
+		var at := along_line(spine, 0.05 + k * 0.1) + Vector3(0.16 * (k % 2 * 2 - 1), 0.32, 0)
+		flame(bfire, bfp, at, Vector3(0.3 * (k % 2 * 2 - 1), 1, 0.3), 0.18, 0.035, Vector3(0, 0.2, 0.8), k * 0.9)
+	var bf := part(root, "BodyFire", bfire, fire_material())
+	bf.material_override = fire_material()
+	# More lava running down the flanks and dripping from the belly.
+	for side: float in [-1.0, 1.0]:
+		for k in range(4):
+			var at := along_line(spine, 0.2 + k * 0.2) + Vector3(side * 0.3, -0.1, 0)
+			lava.tube([at, at + Vector3(side * 0.03, -0.14, 0.02), at + Vector3(side * 0.02, -0.3, 0.03)], [0.022, 0.018, 0.026], lp, {"sides": 5, "per": 2})
 	part(root, "Body", bs)
 	part(root, "BodyLava", lava, lava_mat)
 
@@ -601,8 +654,10 @@ func _spino() -> Node3D:
 	# ---- the head
 	var head_at: Vector3 = neck[3]
 	var head := joint(root, "FurnaceSkull", head_at)
-	var hs := Sculpt.new(); var hb := hs.add_painter(crust); var hh := hs.add_painter(horn); var hd := hs.add_painter(func (_p, _n, _v, _w): return Color("#060404"))
+	var hs := Sculpt.new(); var hb := hs.add_painter(scorched_bone); var hh := hs.add_painter(horn); var hd := hs.add_painter(func (_p, _n, _v, _w): return Color("#050303"))
 	var hl := Sculpt.new(); var hlp := hl.add_painter(molten)
+	var fire := fire_material()
+	var fs_head := Sculpt.new(); var hfp := fs_head.add_painter(fire_paint)
 	var tip := head_at + Vector3(0, -0.14, -0.95)
 	# The skull, deep at the back, and the long narrow snout, flared a little at the tip.
 	hs.blob(head_at + Vector3(0, 0.03, -0.12), Vector3(0.13, 0.15, 0.2), hb, {"lat": 9, "lon": 12, "lump": 0.04})
@@ -612,14 +667,27 @@ func _spino() -> Node3D:
 	for k in range(6): hs.crystal(head_at + Vector3(0, 0.1 - k * 0.025, -0.4 - k * 0.07), Vector3(0, 1, 0.4), 0.05, 0.015, hh, 4, k)
 	var eyes: Array = []
 	for side: float in [-1.0, 1.0]:
-		# Heavy brow over a deep-set eye.
-		hs.tube([head_at + Vector3(0.05 * side, 0.15, -0.2), head_at + Vector3(0.11 * side, 0.14, -0.1), head_at + Vector3(0.13 * side, 0.1, 0.02)], [0.025, 0.035, 0.025], hb, {"sides": 7, "per": 2})
-		hs.blob(head_at + Vector3(0.11 * side, 0.09, -0.12), Vector3(0.035, 0.03, 0.045), hd, {"lat": 5, "lon": 7})
-		eyes.append(head_at + Vector3(0.125 * side, 0.09, -0.12))
-		# Nostrils set far back on the snout.
-		hs.blob(head_at + Vector3(0.035 * side, 0.08, -0.38), Vector3(0.012, 0.008, 0.03), hd, {"lat": 3, "lon": 5})
-		# Spines along the cheek and the back of the skull.
-		for k in range(3): hs.crystal(head_at + Vector3(0.13 * side, 0.0 - k * 0.03, 0.02 + k * 0.03), Vector3(side, -0.1 - k * 0.2, 0.9), 0.09 - k * 0.015, 0.02, hh, 4)
+		# The bare skull's openings: a great round orbit, the antorbital opening in front of it
+		# and the nostril far back up the snout, all dark; the cheekbone (jugal) below the orbit
+		# and a heavy brow above.
+		hs.tube([head_at + Vector3(0.05 * side, 0.16, -0.22), head_at + Vector3(0.12 * side, 0.15, -0.1), head_at + Vector3(0.14 * side, 0.1, 0.03)], [0.025, 0.035, 0.025], hb, {"sides": 7, "per": 2})
+		hs.blob(head_at + Vector3(0.11 * side, 0.08, -0.11), Vector3(0.035, 0.065, 0.07), hd, {"lat": 6, "lon": 8})
+		# The temporal opening behind the orbit.
+		hs.blob(head_at + Vector3(0.12 * side, 0.06, 0.03), Vector3(0.03, 0.045, 0.04), hd, {"lat": 5, "lon": 7})
+		hs.tube([head_at + Vector3(0.12 * side, 0.01, 0.04), head_at + Vector3(0.13 * side, 0.0, -0.12), head_at + Vector3(0.1 * side, -0.02, -0.28)], [0.025, 0.028, 0.02], hb, {"sides": 7, "per": 2})
+		hs.blob(head_at + Vector3(0.09 * side, 0.03, -0.27), Vector3(0.028, 0.035, 0.07), hd, {"lat": 5, "lon": 8})
+		hs.blob(head_at + Vector3(0.04 * side, 0.075, -0.42), Vector3(0.014, 0.012, 0.045), hd, {"lat": 4, "lon": 6})
+		eyes.append(head_at + Vector3(0.14 * side, 0.08, -0.115))
+		# Flames pouring out of each eye socket, swept back.
+		for k in range(3): flame(fs_head, hfp, head_at + Vector3(0.12 * side, 0.1, -0.1 + k * 0.03), Vector3(0.3 * side, 1, 0.6), 0.2 + 0.05 * k, 0.03, Vector3(0, 0.3, 1.2), k + side)
+	# The skull wreathed in fire: tongues of flame rising off the crown, the crest and the back
+	# of the skull, streaming back over the neck.
+	for k in range(16):
+		var t := k / 15.0
+		var at := (head_at + Vector3(0, 0.12, -0.42)).lerp(head_at + Vector3(0, 0.14, 0.08), t) + Vector3(0.07 * sin(k * 2.4), 0.02 * sin(k * 1.7), 0)
+		flame(fs_head, hfp, at, Vector3(0.25 * sin(k * 2.4), 1, 0.35), 0.3 + 0.25 * sin(PI * t) + 0.05 * (k % 3), 0.04 + 0.015 * sin(PI * t), Vector3(0, 0.2, 1.4), k * 0.7)
+	for side: float in [-1.0, 1.0]:
+		for k in range(4): flame(fs_head, hfp, head_at + Vector3(0.13 * side, 0.06 - k * 0.03, 0.0 + k * 0.03), Vector3(side, 0.6, 0.5), 0.2, 0.04, Vector3(0, 0.4, 1.0), k * 1.3 + side)
 	# Upper teeth: conical, set along the jaw edge, the longest in the rosette at the tip.
 	var tl := Sculpt.new(); var tlp := tl.add_painter(func (_p, _n, v: float, _w) -> Color: return Color("#2a1c18").lerp(Color("#f0d8b0"), v).lerp(Color("#ffb040"), smoothstep(0.85, 1.0, v) * 0.5))
 	for side: float in [-1.0, 1.0]:
@@ -635,11 +703,11 @@ func _spino() -> Node3D:
 		hl.tube([at, at + Vector3(0, -0.06, 0), at + Vector3(0, -0.1 - 0.03 * k, 0.01)], [0.012, 0.008, 0.014], hlp, {"sides": 5, "per": 2})
 	part(head, "Skull", hs)
 	part(head, "SkullLava", hl, lava_mat)
+	part(head, "SkullFire", fs_head, fire).material_override = fire
 	var es := Sculpt.new(); var ew := es.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
 	for e: Vector3 in eyes:
 		var eb := Basis(Vector3.UP, -0.3 * signf(e.x)) * Basis(Vector3.FORWARD, 0.25 * signf(e.x))
-		es.blob(e, Vector3(0.016, 0.018, 0.034), ew, {"lat": 5, "lon": 8, "basis": eb})
-		hs.blob(e + Vector3(signf(e.x) * 0.014, 0, -0.003), Vector3(0.003, 0.016, 0.006), hd, {"lat": 3, "lon": 5})
+		es.blob(e, Vector3(0.03, 0.04, 0.045), ew, {"lat": 6, "lon": 8, "basis": eb})
 	part(head, "Eyes", es, glow).material_override = glow
 	# The furnace in the throat: the boss's glowing core.
 	var ts := Sculpt.new(); var tw := ts.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
@@ -648,7 +716,7 @@ func _spino() -> Node3D:
 	# The lower jaw, hinged at the back of the skull, gaping.
 	var jaw_at := head_at + Vector3(0, -0.06, 0.02)
 	var jaw := joint(head, "HingedBasaltJaw", jaw_at)
-	var js := Sculpt.new(); var jp := js.add_painter(crust); var jt := js.add_painter(func (_p, _n, v: float, _w) -> Color: return Color("#2a1c18").lerp(Color("#f0d8b0"), v))
+	var js := Sculpt.new(); var jp := js.add_painter(scorched_bone); var jt := js.add_painter(func (_p, _n, v: float, _w) -> Color: return Color("#2a1c18").lerp(Color("#f0d8b0"), v))
 	var jl := Sculpt.new(); var jlp := jl.add_painter(molten)
 	var jtip := tip + Vector3(0, -0.07, 0.03)
 	js.tube([jaw_at + Vector3(0, -0.04, 0.0), jaw_at.lerp(jtip, 0.4) + Vector3(0, -0.06, 0), jtip + Vector3(0, -0.01, 0.06), jtip], [0.1, 0.07, 0.055, 0.045], jp, {"sides": 12, "per": 3, "flat": 0.85, "side": Vector3.RIGHT, "lump": 0.03, "cap_len": 0.5})
@@ -683,6 +751,12 @@ func _spino() -> Node3D:
 		if t > 0.3: beam(tls, tcol, at - Vector3(0, r * 0.5, 0), Vector3(0, -1, 0.4).normalized(), h * 0.55, 0.045, 0.03, k * 0.9)
 		vein(tlv, tlvp, at + Vector3(0.12 * r, r * 0.45, -0.06), at + Vector3(0.1 * r, -r * 0.45, 0.06), Vector3(1, 0, 0), 0.03, k, 0.02)
 		vein(tlv, tlvp, at + Vector3(-0.12 * r, r * 0.45, -0.06), at + Vector3(-0.1 * r, -r * 0.45, 0.06), Vector3(-1, 0, 0), 0.03, k + 2.0, 0.02)
+	var tfire := Sculpt.new(); var tfp := tfire.add_painter(fire_paint)
+	for k in range(1, 9, 2):
+		var at: Vector3 = tpts[k]; var r: float = trr[k]
+		var hgt := 0.12 + 0.3 * sin(PI * clampf(k / 8.0 * 1.1, 0.0, 1.0))
+		flame(tfire, tfp, at + Vector3(0, r * 0.5 + hgt * 0.9, hgt * 0.4), Vector3(0, 1, 0.4), 0.16, 0.035, Vector3(0, 0.2, 0.8), k)
+	part(tail, "TailFire", tfire, fire_material()).material_override = fire_material()
 	part(tail, "Tail", tls)
 	part(tail, "TailLava", tlv, lava_mat)
 
