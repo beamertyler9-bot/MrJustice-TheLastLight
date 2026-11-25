@@ -75,6 +75,7 @@ const DESIGNS := {
 	"resonance_wyrm": ["res://tools/sculpt_resonance_wyrm.gd", "lamprey"],
 	"glasswing_reaver": ["res://tools/sculpt_glasswing_beasts.gd", "wyvern"],
 	"aurora_custodian": ["res://tools/sculpt_aurora_custodian.gd", "armillary"],
+	"dungeon": ["res://tools/sculpt_bellkeeper.gd", "gilded", "boss"],
 	"dust_devil": ["res://tools/sculpt_sandwraith.gd", "dustdevil"],
 	"linen_revenant": ["res://tools/sculpt_sandwraith.gd", "mummy"],
 }
@@ -87,6 +88,7 @@ func _initialize() -> void:
 		if not ResourceLoader.exists(path): path = "res://assets/creatures/regional_enemy_%s.scn" % id
 		if design.size() > 2 and design[2] == "wild": path = "res://assets/creatures/regional_wild_%s.scn" % id
 		if design.size() > 2 and design[2] in ["lurker", "plain"]: path = "res://assets/creatures/%s.scn" % id
+		if design.size() > 2 and design[2] == "boss": path = "res://assets/creatures/boss_%s.scn" % id
 		var model: Node3D = load(design[0]).new().build(design[1])
 		if ResourceLoader.exists(path):
 			var old: Node = load(path).instantiate()

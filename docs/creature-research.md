@@ -244,3 +244,19 @@ The user turned down three insect designs (griffinfly, robber fly and glasswing 
 - The archaic smile was dropped for the closed helmet, with narrow slanted eyes glowing cyan in its slit.
 - The stone and bronze were darkened, and cracks of light split the breastplate around a crystal eye.
 - Crystal bursts out of the shoulders, and below the waist it breaks away into long jagged crystal.
+
+## The Bellkeeper (deep-dungeon boss) — the gilded keeper, refined
+
+The user preferred the original gilded design, and the new model keeps its silhouette. That includes the low bell-helm with its bail handle and chimes, the arched face full of dawn-light, the toothed collar, the spiked pauldrons hung with bells, the teal light between the plates, the midnight tabard and mantle with the gold sun, and the great bell carried at its side.
+
+**Real plate harness.**
+- **Torso:** a breastplate with a central ridge (tapul) and swelling pectorals, a pointed plackart over the belly, and fauld lames flaring over the hips (here like a bell's skirt).
+- **Shoulders:** pauldrons made of a domed shell over stepped lames.
+- **Arms:** couters with side fans at the elbows, two-plate vambraces, and gauntlets with flared, cusped cuffs.
+- **Legs:** two-plate cuisses, poleyns with side fans at the knees, ridged greaves, and broad sabatons in overlapping lames.
+
+**Bells.** Real bells have a crown and canons, a waist, a sound-bow and a lip, with a clapper inside. Founders' inscriptions run around the waist.
+
+**How it holds the bell-staff.** The great bell sits on the foot of a long iron-banded haft. The staff is gripped upright in a closed fist, index finger toward the bell, so at rest the bell stands mouth-down on the ground.
+
+**Other designs explored.** A Bell Knight, a Living Belfry, a Toll-Keeper and an Oathbound blend were also built in `tools/sculpt_bellkeeper.gd`.
