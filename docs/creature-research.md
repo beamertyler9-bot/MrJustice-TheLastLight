@@ -224,3 +224,23 @@ The user turned down three insect designs (griffinfly, robber fly and glasswing 
 - Strong hind legs with three talons forward and one behind.
 - A barbed glass spade at the tip of the tail.
 - The wing skin is violet glass with dark veins.
+
+## Aurora Custodian (Prismere boss) — the armillary colossus
+
+**The Greek hoplite.**
+- **Corinthian helmet:** beaten from one piece of bronze. The cheek-guards close around the face, leaving a T-shaped opening for the eyes and mouth, with a long nose-guard and a crest running front to back.
+- **Body armour:** a bronze "muscle cuirass" shaped to the chest and stomach, often with a gorgon's face (gorgoneion) worn to frighten the enemy.
+- **Waist:** leather strips (pteruges) hanging around the hips.
+- **Spear:** the dory, about 2.5 m long, with a leaf-shaped head and a bronze butt-spike (sauroter).
+- **Shield:** the aspis, round and dished. It is carried on the forearm through a central band (the porpax), and the hand grips a cord near the rim (the antilabe).
+
+**How it holds them.**
+- The spear stands upright at the colossus's side, butt-spike down. Its fist is closed around the shaft, with the index finger toward the head and the thumb closing over.
+- The shield is worn the hoplite way: the forearm runs through the porpax and the fist holds the antilabe.
+
+**The armillary sphere.** An old astronomers' instrument of interlocking rings for the meridian, the equator and the ecliptic. The ecliptic is set 23.4 degrees to the equator and carries the zodiac. Here the ecliptic band carries twelve glowing signs and crystal spikes, small glass prisms ride two of the rings, and broken stones orbit with it.
+
+**Making it intimidating (user's request).**
+- The archaic smile was dropped for the closed helmet, with narrow slanted eyes glowing cyan in its slit.
+- The stone and bronze were darkened, and cracks of light split the breastplate around a crystal eye.
+- Crystal bursts out of the shoulders, and below the waist it breaks away into long jagged crystal.
