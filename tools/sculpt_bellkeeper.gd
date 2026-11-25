@@ -739,34 +739,50 @@ func _gilded() -> Node3D:
 	var bells: Array = []; var cloths: Array = []
 	var teal_glow := StandardMaterial3D.new()
 	teal_glow.vertex_color_use_as_albedo = true; teal_glow.vertex_color_is_srgb = true
-	teal_glow.emission_enabled = true; teal_glow.emission = Color("#2ad8c8"); teal_glow.emission_energy_multiplier = 0.35
+	teal_glow.emission_enabled = true; teal_glow.emission = Color("#2ad8c8"); teal_glow.emission_energy_multiplier = 0.5
 	teal_glow.roughness = 0.5; teal_glow.metallic = 0.3
 
-	# ---- the body: a great gilt cuirass, teal between the plates, a toothed collar
-	var body := Sculpt.new(); var gb := body.add_painter(filigree); var gp := body.add_painter(gilt_bronze)
+	# ---- the body: a shaped cuirass - a deep breastplate with a ridge down its middle and
+	# two pectoral plates, a pointed plackart over the belly, a narrow waist banded teal, and a
+	# skirt of flaring fauld lames over tassets; a toothed collar round the neck
+	var body := Sculpt.new(); var gb := body.add_painter(filigree); var gp := body.add_painter(gilt_bronze); var gi := body.add_painter(black_iron)
 	var bands := Sculpt.new(); var tb := bands.add_painter(teal_band)
-	body.tube([Vector3(0, 0.74, 0), Vector3(0, 0.95, -0.01), Vector3(0, 1.2, -0.02), Vector3(0, 1.45, 0)], [0.27, 0.3, 0.36, 0.33], gb, {"sides": 22, "per": 3, "side": Vector3.BACK, "flat": 0.78})
-	body.blob(Vector3(0, 1.22, -0.08), Vector3(0.3, 0.18, 0.16), gb, {"lat": 9, "lon": 14})
-	# A raised sun on the breast, its rays standing out in relief.
-	body.tube([Vector3(0, 1.22, -0.235), Vector3(0, 1.22, -0.25)], [0.065, 0.06], gp, {"sides": 16, "per": 1})
-	for k in range(12):
-		var a := TAU * k / 12.0
-		body.crystal(Vector3(cos(a) * 0.07, 1.22 + sin(a) * 0.07, -0.24), Vector3(cos(a), sin(a), -0.25), 0.05 + 0.025 * (k % 2), 0.012, gp, 3)
-	# Teal bands between the waist lames, gilt lames below.
-	for k in range(3):
-		var yy := 0.82 - k * 0.06
-		bands.tube([Vector3(0, yy + 0.008, 0), Vector3(0, yy - 0.008, 0)], [0.29 + k * 0.02, 0.29 + k * 0.02], tb, {"sides": 22, "per": 1, "side": Vector3.BACK, "flat": 0.8})
-		body.tube([Vector3(0, yy - 0.01, 0), Vector3(0, yy - 0.05, 0)], [0.29 + k * 0.022, 0.3 + k * 0.022], gp, {"sides": 22, "per": 1, "side": Vector3.BACK, "flat": 0.8})
-		rim(body, gp, Vector3(0, yy - 0.052, 0), Vector3.UP, 0.3 + k * 0.022, 16, 0.25)
+	body.tube([Vector3(0, 0.98, 0), Vector3(0, 1.08, -0.01), Vector3(0, 1.24, -0.02), Vector3(0, 1.4, 0), Vector3(0, 1.47, 0.01)], [0.24, 0.27, 0.36, 0.37, 0.33], gb, {"sides": 24, "per": 3, "side": Vector3.BACK, "flat": 0.7})
+	for side: float in [-1.0, 1.0]:
+		# The pectoral plates, swelling, each edged in gilt.
+		body.blob(Vector3(0.13 * side, 1.3, -0.17), Vector3(0.15, 0.11, 0.08), gb, {"lat": 7, "lon": 11, "basis": Basis(Vector3.UP, 0.25 * side)})
+		var pe: Array = []; var pr: Array = []
+		for k in range(9):
+			var t := k / 8.0
+			pe.append(Vector3((0.02 + 0.25 * t) * side, 1.2 + 0.18 * sin(PI * t * 0.9), -0.23 + 0.12 * t * t)); pr.append(0.012)
+		body.tube(pe, pr, gp, {"sides": 5, "per": 2})
+	# The ridge (tapul) down the middle, and the plackart rising to a point over the belly.
+	body.tube([Vector3(0, 1.43, -0.18), Vector3(0, 1.3, -0.245), Vector3(0, 1.1, -0.235), Vector3(0, 0.98, -0.2)], [0.014, 0.02, 0.018, 0.014], gp, {"sides": 6, "per": 3})
+	for side: float in [-1.0, 1.0]:
+		body.tube([Vector3(0.2 * side, 0.98, -0.18), Vector3(0.1 * side, 1.08, -0.22), Vector3(0.0, 1.16, -0.24)], [0.013, 0.014, 0.013], gp, {"sides": 5, "per": 2})
+	# Teal undersuit showing at the narrow waist.
+	bands.tube([Vector3(0, 0.975, 0), Vector3(0, 0.94, 0)], [0.252, 0.258], tb, {"sides": 24, "per": 1, "side": Vector3.BACK, "flat": 0.74})
+	# The belt with gilt plaques.
+	body.tube([Vector3(0, 0.935, 0), Vector3(0, 0.905, 0)], [0.27, 0.275], gi, {"sides": 24, "per": 1, "flat": 0.76, "side": Vector3.BACK})
+	for k in range(9):
+		var a2 := lerpf(-1.4, 1.4, k / 8.0)
+		body.blob(Vector3(sin(a2) * 0.275, 0.92, -cos(a2) * 0.21), Vector3(0.026, 0.03, 0.012), gp, {"lat": 4, "lon": 6, "basis": Basis(Vector3.UP, -a2)})
+	# Fauld lames flaring over the hips and thighs like a bell's skirt, each edged gilt with a
+	# thin line of teal between, the lowest cusped.
+	for k in range(6):
+		var yy := 0.89 - k * 0.058
+		var r0 := 0.272 + k * 0.026
+		body.tube([Vector3(0, yy - 0.056, 0), Vector3(0, yy, 0)], [r0 + 0.022, r0], gb if k % 2 == 0 else gp, {"sides": 24, "per": 1, "side": Vector3.BACK, "flat": 0.8, "cap0": false, "cap1": false})
+		rim(body, gp, Vector3(0, yy - 0.058, 0), Vector3.UP, r0 + 0.023, 18 if k < 5 else 9, 0.22 if k < 5 else 0.5)
+		bands.tube([Vector3(0, yy - 0.062, 0), Vector3(0, yy - 0.05, 0)], [r0 + 0.012, r0 + 0.008], tb, {"sides": 24, "per": 1, "side": Vector3.BACK, "flat": 0.8, "cap0": false, "cap1": false})
 	# The collar: a wide gilt brim round the neck, its lower edge set with teeth like a jaw.
-	body.tube([Vector3(0, 1.43, 0), Vector3(0, 1.5, 0)], [0.36, 0.34], gp, {"sides": 22, "per": 1, "flat": 0.9, "side": Vector3.BACK})
-	rim(body, gp, Vector3(0, 1.43, 0), Vector3.UP, 0.36, 18, 0.15)
-	for k in range(14):
-		var a := TAU * (k + 0.5) / 14.0
-		if cos(a) > 0.7: continue
-		body.crystal(Vector3(sin(a) * 0.33, 1.44, cos(a) * 0.3), Vector3(sin(a) * 0.3, -1, cos(a) * 0.3), 0.09, 0.02, gp, 4)
-	# A belt with bronze plaques and a chain of small bells.
-	body.tube([Vector3(0, 0.9, 0), Vector3(0, 0.87, 0)], [0.31, 0.31], body.add_painter(black_iron), {"sides": 22, "per": 1, "flat": 0.8, "side": Vector3.BACK})
+	body.tube([Vector3(0, 1.44, 0), Vector3(0, 1.51, 0)], [0.37, 0.35], gp, {"sides": 24, "per": 1, "flat": 0.9, "side": Vector3.BACK})
+	rim(body, gp, Vector3(0, 1.44, 0), Vector3.UP, 0.37, 18, 0.15)
+	bands.tube([Vector3(0, 1.415, 0), Vector3(0, 1.44, 0)], [0.345, 0.36], tb, {"sides": 24, "per": 1, "flat": 0.9, "side": Vector3.BACK})
+	for k in range(16):
+		var a2 := TAU * (k + 0.5) / 16.0
+		if cos(a2) > 0.7: continue
+		body.crystal(Vector3(sin(a2) * 0.34, 1.44, cos(a2) * 0.31), Vector3(sin(a2) * 0.25, -1, cos(a2) * 0.25), 0.1, 0.02, gp, 4)
 	steel_part(root, "Body", body)
 	part(root, "Bands", bands, teal_glow)
 
@@ -822,21 +838,32 @@ func _gilded() -> Node3D:
 		var hip := joint(root, "%sArmoredHip" % ("Left" if side < 0 else "Right"), h)
 		var kn := h + Vector3(0.02 * side, -0.32, -0.04)
 		var ft := kn + Vector3(0.0, -0.33, 0.04)
-		var ls := Sculpt.new(); var lg := ls.add_painter(filigree)
+		var ls := Sculpt.new(); var lg := ls.add_painter(filigree); var lp := ls.add_painter(gilt_bronze)
 		var lb := Sculpt.new(); var lt := lb.add_painter(teal_band)
-		ls.tube([h, h.lerp(kn, 0.5), kn], [0.16, 0.15, 0.12], lg, {"sides": 14, "per": 2, "flat": 0.9})
-		lb.tube([h.lerp(kn, 0.62), h.lerp(kn, 0.72)], [0.155, 0.15], lt, {"sides": 14, "per": 1})
+		ls.tube([h, kn], [0.14, 0.11], ls.add_painter(black_iron), {"sides": 14, "per": 2})
+		lb.tube([h.lerp(kn, 0.47), h.lerp(kn, 0.53)], [0.152, 0.15], lt, {"sides": 14, "per": 1})
+		# Cuisse: two overlapping plates down the front of the thigh.
+		for k in range(2):
+			var c0 := h.lerp(kn, 0.1 + k * 0.42); var c1 := h.lerp(kn, 0.5 + k * 0.42)
+			ls.tube([c0, c1], [0.158 - k * 0.012, 0.148 - k * 0.012], lg, {"sides": 14, "per": 1, "flat": 0.88})
+			rim(ls, lp, c1, (c1 - c0).normalized(), 0.15 - k * 0.012, 8, 0.2)
 		part(hip, "Cuisse", ls)
 		part(hip, "Band", lb, teal_glow)
 		var knee := joint(hip, "%sGreave" % ("Left" if side < 0 else "Right"), kn)
 		var ss := Sculpt.new(); var sg := ss.add_painter(filigree); var sp := ss.add_painter(gilt_bronze)
 		var sb := Sculpt.new(); var st := sb.add_painter(teal_band)
-		ss.blob(kn + Vector3(0, 0, -0.04), Vector3(0.12, 0.1, 0.11), sp, {"lat": 6, "lon": 9})
-		rim(ss, sp, kn + Vector3(0, 0, -0.1), Vector3(0, 0, -1), 0.08, 6, 0.3)
-		ss.tube([kn, kn.lerp(ft, 0.5), ft + Vector3(0, 0.09, 0)], [0.13, 0.12, 0.11], sg, {"sides": 14, "per": 2})
-		sb.tube([ft + Vector3(0, 0.1, 0), ft + Vector3(0, 0.13, 0)], [0.12, 0.12], st, {"sides": 14, "per": 1})
+		# Poleyn: a domed knee cop with a fan on its outer side and a spike in front.
+		ss.blob(kn + Vector3(0, 0, -0.05), Vector3(0.12, 0.1, 0.1), sp, {"lat": 7, "lon": 10})
+		ss.lathe(kn + Vector3(0.09 * side, 0, -0.02), [Vector2(0.0, 0.015), Vector2(0.08, 0.008), Vector2(0.095, 0.0), Vector2(0.0, -0.01)], sg, {"sides": 12, "basis": Basis(Vector3.BACK, -PI * 0.5 * side)})
+		ss.crystal(kn + Vector3(0, 0, -0.14), Vector3(0, 0.15, -1), 0.09, 0.03, sp, 4)
+		# Greave with a ridge down the shin, teal at the ankle.
+		ss.tube([kn, ft + Vector3(0, 0.08, 0)], [0.1, 0.085], ss.add_painter(black_iron), {"sides": 14, "per": 2})
+		sb.tube([ft + Vector3(0, 0.1, 0), ft + Vector3(0, 0.125, 0)], [0.104, 0.1], st, {"sides": 14, "per": 1})
+		ss.tube([kn + Vector3(0, -0.06, 0), kn.lerp(ft, 0.5), ft + Vector3(0, 0.14, 0)], [0.125, 0.12, 0.1], sg, {"sides": 16, "per": 2, "flat": 0.92})
+		ss.tube([kn + Vector3(0, -0.07, -0.12), ft + Vector3(0, 0.15, -0.1)], [0.012, 0.01], sp, {"sides": 5, "per": 2})
+		rim(ss, sp, ft + Vector3(0, 0.14, 0), Vector3.UP, 0.1, 10, 0.25)
 		# Broad sabatons in overlapping lames, the toe turned up.
-		ss.tube([ft + Vector3(0, 0.05, 0.08), ft + Vector3(0, 0.045, -0.1), ft + Vector3(0, 0.04, -0.24), ft + Vector3(0, 0.07, -0.3)], [0.1, 0.1, 0.075, 0.03], sp, {"sides": 12, "per": 2, "flat": 1.35, "bands": 6, "band": 0.12})
+		ss.tube([ft + Vector3(0, 0.06, 0.08), ft + Vector3(0, 0.05, -0.1), ft + Vector3(0, 0.045, -0.24), ft + Vector3(0, 0.075, -0.3)], [0.1, 0.1, 0.075, 0.03], sp, {"sides": 12, "per": 2, "flat": 1.35, "bands": 6, "band": 0.12})
 		part(knee, "Greave", ss)
 		part(knee, "Band", sb, teal_glow)
 		feet.append(hip); knees.append(knee)
@@ -851,36 +878,59 @@ func _gilded() -> Node3D:
 		var hand := el + Vector3(0.03 * side, -0.26, -0.12) if side < 0 else Vector3(staff_x, 0.92, -0.18)
 		var us := Sculpt.new(); var ug := us.add_painter(filigree); var up := us.add_painter(gilt_bronze)
 		var ub := Sculpt.new(); var ut := ub.add_painter(teal_band)
-		ub.tube([sh, sh.lerp(el, 0.5), el], [0.12, 0.11, 0.1], ut, {"sides": 12, "per": 2})
-		for k in range(3):
-			us.tube([sh.lerp(el, 0.35 + k * 0.2) + Vector3(0, 0.02, 0), sh.lerp(el, 0.35 + k * 0.2) - Vector3(0, 0.03, 0)], [0.125, 0.12], up, {"sides": 12, "per": 1})
-		# Four broad lames, each edged with a curling gilt trim, teal showing between.
+		us.tube([sh, sh.lerp(el, 0.5), el], [0.12, 0.11, 0.1], us.add_painter(black_iron), {"sides": 12, "per": 2})
+		# The pauldron: a great domed shell over the shoulder, with four lames below it, each a
+		# shallow ring of plate stepping out and down, edged gilt with teal showing between.
+		var dome_b := Basis(Vector3.BACK, -0.38 * side)
+		var dc := sh + Vector3(0.06 * side, 0.05, 0)
+		us.lathe(dc, [Vector2(0.0, 0.17), Vector2(0.1, 0.155), Vector2(0.18, 0.11), Vector2(0.235, 0.04), Vector2(0.25, 0.0), Vector2(0.23, -0.005), Vector2(0.0, 0.08)], ug, {"sides": 22, "basis": dome_b * Basis.from_scale(Vector3(1, 1, 0.85))})
+		rim(us, up, dc, dome_b * Vector3.UP, 0.25, 12, 0.18)
+		var axis := dome_b * Vector3.UP
 		for k in range(4):
-			var lc := sh + Vector3((0.05 + k * 0.03) * side, 0.12 - k * 0.075, 0)
-			us.blob(lc, Vector3(0.24 - k * 0.012, 0.06, 0.2 - k * 0.008), ug, {"lat": 6, "lon": 14, "basis": Basis(Vector3.BACK, -0.3 * side)})
-			rim(us, up, lc + Vector3(0.04 * side, -0.045, 0), Vector3(0.3 * side, 1, 0).normalized(), 0.225 - k * 0.012, 10, 0.3)
-			rim(ub, ut, lc + Vector3(0.035 * side, -0.065, 0), Vector3(0.3 * side, 1, 0).normalized(), 0.205 - k * 0.012, 10, 0.2)
-		for k in range(3):
-			us.crystal(sh + Vector3((0.04 + k * 0.08) * side, 0.17, -0.1 + k * 0.1), Vector3(0.2 * side, 1, 0), 0.2 - k * 0.025, 0.035, up, 6)
+			var c := dc - axis * (0.05 + k * 0.055) + Vector3(0.025 * k * side, 0, 0)
+			var r := 0.235 - k * 0.018
+			us.tube([c - axis * 0.03, c + axis * 0.02], [r, r * 0.92], ug if k % 2 == 1 else up, {"sides": 22, "per": 1, "flat": 0.85, "side": Vector3.BACK, "cap0": false, "cap1": false})
+			rim(us, up, c - axis * 0.032, axis, r + 0.002, 12, 0.2)
+			ub.tube([c + axis * 0.012, c + axis * 0.028], [r * 0.93, r * 0.9], ut, {"sides": 22, "per": 1, "flat": 0.85, "side": Vector3.BACK, "cap0": false, "cap1": false})
+		# A row of tall spikes along the crest of the dome.
+		for k in range(4):
+			var at := dc + dome_b * Vector3(0.0, 0.15, -0.15 + k * 0.1)
+			us.crystal(at, dome_b * Vector3(0.15, 1, (k - 1.5) * 0.15), 0.22 - absf(k - 1.5) * 0.04, 0.036, up, 6)
+		# A raised sun boss on the dome's face.
+		var boss := dc + dome_b * Vector3(0.17, 0.08, 0)
+		us.blob(boss, Vector3.ONE * 0.035, up, {"lat": 5, "lon": 8})
+		for k in range(8):
+			var ang := TAU * k / 8.0
+			var rd := dome_b * Vector3(0, cos(ang), sin(ang))
+			us.crystal(boss + rd * 0.03, rd + dome_b * Vector3(0.3, 0, 0), 0.03, 0.008, up, 3)
 		part(arm, "Pauldron", us)
 		part(arm, "Bands", ub, teal_glow)
 		# Bells hanging under the pauldron's edge.
 		for k in range(2):
-			var bj := joint(arm, "PauldronChime" if k == 0 else "PauldronChime2", sh + Vector3(0.3 * side, -0.12, -0.1 + k * 0.2))
+			var bj := joint(arm, "PauldronChime" if k == 0 else "PauldronChime2", sh + Vector3(0.27 * side, -0.2, -0.1 + k * 0.2))
 			var bs := Sculpt.new(); var bp2 := bs.add_painter(gilt_bronze)
-			bs.tube([sh + Vector3(0.3 * side, -0.12, -0.1 + k * 0.2), sh + Vector3(0.3 * side, -0.17, -0.1 + k * 0.2)], [0.008, 0.008], bp2, {"sides": 4, "per": 1})
-			church_bell(bs, bp2, sh + Vector3(0.3 * side, -0.17, -0.1 + k * 0.2), Vector3.DOWN, 0.055)
+			bs.tube([sh + Vector3(0.27 * side, -0.2, -0.1 + k * 0.2), sh + Vector3(0.27 * side, -0.25, -0.1 + k * 0.2)], [0.008, 0.008], bp2, {"sides": 4, "per": 1})
+			church_bell(bs, bp2, sh + Vector3(0.27 * side, -0.25, -0.1 + k * 0.2), Vector3.DOWN, 0.055)
 			part(bj, "Bell", bs, bronze_mat)
 			bells.append(bj)
 		var fore := joint(arm, ("LeftElbow" if side < 0 else "MaulElbow"), el)
 		var fs := Sculpt.new(); var fg := fs.add_painter(filigree); var fp := fs.add_painter(gilt_bronze)
 		var fb := Sculpt.new(); var ft2 := fb.add_painter(teal_band)
 		var a := (hand - el).normalized()
+		# Couter: a domed elbow cop with a fan on the outside.
 		fs.blob(el, Vector3.ONE * 0.1, fp, {"lat": 6, "lon": 9})
-		rim(fs, fp, el + Vector3(0.05 * side, 0, 0), Vector3(side, 0, 0), 0.08, 6, 0.3)
-		fb.tube([el, hand - a * 0.08], [0.09, 0.08], ft2, {"sides": 12, "per": 1})
-		for k in range(3): fs.tube([el.lerp(hand, 0.2 + k * 0.22), el.lerp(hand, 0.32 + k * 0.22)], [0.1 - k * 0.005, 0.098 - k * 0.005], fg, {"sides": 12, "per": 1})
-		fs.tube([hand - a * 0.16, hand - a * 0.05], [0.09, 0.105], fp, {"sides": 12, "per": 1, "cap1": false})
+		fs.lathe(el + Vector3(0.07 * side, 0, 0.02), [Vector2(0.0, 0.015), Vector2(0.075, 0.008), Vector2(0.09, 0.0), Vector2(0.0, -0.01)], fg, {"sides": 12, "basis": Basis(Vector3.BACK, -PI * 0.5 * side)})
+		fs.crystal(el + Vector3(0, 0, 0.09), Vector3(0.2 * side, -0.2, 1), 0.08, 0.025, fp, 4)
+		fs.tube([el, hand - a * 0.08], [0.09, 0.08], fs.add_painter(black_iron), {"sides": 12, "per": 1})
+		fb.tube([el.lerp(hand, 0.46), el.lerp(hand, 0.5)], [0.096, 0.094], ft2, {"sides": 12, "per": 1})
+		# Vambrace in two plates, gilt edged.
+		for k in range(2):
+			var c0 := el.lerp(hand, 0.15 + k * 0.33); var c1 := el.lerp(hand, 0.45 + k * 0.33)
+			fs.tube([c0, c1], [0.098 - k * 0.006, 0.092 - k * 0.006], fg, {"sides": 14, "per": 1, "flat": 0.9})
+			rim(fs, fp, c1, a, 0.093 - k * 0.006, 8, 0.2)
+		# The gauntlet's flared cuff, cusped, and the back-of-hand plate.
+		fs.lathe(hand - a * 0.1, [Vector2(0.08, 0.0), Vector2(0.1, 0.05), Vector2(0.13, 0.09), Vector2(0.12, 0.095), Vector2(0.075, 0.0)], fp, {"sides": 14, "basis": Basis(Quaternion(Vector3.UP, -a))})
+		rim(fs, fp, hand - a * 0.195, a, 0.125, 7, 0.35)
 		if side > 0:
 			# The bell-staff: a long iron-bound haft held upright in the fist, the great bell on
 			# its foot resting mouth-down on the ground; the index finger toward the bell.
