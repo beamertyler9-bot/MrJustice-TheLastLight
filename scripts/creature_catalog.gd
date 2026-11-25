@@ -14,7 +14,7 @@ const FORMS = {
 	"cliffwarden": "golem", "stonejaw_wyrm": "wyrm", "fudge_golem": "golem", "cocoa_knight": "knight", "chocobar_croc": "crawler", "wrapper_mimic": "mimic", "pretzel_crawler": "crawler", "cola_sloshback": "frog", "sugarspike_wasp": "winged", "grand_confectioner": "knight",
 	"windwhistle_stalker": "cat", "thistle_jackal": "hound", "grassland_colossus": "golem", "kiteclaw_raptor": "winged", "stormhorn_matriarch": "boar", "storm_bison": "boar", "thunder_rhino": "boar", "stormcloud_muskox": "boar", "stormfrill": "boar", "thunderclub": "boar", "dune_maw": "wyrm", "pit_antlion": "crawler", "dune_monitor": "wyrm", "thorn_devil": "lizard", "sunken_sentinel": "knight", "pharaoh_guardian": "knight", "lion_warden": "knight", "sandwraith": "wraith", "dust_devil": "wraith", "linen_revenant": "wraith", "obelisk_scorpion": "scorpion", "glass_anubid": "knight",
 	"riftback": "armored", "volcano_tortoise": "armored", "furnace_hound": "hound", "cerberus": "hound", "bone_hound": "hound", "slag_crawler": "crawler", "ash_harpy": "winged", "cinder_vulture": "winged", "root_reaper": "reaper", "grave_mandrake": "reaper", "bog_wight": "reaper", "wraithhart": "deer", "hollow_hound": "hound", "shadow_wolf": "hound", "grave_creeper": "crawler", "grave_mantis": "crawler", "deathshead_moth": "winged", "ghost_moon_moth": "winged", "thorn_widow": "spider", "spiny_orbweaver": "spider", "mourning_knight": "knight", "pale_watcher": "wraith", "blackthorn_regent": "knight",
-	"shard_sentinel": "knight", "prismstalker": "cat", "geode_mimic": "mimic", "resonance_wyrm": "wyrm", "glasswing_reaver": "winged", "aurora_custodian": "wraith"}
+	"shard_sentinel": "knight", "prismstalker": "cat", "geode_mimic": "mimic", "celestine_boxcrab": "mimic", "thunderegg_crab": "mimic", "resonance_wyrm": "wyrm", "glasswing_reaver": "winged", "aurora_custodian": "wraith"}
 static var roster: Array = []
 static var lookup: Dictionary = {}
 static func entries() -> Array:
@@ -35,7 +35,7 @@ static func hostiles_for(region: int) -> Array:
 	return entries().filter(func (e): return e.region == region and e.kind == "hostile" and not e.boss).map(func (e): return enemy_id(e.id))
 ## Big storm beasts roam the plains but are a rare sight: each is picked this often compared
 ## with an ordinary hostile (1.0).
-const RARITY = {"storm_bison": 0.2, "thunder_rhino": 0.2, "stormcloud_muskox": 0.2, "stormfrill": 0.2, "thunderclub": 0.2, "pit_antlion": 0.35, "dune_monitor": 0.35, "pharaoh_guardian": 0.35, "lion_warden": 0.35, "dust_devil": 0.35, "linen_revenant": 0.35, "volcano_tortoise": 0.35, "cerberus": 0.25, "bone_hound": 0.35, "cinder_vulture": 0.35, "grave_mandrake": 0.35, "bog_wight": 0.35, "shadow_wolf": 0.35, "grave_mantis": 0.35, "ghost_moon_moth": 0.35, "spiny_orbweaver": 0.35}
+const RARITY = {"storm_bison": 0.2, "thunder_rhino": 0.2, "stormcloud_muskox": 0.2, "stormfrill": 0.2, "thunderclub": 0.2, "pit_antlion": 0.35, "dune_monitor": 0.35, "pharaoh_guardian": 0.35, "lion_warden": 0.35, "dust_devil": 0.35, "linen_revenant": 0.35, "volcano_tortoise": 0.35, "cerberus": 0.25, "bone_hound": 0.35, "cinder_vulture": 0.35, "grave_mandrake": 0.35, "bog_wight": 0.35, "shadow_wolf": 0.35, "grave_mantis": 0.35, "ghost_moon_moth": 0.35, "spiny_orbweaver": 0.35, "celestine_boxcrab": 0.35, "thunderegg_crab": 0.35}
 ## Picks one of `options` from `seed`, the same every time for the same seed, with rare
 ## species weighted down.
 static func pick_hostile(options: Array, seed: int) -> String:
@@ -99,6 +99,9 @@ const SIZES = {"cocoa_knight": {"radius": 0.6, "height": 2.6, "reach": 2.6}, "fu
 	"blackthorn_regent": {"radius": 0.8, "height": 3.4, "reach": 3.0, "hp": 34, "front_max": 1.9},
 	"shard_sentinel": {"radius": 0.85, "height": 3.3, "reach": 2.9, "hp": 9, "front_max": 1.9},
 	"prismstalker": {"radius": 0.7, "height": 1.7, "reach": 2.6, "hp": 6, "front_max": 1.9},
+	"geode_mimic": {"radius": 0.85, "height": 1.7, "reach": 2.6, "hp": 7, "front_max": 1.8},
+	"celestine_boxcrab": {"radius": 0.9, "height": 1.45, "reach": 2.6, "hp": 8, "front_max": 1.8},
+	"thunderegg_crab": {"radius": 1.0, "height": 2.0, "reach": 2.9, "hp": 6, "front_max": 1.9},
 	"mourning_knight": {"radius": 0.65, "height": 2.9, "reach": 2.8, "hp": 8, "front_max": 1.6},
 	"wraithhart": {"radius": 0.7, "height": 2.6, "reach": 2.6, "hp": 7, "front_max": 2.0},
 	"cerberus": {"radius": 0.75, "height": 1.8, "hp": 10, "damage": 2, "front_max": 1.9},

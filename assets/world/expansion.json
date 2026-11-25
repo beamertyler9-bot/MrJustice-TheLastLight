@@ -11984,7 +11984,7 @@
       "region": 15,
       "kind": "hostile",
       "boss": false,
-      "hook": "Low refractive feline silhouette; a stable edge glint reveals it before a pounce."
+      "hook": "A smoky snow leopard whose rosettes are rings of split rainbow light, frost crystals down its spine; a steady glint along its back gives it away before a pounce."
     },
     {
       "id": "geode_mimic",
@@ -11992,7 +11992,23 @@
       "region": 15,
       "kind": "hostile",
       "boss": false,
-      "hook": "Closed rough geode shell hiding jointed claws; emits a chime before splitting open."
+      "hook": "A crab living in an amethyst geode: shut, a rough round stone with a thin glow watching through the seam; it chimes, the top half lifts on a mouth of purple crystal teeth, too many stalked eyes and the bones of its last meal."
+    },
+    {
+      "id": "celestine_boxcrab",
+      "name": "Celestine Box Crab",
+      "region": 15,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "A box crab in a pale limestone geode lined with sky-blue celestine, its face hidden behind two huge crested claws that lift with the lid; it chimes before splitting open."
+    },
+    {
+      "id": "thunderegg_crab",
+      "name": "Thunder Egg Crab",
+      "region": 15,
+      "kind": "hostile",
+      "boss": false,
+      "hook": "A spider crab carrying a dark basalt thunder egg high on long spiny legs; amber light leaks through the seam, and it chimes before the egg splits on a mouth of glowing citrine."
     },
     {
       "id": "resonance_wyrm",

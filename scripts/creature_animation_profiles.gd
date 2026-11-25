@@ -111,6 +111,8 @@ const DATA = {
 	"shard_sentinel": ["march", "crystal_settle", "hammer", 5.2, 0.24, 0.86, Vector3(0.15, 0.11, 0.06), Vector3(0.04, 0.08, 0), -0.09],
 	"prismstalker": ["stalk", "edge_glint", "refract", 7.8, 0.41, 0.2, Vector3(0.095, 0.31, 0.13), Vector3(0.23, 0.33, -0.09), 0.19],
 	"geode_mimic": ["crawl", "geode_chime", "split", 5.6, 0.23, 0.74, Vector3(0.21, 0.15, 0.085), Vector3(0.06, 0.09, 0.04), 0.11],
+	"celestine_boxcrab": ["crawl", "geode_chime", "split", 5.6, 0.23, 0.74, Vector3(0.21, 0.15, 0.085), Vector3(0.06, 0.09, 0.04), 0.11],
+	"thunderegg_crab": ["crawl", "geode_chime", "split", 5.6, 0.23, 0.74, Vector3(0.21, 0.15, 0.085), Vector3(0.06, 0.09, 0.04), 0.11],
 	"resonance_wyrm": ["slither", "rib_vibration", "resonate", 5.2, 0.26, 0.63, Vector3(0.18, 0.27, 0.12), Vector3(0.25, 0.35, 0.03), -0.22],
 	"glasswing_reaver": ["ray", "blade_align", "align", 4.8, 0.38, 0.27, Vector3(0.12, 0.2, 0.16), Vector3(0.16, 0.26, 0.07), 0.24],
 	"aurora_custodian": ["float", "aurora_orbit", "aurora", 2.9, 0.19, 0.35, Vector3(0.14, 0.25, 0.17), Vector3(0.2, 0.3, -0.03), -0.19],

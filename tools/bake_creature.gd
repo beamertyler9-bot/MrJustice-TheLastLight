@@ -69,6 +69,9 @@ const DESIGNS := {
 	"blackthorn_regent": ["res://tools/sculpt_mourning_knight.gd", "thorn"],
 	"shard_sentinel": ["res://tools/sculpt_shard_sentinel.gd", "selenite"],
 	"prismstalker": ["res://tools/sculpt_prismstalker.gd", "snow"],
+	"geode_mimic": ["res://tools/sculpt_geode_mimic.gd", "amethyst"],
+	"celestine_boxcrab": ["res://tools/sculpt_geode_mimic.gd", "boxcrab"],
+	"thunderegg_crab": ["res://tools/sculpt_geode_mimic.gd", "spider"],
 	"dust_devil": ["res://tools/sculpt_sandwraith.gd", "dustdevil"],
 	"linen_revenant": ["res://tools/sculpt_sandwraith.gd", "mummy"],
 }

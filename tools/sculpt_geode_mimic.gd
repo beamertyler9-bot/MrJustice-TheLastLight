@@ -22,11 +22,12 @@ var gem_mat: StandardMaterial3D
 var rng := RandomNumberGenerator.new()
 
 # Per-design colours.
-var rind_a := Color("#7d7264"); var rind_b := Color("#b9ad97")
+var rind_a := Color("#5c544a"); var rind_b := Color("#a39782")
 var band_a := Color("#efedf2"); var band_b := Color("#9a9ab4"); var band_c := Color("#b9a6d6")
 var gem_deep := Color("#4a1f7a"); var gem_pale := Color("#d9c2ff")
-var leg_a := Color("#4a3f52"); var leg_b := Color("#8a7a92")
-var glow_col := Color("#c89bff")
+var leg_a := Color("#2a2030"); var leg_b := Color("#6a5878")
+var spot_col := Color("#8a7a92")
+var glow_col := Color("#d77bff")
 
 
 func _init() -> void:
@@ -58,14 +59,14 @@ func build(variant: String) -> Node3D:
 			rind_a = Color("#9a958a"); rind_b = Color("#dcd6c8")
 			band_a = Color("#f4f6f8"); band_b = Color("#a9bccc"); band_c = Color("#d8e4ee")
 			gem_deep = Color("#2f6fb4"); gem_pale = Color("#d6f0ff")
-			leg_a = Color("#c9a88a"); leg_b = Color("#f0e2cc")
+			leg_a = Color("#c9b49a"); leg_b = Color("#efe4d2"); spot_col = Color("#8a1a1a")
 			glow_col = Color("#8fd0ff")
 			return _geode(0.56, 0.62, 0.4, 0.3, 0.76, 0.24, 1.4)
 		"spider":
 			rind_a = Color("#2e2a28"); rind_b = Color("#5e554c")
 			band_a = Color("#e8dccb"); band_b = Color("#8a6a4a"); band_c = Color("#c9a070")
 			gem_deep = Color("#7a3a0a"); gem_pale = Color("#ffd27a")
-			leg_a = Color("#b8461e"); leg_b = Color("#f2e6d8")
+			leg_a = Color("#9a3214"); leg_b = Color("#d8683a"); spot_col = Color("#f2e6d8")
 			glow_col = Color("#ffae3a")
 			return _geode(1.12, 0.42, 0.4, 0.36, 1.35, 0.5, 1.25)
 	return null
@@ -100,10 +101,10 @@ func _cave() -> Callable:
 
 
 func _chitin() -> Callable:
-	var a := leg_a; var b := leg_b; var spotted := kindg != "amethyst"
+	var a := leg_a; var b := leg_b; var sc := spot_col; var spotted := kindg != "amethyst"
 	return func (p: Vector3, n: Vector3, v: float, _w: float) -> Color:
 		var c := a.lerp(b, clampf(0.3 + n.y * 0.35 + Sculpt.fbm(p * 8.0) * 0.4, 0.0, 1.0))
-		if spotted: c = c.lerp(b, smoothstep(0.3, 0.42, Sculpt.noise(p * 15.0)) * 0.8)
+		if spotted: c = c.lerp(sc, smoothstep(0.3, 0.42, Sculpt.noise(p * 15.0)) * 0.85)
 		return c.darkened(smoothstep(0.7, 1.0, v) * 0.35)
 
 
@@ -183,6 +184,13 @@ func crab_legs(spots: Array, span: float, rise: float, thick: float, spiny: bool
 			for j in range(4):
 				var s0 := at.lerp(knee_at, 0.2 + j * 0.2)
 				ts.crystal(s0 + Vector3(0, thick * 0.8, 0), Vector3(out.x * 0.3, 1.0, out.z * 0.3), thick * 1.1, thick * 0.25, sp, 4)
+		if not spiny:
+			# Bristles (setae) in a fringe under the merus.
+			var hp := ts.add_painter(func (_p, _n, v, _w): return leg_a.darkened(0.3).lerp(leg_b, v * 0.6))
+			for j in range(9):
+				var h0 := at.lerp(knee_at, 0.15 + j * 0.085) + Vector3(0, -thick * 0.85, 0)
+				var hd := (out * 0.3 + Vector3(0, -1, 0) + Vector3(sin(j * 2.1), 0, cos(j * 1.7)) * 0.25).normalized()
+				ts.tube([h0, h0 + hd * 0.05, h0 + hd * 0.085 + out * 0.02], [0.006, 0.004, 0.001], hp, {"sides": 3, "per": 1, "cap1": false})
 		part(hip, "Merus", ts, flesh)
 		var knee := joint(hip, "Knee", knee_at)
 		var foot := Vector3(at.x, 0.0, at.z) + out * span + Vector3(0, 0.015, 0)
@@ -251,17 +259,63 @@ func _geode(height: float, rr: float, h_up: float, h_dn: float, span: float, ris
 	part(head, "ShellBase", bs, rind_mat); part(head, "CrystalsBase", bg, gem_mat)
 	var ls := Sculpt.new(); var lg := Sculpt.new()
 	half(ls, lg, c + Vector3(0, 0.012, 0), rr, h_up, true, 0.16 if kindg != "boxcrab" else 0.13)
-	# Stalked crab eyes down in the cave, glowing.
+	# Too many eyes: a pair of tall stalked crab eyes and a crowd of smaller ones down in the
+	# cave, each with a black slit pupil; and, even while it lies shut, two thin slits of glow
+	# watching through the seam at the front.
 	var es := Sculpt.new(); var ew := es.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
 	var stalk := Sculpt.new(); var stp := stalk.add_painter(_chitin())
+	var pup := Sculpt.new(); var pp := pup.add_painter(func (_p, _n, _v, _w): return Color("#08040a"))
+	var eye_spots := [[Vector3(0.15, 0.07, -0.5), 0.055], [Vector3(-0.15, 0.07, -0.5), 0.055], [Vector3(0.05, -0.02, -0.58), 0.032],
+		[Vector3(-0.07, 0.0, -0.55), 0.028], [Vector3(0.24, -0.04, -0.4), 0.03], [Vector3(-0.23, -0.03, -0.42), 0.034], [Vector3(-0.01, 0.04, -0.46), 0.024]]
+	for es_: Array in eye_spots:
+		var o: Vector3 = es_[0]; var er: float = es_[1]
+		var e1 := c + Vector3(o.x, o.y, o.z * rr)
+		var e0 := c + Vector3(o.x * 0.5, -h_dn * 0.5, o.z * rr * 0.6)
+		stalk.tube([e0, e0.lerp(e1, 0.5) + Vector3(o.x * 0.15, 0, 0), e1], [er * 0.55, er * 0.45, er * 0.4], stp, {"sides": 7, "per": 2})
+		var eye := e1 + Vector3(0, er * 0.5, -0.01)
+		es.blob(eye, Vector3(er, er * 1.1, er), ew, {"lat": 5, "lon": 8})
+		pup.blob(eye + Vector3(0, 0, -er * 0.93), Vector3(er * 0.18, er * 0.75, er * 0.12), pp, {"lat": 4, "lon": 6})
 	for side in [-1.0, 1.0]:
-		var e0 := c + Vector3(0.09 * side, -h_dn * 0.45, -rr * 0.35)
-		var e1 := c + Vector3(0.15 * side, 0.07, -rr * 0.5)
-		stalk.tube([e0, e0.lerp(e1, 0.5) + Vector3(0.02 * side, 0, 0), e1], [0.03, 0.025, 0.022], stp, {"sides": 7, "per": 2})
-		es.blob(e1 + Vector3(0, 0.03, -0.01), Vector3(0.055, 0.06, 0.055), ew, {"lat": 5, "lon": 8})
-	part(head, "EyeStalks", stalk, flesh)
-	dim_eyes.albedo_color = glow_col; dim_eyes.emission = glow_col; dim_eyes.emission_energy_multiplier = 1.6
+		var th: float = -PI * 0.5 + 0.22 * side
+		var at := c + Vector3(cos(th) * (rr + 0.004), seam_y(c, th, rr) - 0.012, sin(th) * (rr + 0.004))
+		es.blob(at, Vector3(0.05, 0.009, 0.012), ew, {"lat": 4, "lon": 8, "basis": Basis(Vector3.UP, -th - PI * 0.5) * Basis(Vector3.BACK, -0.2 * side)})
+	part(head, "EyeStalks", stalk, flesh); part(head, "Pupils", pup, flesh)
+	dim_eyes.albedo_color = glow_col.darkened(0.35); dim_eyes.emission = glow_col; dim_eyes.emission_energy_multiplier = 0.75
 	var core := part(head, "Eyes", es, dim_eyes); core.material_override = dim_eyes
+	# The mouth down in the cave: a wet red gullet and a crab's fan of mouthparts
+	# (maxillipeds), with the bones of its last meal caught among the crystals.
+	var ms := Sculpt.new()
+	var wet := ms.add_painter(func (p: Vector3, n: Vector3, _v, _w): return MAW.lerp(GUM, clampf(n.y * 0.7 + Sculpt.noise(p * 14.0) * 0.4, 0.0, 1.0)))
+	var mp := ms.add_painter(func (p: Vector3, n: Vector3, v: float, _w): return Color("#5a1a24").lerp(Color("#b0606a"), clampf(n.y * 0.5 + 0.3, 0.0, 1.0)).darkened(v * 0.3))
+	var bone := ms.add_painter(func (p: Vector3, n: Vector3, _v, _w): return Color("#cfc2a0").lerp(Color("#f2ead6"), clampf(n.y * 0.5 + 0.4 + Sculpt.noise(p * 20.0) * 0.3, 0.0, 1.0)))
+	var sock := ms.add_painter(func (_p, _n, _v, _w): return Color("#120808"))
+	var floor_y := c.y - h_dn * 0.62
+	ms.blob(Vector3(0, floor_y, -0.02), Vector3(rr * 0.5, 0.07, rr * 0.46), wet, {"lat": 6, "lon": 12, "lump": 0.15})
+	for k in range(3):
+		for side in [-1.0, 1.0]:
+			var mz: float = -rr * (0.22 + k * 0.08); var mx: float = side * (0.04 + k * 0.035)
+			var b0 := Vector3(mx, floor_y + 0.03, mz)
+			ms.tube([b0, b0 + Vector3(side * 0.03, 0.07 - k * 0.012, -0.05), b0 + Vector3(side * 0.012, 0.1 - k * 0.02, -0.1)], [0.034 - k * 0.006, 0.03 - k * 0.005, 0.006], mp, {"sides": 7, "per": 2, "flat": 0.45, "side": Vector3(0, 0, 1), "cap1": false})
+	for k in range(3):
+		var a0 := Vector3(rng.randf_range(-0.2, 0.2), floor_y + 0.06, rng.randf_range(-0.12, 0.2) * rr / 0.5)
+		var a1 := a0 + Vector3(rng.randf_range(-1.0, 1.0), 0.15, rng.randf_range(-1.0, 1.0)).normalized() * rng.randf_range(0.13, 0.2)
+		ms.tube([a0, a1], [0.013, 0.012], bone, {"sides": 6, "per": 2})
+		ms.blob(a0, Vector3.ONE * 0.022, bone, {"lat": 4, "lon": 6}); ms.blob(a1, Vector3.ONE * 0.02, bone, {"lat": 4, "lon": 6})
+	# A small skull, eyeholes up, half buried in the crystals at the back.
+	var sk := Vector3(rr * 0.25, floor_y + 0.07, rr * 0.35)
+	ms.blob(sk, Vector3(0.065, 0.055, 0.075), bone, {"lat": 6, "lon": 9})
+	ms.blob(sk + Vector3(0, -0.02, -0.07), Vector3(0.04, 0.03, 0.04), bone, {"lat": 4, "lon": 7})
+	for side in [-1.0, 1.0]: ms.blob(sk + Vector3(0.025 * side, 0.025, -0.05), Vector3(0.018, 0.016, 0.014), sock, {"lat": 4, "lon": 6})
+	part(head, "Maw", ms, flesh)
+	# Drool hanging in strings from the lid's teeth.
+	var ds := Sculpt.new(); var dp := ds.add_painter(func (_p, _n, _v, _w): return Color("#e9e2d6"))
+	for k in range(6):
+		var th := -PI * 0.5 + (k - 2.5) * 0.28
+		var r0 := rr - 0.08
+		var top := c + Vector3(cos(th) * r0, seam_y(c, th, r0) + 0.01, sin(th) * r0)
+		var l := 0.12 + 0.1 * absf(sin(k * 2.3))
+		ds.tube([top, top + Vector3(0.008, -l * 0.6, 0.004), top + Vector3(0, -l, 0)], [0.006, 0.004, 0.011], dp, {"sides": 5, "per": 2})
+	part(lid, "Drool", ds, flesh)
 	var light := OmniLight3D.new(); light.name = "CaveGlow"; light.light_color = glow_col
 	light.light_energy = 0.7 if kindg == "spider" else 0.45; light.omni_range = rr * 2.2
 	light.position = Vector3(0, -h_dn * 0.3, 0); head.add_child(light)

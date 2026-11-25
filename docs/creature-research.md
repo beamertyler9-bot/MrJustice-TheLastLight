@@ -163,3 +163,25 @@ monster should stand clearly bigger than him.
 ## Prismstalker (Prismere) — snow leopard
 
 Built on the snow leopard (*Panthera uncia*): pale smoky-grey coat, paler underneath; a deep chest and short, strong forelegs; a small, rounded head; and a very thick tail almost as long as its body, which it uses for balance and wraps around itself for warmth. Its rosettes are open dark rings rather than solid spots. In the Prismere each rosette is a dark smoky ring holding split rainbow light, like the colour fringes thrown by a prism. Small frost crystals run along the spine. The game's existing cue is kept: a steady white glint runs along the ridge of the back before it pounces.
+
+## Geode Mimic, Celestine Box Crab, Thunder Egg Crab (Prismere) — crabs living in geodes
+
+**Geodes.** A geode is a hollow, roughly round rock. Its outside is a knobbly, "cauliflower" rind of chalcedony or limestone. Just inside the rind is a band of agate in thin concentric stripes, and the hollow is lined with crystals that all point inwards: amethyst (purple), celestine (pale sky blue, famous from Madagascar) or smoky quartz and citrine. A "thunder egg" is a geode that formed in volcanic rock, so its rind is dark basalt or rhyolite.
+
+**Crab anatomy.**
+- Each walking leg has seven segments: coxa, basis, ischium, then the long, flattened merus, which rises to the "knee". After it come the carpus, the propodus and a pointed dactyl that grips the ground.
+- The legs are fringed with bristles (setae).
+- The claws (chelipeds) close a movable finger (the dactyl) onto a fixed finger that grows out of the swollen palm (propodus).
+- Around the mouth is a fan of layered mouthparts (maxillipeds), and the eyes sit on stalks.
+
+**The three designs.**
+- **Geode Mimic:** an amethyst geode on a shore crab's legs. The claws are folded under the seam.
+- **Celestine Box Crab:** based on the box crab (*Calappa*, the "shame-faced crab"). It hides its face behind two huge flat claws that look like part of its shell, each topped with a cockscomb crest.
+- **Thunder Egg Crab:** based on the Japanese spider crab (*Macrocheira kaempferi*), which has the longest legs of any arthropod. Its legs are spiny and orange, and it carries the thunder egg high above the ground.
+
+**Creepy touches shared by all three.**
+- Two thin slits of glowing eyes watch through the seam while the shell is shut.
+- Inside are too many stalked eyes with slit pupils.
+- The gullet is a wet red pit with mouthparts around it.
+- Drool hangs from the lid's teeth.
+- Bones and a small skull lie among the crystals.
