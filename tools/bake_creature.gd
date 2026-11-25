@@ -68,6 +68,7 @@ const DESIGNS := {
 	"pale_watcher": ["res://tools/sculpt_pale_watcher.gd", "veiled"],
 	"blackthorn_regent": ["res://tools/sculpt_mourning_knight.gd", "thorn"],
 	"shard_sentinel": ["res://tools/sculpt_shard_sentinel.gd", "selenite"],
+	"prismstalker": ["res://tools/sculpt_prismstalker.gd", "snow"],
 	"dust_devil": ["res://tools/sculpt_sandwraith.gd", "dustdevil"],
 	"linen_revenant": ["res://tools/sculpt_sandwraith.gd", "mummy"],
 }

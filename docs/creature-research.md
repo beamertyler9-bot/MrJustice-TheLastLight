@@ -159,3 +159,7 @@ monster should stand clearly bigger than him.
 - The head is a split geode: a rock shell whose hollow is lined with crystals pointing inward.
 - A maul is held with both hands on the haft, well apart, the head carried over the shoulder; its head is set across the haft in the plane of the swing.
 - Considered but not used: rock-crystal quartz (six-sided prisms with six-faced points, in druses on granite, with amethyst); bismuth hopper crystals (stair-stepped hollow squares with iridescent oxide).
+
+## Prismstalker (Prismere) — snow leopard
+
+Built on the snow leopard (*Panthera uncia*): pale smoky-grey coat, paler underneath; a deep chest and short, strong forelegs; a small, rounded head; and a very thick tail almost as long as its body, which it uses for balance and wraps around itself for warmth. Its rosettes are open dark rings rather than solid spots. In the Prismere each rosette is a dark smoky ring holding split rainbow light, like the colour fringes thrown by a prism. Small frost crystals run along the spine. The game's existing cue is kept: a steady white glint runs along the ridge of the back before it pounces.
