@@ -474,8 +474,8 @@ func _grand() -> Node3D:
 	# ---- the body: a gilded cuirass with a belfry in its breast
 	var body := Sculpt.new(); var gb := body.add_painter(gilt_bronze); var bi := body.add_painter(black_iron)
 	var dk := body.add_painter(func (_p, _n, _v, _w): return Color("#06040a"))
-	body.tube([Vector3(0, 0.95, 0), Vector3(0, 1.1, -0.01), Vector3(0, 1.3, -0.02), Vector3(0, 1.5, 0)], [0.25, 0.29, 0.35, 0.31], gb, {"sides": 20, "per": 3, "side": Vector3.BACK, "flat": 0.74})
-	body.blob(Vector3(0, 1.32, -0.08), Vector3(0.3, 0.19, 0.16), gb, {"lat": 9, "lon": 14})
+	body.tube([Vector3(0, 0.95, 0), Vector3(0, 1.1, -0.01), Vector3(0, 1.32, -0.02), Vector3(0, 1.5, 0)], [0.22, 0.25, 0.38, 0.35], gb, {"sides": 20, "per": 3, "side": Vector3.BACK, "flat": 0.66})
+	body.blob(Vector3(0, 1.34, -0.07), Vector3(0.32, 0.17, 0.13), gb, {"lat": 9, "lon": 14})
 	# The belfry window: a pointed arch cut deep into the breastplate, iron louvres across it,
 	# and a bell of light hanging inside.
 	box(body, dk, Vector3(0, 1.26, -0.262), Basis.IDENTITY, Vector3(0.095, 0.13, 0.02))
@@ -523,10 +523,13 @@ func _grand() -> Node3D:
 		var a := TAU * k / 6.0
 		var c0 := Vector3(sin(a) * 0.07, 2.06, cos(a) * 0.07)
 		hs.tube([c0, c0 + Vector3(sin(a) * 0.05, 0.1, cos(a) * 0.05), c0 + Vector3(sin(a) * 0.02, 0.15, cos(a) * 0.02)], [0.022, 0.02, 0.016], hg, {"sides": 6, "per": 2})
-	hs.lathe(Vector3(0, 2.08, 0), [Vector2(0.0, 0.32), Vector2(0.03, 0.2), Vector2(0.07, 0.04), Vector2(0.075, 0.0), Vector2(0.0, 0.0)], hs.add_painter(slate), {"sides": 8})
-	hs.blob(Vector3(0, 2.41, 0), Vector3.ONE * 0.025, hg, {"lat": 5, "lon": 8})
-	hs.tube([Vector3(0, 2.43, 0), Vector3(0, 2.52, 0)], [0.008, 0.008], hg, {"sides": 4, "per": 1})
-	hs.tube([Vector3(-0.03, 2.49, 0), Vector3(0.03, 2.49, 0)], [0.007, 0.007], hg, {"sides": 4, "per": 1})
+	hs.blob(Vector3(0, 2.12, 0), Vector3.ONE * 0.045, hg, {"lat": 6, "lon": 8})
+	# Founders' inscription round the helm's waist, its letters burning with the same light.
+	for k in range(22):
+		var a := TAU * (k + 0.5) / 22.0
+		if cos(a) < -0.55: continue
+		var at := Vector3(sin(a) * 0.17, 1.95, cos(a) * 0.17)
+		core_s.blob(at, Vector3(0.012, 0.022 + 0.008 * (k % 3), 0.006), cw, {"lat": 3, "lon": 4, "basis": Basis(Vector3.UP, a)})
 	steel_part(head, "Helm", hs)
 	var core := part(head, "BellLight", core_s, glow); core.material_override = glow
 
@@ -646,23 +649,51 @@ func _grand() -> Node3D:
 	var back := joint(root, "WovenFuneralMantle", Vector3(0, 1.5, 0.22))
 	var bcs := Sculpt.new(); var bcp := bcs.add_painter(midnight); var bgp := bcs.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return midnight(p, n, v, w).lerp(Color("#c8983c"), 0.7))
 	var mt: Array = []
-	for k in range(10): mt.append(Vector3(lerpf(-0.34, 0.34, k / 9.0), 1.52, 0.22 + 0.05 * sin(k / 9.0 * PI)))
-	drape(bcs, bcp, mt, 1.3, Vector3(0, 0, 0.14), 0.06, 0.7, 0.3)
+	for k in range(10): mt.append(Vector3(lerpf(-0.42, 0.42, k / 9.0), 1.53, 0.2 + 0.07 * sin(k / 9.0 * PI)))
+	drape(bcs, bcp, mt, 1.45, Vector3(0, 0, 0.22), 0.07, 0.7, 0.3)
 	bcs.tube(mt, [0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03], bgp, {"sides": 6, "per": 1})
 	part(back, "Mantle", bcs, cloth_mat)
 	cloths.append(back)
 	for k in range(3): swinging_bell(root, Vector3(lerpf(-0.2, 0.2, k / 2.0), 0.93, 0.21), 0.05, 0.08 + 0.05 * (k % 2), bells)
 	part(root, "BelfryLight", glow_s, glow).material_override = glow
 
+	# ---- the great bell of the town, carried on its back in a belfry arch of oak and iron
+	# rising over its shoulders, the bell hung from the apex with its inscription alight.
+	var fr := Sculpt.new(); var fo := fr.add_painter(oak); var fi2 := fr.add_painter(black_iron); var fg2 := fr.add_painter(gilt_bronze)
+	var z := 0.4
+	for k in range(2):
+		var off := -0.05 + k * 0.1
+		arch(fr, fo, Vector3(-0.46, 1.45, z + off), Vector3(0.46, 1.45, z + off), 0.98, 0.05)
+	for side in [-1.0, 1.0]:
+		fr.tube([Vector3(0.28 * side, 1.42, 0.16), Vector3(0.46 * side, 1.46, z)], [0.05, 0.045], fi2, {"sides": 6, "per": 1})
+		for k in range(4): fr.crystal(Vector3((0.5 - k * 0.07) * side, 1.62 + k * 0.19, z), Vector3(side, 0.5, 0), 0.15 - k * 0.02, 0.03, fi2, 4)
+	fr.tube([Vector3(-0.16, 2.37, z), Vector3(0.16, 2.37, z)], [0.05, 0.05], fo, {"sides": 8, "per": 1})
+	fr.blob(Vector3(0, 2.5, z), Vector3.ONE * 0.06, fg2, {"lat": 6, "lon": 8})
+	fr.tube([Vector3(0, 2.54, z), Vector3(0, 2.72, z)], [0.013, 0.013], fg2, {"sides": 4, "per": 1})
+	fr.tube([Vector3(-0.06, 2.66, z), Vector3(0.06, 2.66, z)], [0.011, 0.011], fg2, {"sides": 4, "per": 1})
+	part(root, "BelfryArch", fr)
+	var gj := joint(root, "GreatBell", Vector3(0, 2.36, z))
+	var gbs := Sculpt.new(); var gbp := gbs.add_painter(gilt_bronze)
+	church_bell(gbs, gbp, Vector3(0, 2.36, z), Vector3.DOWN, 0.32, true)
+	part(gj, "Bell", gbs, bronze_mat)
+	var ins := Sculpt.new(); var inw := ins.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
+	for k in range(26):
+		var a := TAU * (k + 0.5) / 26.0
+		var rr := 0.32 * 0.63
+		ins.blob(Vector3(sin(a) * rr, 2.36 - 0.32 * 1.25 * 0.48, z + cos(a) * rr), Vector3(0.016, 0.03 + 0.01 * (k % 3), 0.007), inw, {"lat": 3, "lon": 4, "basis": Basis(Vector3.UP, a)})
+	part(gj, "Inscription", ins, glow).material_override = glow
+	bells.append(gj)
+
+
 	# ---- the awakened crown: a turning ring of spectral bells over the helm
 	var cr := Sculpt.new(); var crp := cr.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
 	for k in range(10):
 		var a := TAU * k / 10.0
-		church_bell(cr, crp, Vector3(sin(a) * 0.42, 2.62, cos(a) * 0.42), Vector3.DOWN, 0.06, false)
+		church_bell(cr, crp, Vector3(sin(a) * 0.6, 2.85, cos(a) * 0.6 + 0.2), Vector3.DOWN, 0.07, false)
 	var ring_pts: Array = []; var ring_r: Array = []
 	for k in range(41):
 		var a := TAU * k / 40.0
-		ring_pts.append(Vector3(sin(a) * 0.42, 2.62, cos(a) * 0.42)); ring_r.append(0.01)
+		ring_pts.append(Vector3(sin(a) * 0.6, 2.85, cos(a) * 0.6 + 0.2)); ring_r.append(0.012)
 	cr.tube(ring_pts, ring_r, crp, {"sides": 4, "per": 1})
 	var crown := part(root, "AwakenedDawnResonance", cr, crown_mat); crown.material_override = crown_mat
 	crown.visible = false
