@@ -232,7 +232,7 @@ func _beast() -> Node3D:
 	var snout: Vector3; var jaw_at: Vector3; var eyes: Array = []
 	if monitor:
 		# A long flat skull, the snout narrowing, nostrils near the tip, heavy brows.
-		hs.tube([head_at, head_at + Vector3(0, 0.02, -0.25), head_at + Vector3(0, -0.02, -0.55), head_at + Vector3(0, -0.06, -0.78)], ([0.2, 0.19, 0.15, 0.1] if drake else [0.34, 0.32, 0.23, 0.13]), hb, {"sides": 16, "per": 3, "flat": 2.3 if drake else 1.45, "lump": 0.05, "cap0": false})
+		hs.tube([head_at, head_at + Vector3(0, 0.02, -0.25), head_at + Vector3(0, -0.02, -0.55), head_at + Vector3(0, -0.06, -0.78)], ([0.2, 0.19, 0.17, 0.15] if drake else [0.34, 0.32, 0.23, 0.13]), hb, {"sides": 16, "per": 3, "flat": 2.3 if drake else 1.45, "lump": 0.05, "cap0": false})
 		snout = head_at + Vector3(0, -0.06, -0.8)
 		for side: float in [-1.0, 1.0]:
 			hs.tube([head_at + Vector3(0.08 * side, 0.15, -0.38), head_at + Vector3(0.17 * side, 0.14, -0.22), head_at + Vector3(0.2 * side, 0.1, -0.05)], [0.035, 0.045, 0.03], hb, {"sides": 6, "per": 2})
@@ -287,7 +287,7 @@ func _beast() -> Node3D:
 	for side: float in [-1.0, 1.0]:
 		var n := 7 if monitor else 5
 		for k in range(n):
-			var at := snout.lerp(jaw_at, 0.05 + k / float(n) * 0.75) + Vector3(side * ((0.12 + k * 0.04) if drake else (0.06 + k * (0.025 if monitor else 0.035))), -0.02, 0)
+			var at := snout.lerp(jaw_at, 0.05 + k / float(n) * 0.75) + Vector3(side * ((0.26 - k * 0.01) if drake else (0.06 + k * (0.025 if monitor else 0.035))), -0.02, 0)
 			tl.crystal(at, Vector3(0, -1, 0.1), 0.06 + (0.03 if k == 1 else 0.0), 0.014, tlp, 4)
 	part(head, "Teeth", tl)
 	# The jaw, hinged at the back.
@@ -295,12 +295,12 @@ func _beast() -> Node3D:
 	var js := Sculpt.new(); var jp := js.add_painter(basalt); var jt := js.add_painter(horn)
 	var jl := Sculpt.new(); var jlp := jl.add_painter(molten)
 	var jaw_tip := snout + Vector3(0, -0.12, 0.04)
-	js.tube([jaw_at + Vector3(0, -0.02, 0.02), jaw_at.lerp(jaw_tip, 0.5) + Vector3(0, -0.04, 0), jaw_tip], [0.2 if not monitor else (0.13 if drake else 0.18), 0.16 if not monitor else (0.11 if drake else 0.13), 0.075 if drake else 0.06], jp, {"sides": 14, "per": 3, "flat": 2.4 if drake else 1.5, "lump": 0.05})
+	js.tube([jaw_at + Vector3(0, -0.02, 0.02), jaw_at.lerp(jaw_tip, 0.5) + Vector3(0, -0.04, 0), jaw_tip], [0.2 if not monitor else (0.13 if drake else 0.18), 0.16 if not monitor else (0.11 if drake else 0.13), 0.13 if drake else 0.06], jp, {"sides": 14, "per": 3, "flat": 2.4 if drake else 1.5, "lump": 0.05})
 	jl.blob(jaw_at.lerp(jaw_tip, 0.45) + Vector3(0, 0.07, 0), Vector3(0.2 if drake else 0.11, 0.025, (jaw_tip - jaw_at).length() * 0.42), jlp, {"lat": 4, "lon": 8})
 	for side: float in [-1.0, 1.0]:
 		var n := 6 if monitor else 4
 		for k in range(n):
-			var at := jaw_tip.lerp(jaw_at, 0.08 + k / float(n) * 0.7) + Vector3(side * ((0.1 + k * 0.04) if drake else (0.05 + k * 0.03)), 0.06, 0)
+			var at := jaw_tip.lerp(jaw_at, 0.08 + k / float(n) * 0.7) + Vector3(side * ((0.24 - k * 0.01) if drake else (0.05 + k * 0.03)), 0.06, 0)
 			js.crystal(at, Vector3(0, 1, -0.1), 0.05, 0.012, jt, 4)
 	if monitor:
 		# The forked tongue, flicking out.
@@ -402,53 +402,47 @@ func _drake_extras(spine: Array, rads: Array, head: Node3D, head_at: Vector3, ja
 	for side: float in [-1.0, 1.0]:
 		for k in range(3): cs.crystal(jaw_at + Vector3((0.15 - k * 0.04) * side, -0.12, -0.15 - k * 0.15), Vector3(0.3 * side, -1, 0.4), 0.12, 0.03, ch, 4)
 	part(jaw, "ChinSpikes", cs).rotation.x = -0.3
-	# Two small torn wings on the shoulders, built like a bat's: the arm up to the wrist, a hooked
-	# thumb, three long fingers fanning back, and a skin of scorched hide stretched between them
-	# and back to the flank, its trailing edge scalloped and torn.
+	# Two small wings folded tight against the shoulders, as a bat folds them: the arm bent back
+	# along the flank, the long fingers lying alongside it, the scorched skin gathered between
+	# them in pleats; ragged at the edge, too torn to fly.
 	var ws := Sculpt.new(); var wb := ws.add_painter(basalt); var wc := ws.add_painter(horn)
-	var skin := ws.add_painter(func (p: Vector3, _n, v: float, w: float) -> Color:
+	var skin := ws.add_painter(func (p: Vector3, _n, v: float, _w) -> Color:
 		var c := Color("#1c100c").lerp(Color("#5a2414"), clampf(Sculpt.noise(p * 9.0) * 0.6 + 0.35, 0.0, 1.0))
-		# Glowing veins running out along the skin.
-		var vein := smoothstep(0.44, 0.49, absf(fposmod(w * 3.0 + v * 0.4, 1.0) - 0.5)) * smoothstep(0.15, 0.4, v)
-		return c.lerp(Color("#ff6a14"), vein * 0.6 + smoothstep(0.92, 1.0, v) * 0.25))
-	var wrng := RandomNumberGenerator.new(); wrng.seed = 31
-	var shoulder := along_line(spine, 0.22)
+		return c.lerp(Color("#ff6a14"), smoothstep(0.9, 1.0, v) * 0.3))
+	var shoulder := along_line(spine, 0.2)
 	for side: float in [-1.0, 1.0]:
-		var r0 := shoulder + Vector3(rads[1] * 0.55 * side, rads[1] * 0.5, 0.1)
-		var el := r0 + Vector3(0.3 * side, 0.32, 0.18)
-		var wr := el + Vector3(0.22 * side, 0.3, 0.12)
-		var tips := [wr + Vector3(0.62 * side, 0.12, 0.28), wr + Vector3(0.5 * side, -0.2, 0.62), wr + Vector3(0.2 * side, -0.48, 0.74)]
-		var flank := shoulder + Vector3(rads[1] * 0.6 * side, rads[1] * 0.25, 0.75)
-		ws.tube([r0, r0.lerp(el, 0.5) + Vector3(0, 0.03, 0), el], [0.075, 0.065, 0.055], wb, {"sides": 9, "per": 2})
-		ws.blob(el, Vector3.ONE * 0.06, wb, {"lat": 5, "lon": 7})
-		ws.tube([el, wr], [0.055, 0.045], wb, {"sides": 8, "per": 2})
+		var r0 := shoulder + Vector3(rads[1] * 0.6 * side, rads[1] * 0.55, 0.05)
+		var el := r0 + Vector3(0.12 * side, 0.32, 0.3)
+		var wr := el + Vector3(0.04 * side, -0.12, 0.45)
+		ws.tube([r0, r0.lerp(el, 0.5) + Vector3(0.02 * side, 0.03, 0), el], [0.08, 0.07, 0.06], wb, {"sides": 9, "per": 2})
+		ws.blob(el, Vector3.ONE * 0.07, wb, {"lat": 5, "lon": 7})
+		ws.crystal(el, Vector3(0.2 * side, 1.0, -0.5), 0.16, 0.035, wc, 4)
+		ws.tube([el, wr], [0.06, 0.045], wb, {"sides": 8, "per": 2})
 		ws.blob(wr, Vector3.ONE * 0.05, wb, {"lat": 5, "lon": 7})
-		ws.tube([wr, wr + Vector3(0.03 * side, 0.1, -0.06), wr + Vector3(0.0, 0.15, -0.14)], [0.03, 0.02, 0.003], wc, {"sides": 6, "per": 2, "cap1": false})
-		var mids: Array = []
-		for t: Vector3 in tips:
-			var m := wr.lerp(t, 0.5) + Vector3(0, 0.05, 0) + (t - wr).cross(Vector3.UP).normalized() * 0.03 * side
-			mids.append(m)
-			ws.tube([wr, m, t], [0.035, 0.026, 0.006], wb, {"sides": 7, "per": 3, "cap1": false})
-			ws.blob(m, Vector3.ONE * 0.03, wb, {"lat": 4, "lon": 6})
-			ws.crystal(t, (t - m).normalized(), 0.08, 0.012, wc, 4)
-		# The skin panels: between each pair of fingers, and from the last finger back to the flank.
-		var panels := [[[wr, mids[0], tips[0]], [wr, mids[1], tips[1]]], [[wr, mids[1], tips[1]], [wr, mids[2], tips[2]]], [[r0, el, wr, mids[2], tips[2]], [r0 + Vector3(0, -0.05, 0.12), r0.lerp(flank, 0.4), flank, flank, flank]]]
-		for pi in range(panels.size()):
-			var la: Array = panels[pi][0]; var lb: Array = panels[pi][1]
-			var rows := 9; var cols := 7
+		# Fingers lying back and down along the flank, fanned only a little.
+		var tips: Array = []
+		for k in range(3):
+			var t := wr + Vector3((0.1 + k * 0.03) * side, -0.12 - k * 0.14, 0.5 - k * 0.06)
+			tips.append(t)
+			ws.tube([wr, wr.lerp(t, 0.5) + Vector3(0.03 * side, 0.03, 0), t], [0.035, 0.026, 0.006], wb, {"sides": 7, "per": 3, "cap1": false})
+			ws.crystal(t, (t - wr).normalized(), 0.07, 0.012, wc, 4)
+		# The skin: a pleated sheet from the arm down across the fingers to the flank.
+		var lines: Array = [[r0, el, wr], [r0 + Vector3(0.02 * side, -0.1, 0.1), el + Vector3(0.05 * side, -0.2, 0.05), tips[0]], [r0 + Vector3(0.03 * side, -0.18, 0.2), el + Vector3(0.07 * side, -0.36, 0.1), tips[1]], [r0 + Vector3(0.02 * side, -0.25, 0.3), el + Vector3(0.06 * side, -0.48, 0.15), tips[2]]]
+		for li in range(lines.size() - 1):
+			var la: Array = lines[li]; var lb: Array = lines[li + 1]
+			var rows := 8; var cols := 4
 			for layer in [0, 1]:
 				var base := ws._v.size()
 				for ri in range(rows + 1):
 					for ci in range(cols + 1):
 						var u := ci / float(cols); var t := ri / float(rows)
-						# The free edge bows in between the fingers (a scallop), torn here and there.
-						var tm := 1.0 - (0.3 * sin(PI * u) + (wrng.randf() * 0.12 if ri == rows and ci > 0 and ci < cols else 0.0) if pi < 2 else 0.0)
-						var q := along_line(la, t * tm).lerp(along_line(lb, t * tm), u)
-						q += Vector3(0, -0.05 * sin(PI * u) * t, 0) + Vector3(0, 0.003 if layer == 0 else -0.003, 0)
+						var q := along_line(la, t).lerp(along_line(lb, t), u)
+						# Pleated: the skin bows out between each pair of fingers.
+						q += Vector3(0.05 * side * sin(PI * u), 0, 0) + Vector3(0.003 * side if layer == 0 else -0.003 * side, 0, 0)
 						ws._v.append(q); ws._along.append(t); ws._ridge.append(u); ws._painter.append(skin)
 				for ri in range(rows):
 					for ci in range(cols):
-						if ri >= rows - 2 and (ci + pi * 3 + int(side)) % 5 == 0: continue
+						if ri == rows - 1 and (ci + li) % 3 == 1: continue
 						var k := base + ri * (cols + 1) + ci
 						if layer == 0: ws._i.append_array(PackedInt32Array([k, k + cols + 1, k + 1, k + 1, k + cols + 1, k + cols + 2]))
 						else: ws._i.append_array(PackedInt32Array([k, k + 1, k + cols + 1, k + 1, k + cols + 2, k + cols + 1]))
