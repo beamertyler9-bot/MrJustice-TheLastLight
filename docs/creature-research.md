@@ -202,3 +202,25 @@ Built on the snow leopard (*Panthera uncia*): pale smoky-grey coat, paler undern
 - a glow deep in the throat
 
 **Prismere touches.** The rings of its body are mineral ribs, and its teeth are crystal.
+
+## Glasswing Reaver (Prismere) — glass wyvern
+
+The user turned down three insect designs (griffinfly, robber fly and glasswing butterfly), then glass wyvern, glass manta and glass falcon options were made. The wyvern was chosen and then made more dragon-like.
+
+**Wyvern.** In heraldry a wyvern is a dragon with two legs, wings in place of arms, and a barbed tail.
+
+**Wings, built on the bat's.** A dragon's wing is drawn as a bat's wing:
+- the upper arm and forearm reach a wrist with a hooked thumb claw
+- four long finger bones fan out from the wrist
+- skin is stretched between the fingers (the chiropatagium) and from the last finger and the arm back to the flank (the plagiopatagium)
+- the free edge scallops inward between the fingertips
+
+**The first draft's pterosaur wing.** That wing hung its skin from one hugely long fourth finger, and the skin was stiffened with fibres (actinofibrils). The tail vane of *Rhamphorhynchus* inspired the original tail tip.
+
+**The final design.**
+- A dragon's head: heavy brows, a long snout with flared nostrils, two pairs of swept-back horns, crystal teeth and a frill of glass spines at the jaw hinge.
+- A deep, keeled chest for the flight muscles and an S-curved neck.
+- Pale belly scutes and glass spines along the spine.
+- Strong hind legs with three talons forward and one behind.
+- A barbed glass spade at the tip of the tail.
+- The wing skin is violet glass with dark veins.
