@@ -114,11 +114,16 @@ func _stalker(skin: Callable, scale: float) -> Node3D:
 	part(root, "EdgeGlint", gl, glint_mat)
 	match kindp:
 		"snow":
+			# One smooth, broad rump over both haunches, so the hips read as a single rounded
+			# back end (not two thighs and a knob between), with the tail rising out of its top.
+			var body: Sculpt = parts.body; var bp: int = parts.body_painter
+			body.blob(Vector3(0, 0.81, 0.58), Vector3(0.26, 0.21, 0.24), bp, {"lat": 10 * dense, "lon": 14 * dense})
+			body.blob(Vector3(0, 0.88, 0.73), Vector3(0.15, 0.12, 0.12), bp, {"lat": 8 * dense, "lon": 12 * dense})
 			# The snow leopard's very thick, very long tail, and crystal frost along the spine.
 			var ts: Sculpt = parts.tail_sculpts[1]; var tp := ts.add_painter(snow_coat)
 			ts.tube([Vector3(0, 0.48, 1.22), Vector3(0, 0.42, 1.42), Vector3(0, 0.45, 1.6), Vector3(0, 0.55, 1.72)], [0.07, 0.068, 0.066, 0.06], tp, {"sides": 12, "per": 3, "cap0": false})
 			var ts0: Sculpt = parts.tail_sculpts[0]
-			ts0.tube([Vector3(0, 0.84, 0.64), Vector3(0, 0.76, 0.9), Vector3(0, 0.6, 1.08), Vector3(0, 0.48, 1.24)], [0.07, 0.072, 0.07, 0.07], ts0.add_painter(snow_coat), {"sides": 12, "per": 3, "cap1": false})
+			ts0.tube([Vector3(0, 0.88, 0.66), Vector3(0, 0.8, 0.9), Vector3(0, 0.62, 1.08), Vector3(0, 0.48, 1.24)], [0.1, 0.078, 0.072, 0.07], ts0.add_painter(snow_coat), {"sides": 12, "per": 3, "cap1": false})
 			var fr := Sculpt.new(); var fp := fr.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return Color("#e8f6ff").lerp(rainbow(p.z * 3.0), 0.25))
 			for k in range(9):
 				var z := lerpf(-0.5, 0.45, k / 8.0)
