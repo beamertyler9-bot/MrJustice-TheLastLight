@@ -42,7 +42,7 @@ func build(variant: String) -> Node3D:
 	crystal_mat.emission = Color("#6a7aa8"); crystal_mat.emission_energy_multiplier = 0.4
 	match variant:
 		"armillary":
-			glow.albedo_color = Color("#bff0ff").darkened(0.2); glow.emission = Color("#bff0ff")
+			glow.albedo_color = Color("#3ad0ff"); glow.emission = Color("#2ac8ff")
 		"moai":
 			glow.albedo_color = Color("#9affd8").darkened(0.2); glow.emission = Color("#8affd0")
 		"aurora":
@@ -104,88 +104,202 @@ func glow_part(parent: Node3D, name: String, s: Sculpt) -> MeshInstance3D:
 
 # ------------------------------------------------------------------ A: armillary colossus
 
+## A fist closed round a shaft, as `fist()` but sized by `k` for a giant's hand.
+func big_fist(s: Sculpt, painter: int, c: Vector3, d: Vector3, a: Vector3, bh: Vector3, grip_r: float, k: float) -> void:
+	var front := d.cross(bh).normalized()
+	if front.dot(a) < 0.0: front = -front
+	s.blob(c + bh * (grip_r + 0.022 * k) - a * 0.01 * k, Vector3(0.02, 0.05, 0.045) * k, painter, {"lat": 5, "lon": 8, "basis": Basis(bh, d, bh.cross(d)).orthonormalized()})
+	for f in range(4):
+		var off := d * (0.03 - f * 0.022) * k
+		var pts: Array = []; var rr: Array = []
+		for j in range(6):
+			var t := lerpf(0.0, PI * 1.25, j / 5.0)
+			pts.append(c + off + (bh * cos(t) + front * sin(t)) * (grip_r + 0.014 * k)); rr.append(0.0115 * k)
+		s.tube(pts, rr, painter, {"sides": 6, "per": 1})
+	var tb := c + d * 0.045 * k
+	s.tube([tb + bh * (grip_r + 0.01 * k) - a * 0.02 * k, tb + front * (grip_r + 0.012 * k) + bh * 0.008 * k, tb + front * (grip_r + 0.01 * k) - bh * (grip_r * 0.6)], [0.013 * k, 0.012 * k, 0.01 * k], painter, {"sides": 6, "per": 2})
+	s.blob(c - a * 0.035 * k + bh * 0.01 * k, Vector3(0.038, 0.045, 0.04) * k, painter, {"lat": 5, "lon": 8})
+
+
+static func dark_stone(p: Vector3, n: Vector3, _v: float, w: float) -> Color:
+	var c := Color("#16181e").lerp(Color("#44464e"), clampf(n.y * 0.25 + 0.35 + Sculpt.fbm(p * 5.0) * 0.45, 0.0, 1.0))
+	c = c.lerp(Color("#0a0a0c"), smoothstep(0.66, 0.78, Sculpt.noise(p * 30.0)) * 0.6)
+	return c.darkened(clampf(-w, 0.0, 1.0) * 0.3)
+
+
+## Old bronze: dark and burnished, streaked green with verdigris in the hollows.
+static func old_bronze(p: Vector3, n: Vector3, _v: float, _w: float) -> Color:
+	var c := Color("#1a120a").lerp(Color("#7a5628"), clampf(n.y * 0.3 + 0.3 + Sculpt.noise(p * 12.0) * 0.35, 0.0, 1.0))
+	c = c.lerp(Color("#c89a50"), smoothstep(0.55, 0.75, Sculpt.noise(p * 20.0)) * 0.35)
+	return c.lerp(Color("#2a6a5c"), smoothstep(0.3, 0.6, Sculpt.noise(p * 5.0 + Vector3(4, 0, 0))) * clampf(0.75 - n.y * 0.4, 0.0, 1.0) * 0.75)
+
+
+## A: the bronze-armoured colossus of an ancient hoplite, its stone cracked through with light,
+## hanging in an armillary sphere. Built on the Greek hoplite: a Corinthian helmet (one
+## piece of bronze, the cheek-guards closing round the face to leave only a T of eyes and
+## mouth, a long nose-guard and a tall crest), a bronze "muscle cuirass" shaped to the body,
+## leather strips (pteruges) hanging from the waist, a long spear (the dory) with a leaf-shaped
+## head and a bronze butt-spike, and the round, dished aspis shield, carried on the forearm
+## through a central band (the porpax) with the hand gripping a cord near the rim (the
+## antilabe).
 func _armillary() -> Node3D:
-	var bs := Sculpt.new(); var sp := bs.add_painter(granite); var cp := bs.add_painter(quartz)
-	var dk := bs.add_painter(func (_p, _n, _v, _w): return Color("#0a0c12"))
-	# The torso of an archaic statue: broad square shoulders, a narrow waist, the chest muscles
-	# and ribs cut as flat stylised planes.
-	bs.blob(Vector3(0, 1.58, 0), Vector3(0.34, 0.3, 0.2), sp, {"lat": 10, "lon": 14, "lump": 0.03})
+	var lights := Sculpt.new(); var lw := lights.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
+	var bs := Sculpt.new(); var sp := bs.add_painter(dark_stone); var bz := bs.add_painter(old_bronze); var cp := bs.add_painter(quartz)
+	var leather := bs.add_painter(func (p: Vector3, n: Vector3, v: float, _w) -> Color: return Color("#2a1c14").lerp(Color("#5a3a24"), clampf(n.y * 0.3 + 0.4 + Sculpt.noise(p * 16.0) * 0.3, 0.0, 1.0)).lerp(Color("#16181e"), v * 0.5))
+	# The muscle cuirass over a broad chest; the stone of the shoulders and neck bare.
+	bs.blob(Vector3(0, 1.58, 0), Vector3(0.38, 0.34, 0.24), bz, {"lat": 12, "lon": 16})
 	for side in [-1.0, 1.0]:
-		bs.blob(Vector3(0.14 * side, 1.62, -0.13), Vector3(0.13, 0.09, 0.06), sp, {"lat": 6, "lon": 9})
-		bs.blob(Vector3(0.34 * side, 1.74, 0), Vector3(0.15, 0.13, 0.14), sp, {"lat": 7, "lon": 10})
-		for k in range(3): bs.tube([Vector3(0.06 * side, 1.44 - k * 0.06, -0.17), Vector3(0.2 * side, 1.47 - k * 0.06, -0.13)], [0.016, 0.012], sp, {"sides": 5, "per": 1})
-	bs.blob(Vector3(0, 1.26, 0), Vector3(0.22, 0.2, 0.16), sp, {"lat": 8, "lon": 12})
-	bs.tube([Vector3(0, 1.8, 0), Vector3(0, 1.92, 0)], [0.1, 0.09], sp, {"sides": 10, "per": 2})
-	# Cracked open over the heart, a light burning inside.
-	var gs := Sculpt.new(); var gw := gs.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
-	gs.blob(Vector3(0, 1.6, -0.17), Vector3(0.07, 0.09, 0.04), gw, {"lat": 6, "lon": 8})
-	for k in range(5): crack(bs, dk, Vector3(0, 1.6, -0.19), Vector3(0, 1.6, -0.19) + Vector3(cos(k * 1.3) * 0.25, sin(k * 1.3) * 0.22, 0), Vector3(0, 0, -1), 0.03, k)
-	cluster(bs, cp, Vector3(0, 1.6, -0.16), Vector3(0, 0, -1), 5, 0.14, 0.03, 0.4)
-	# Below the waist it has broken away into hanging crystal.
-	cluster(bs, cp, Vector3(0, 1.12, 0), Vector3(0, -1, 0), 9, 0.7, 0.09, 1.1, 0.5)
+		bs.blob(Vector3(0.15 * side, 1.66, -0.15), Vector3(0.15, 0.1, 0.08), bz, {"lat": 7, "lon": 10})
+		for k in range(3): bs.blob(Vector3(0.07 * side, 1.47 - k * 0.075, -0.18), Vector3(0.065, 0.032, 0.04), bz, {"lat": 5, "lon": 8})
+		bs.blob(Vector3(0.42 * side, 1.8, 0), Vector3(0.17, 0.15, 0.16), sp, {"lat": 8, "lon": 10, "lump": 0.05})
+		# Crystal breaking out through the stone of the shoulders.
+		cluster(bs, cp, Vector3(0.46 * side, 1.9, 0.04), Vector3(0.6 * side, 1, 0.3), 5, 0.26, 0.05, side * 2.0)
+	bs.blob(Vector3(0, 1.28, 0), Vector3(0.27, 0.16, 0.2), bz, {"lat": 8, "lon": 12})
+	bs.tube([Vector3(0, 1.85, 0), Vector3(0, 1.97, -0.01)], [0.12, 0.11], sp, {"sides": 10, "per": 2})
+	# A gorgon's face on the breast, as hoplites wore to terrify: here a glowing crystal eye.
+	bs.blob(Vector3(0, 1.6, -0.235), Vector3(0.07, 0.07, 0.03), bz, {"lat": 6, "lon": 10})
+	lights.blob(Vector3(0, 1.6, -0.258), Vector3(0.035, 0.045, 0.015), lw, {"lat": 5, "lon": 8})
+	# Pteruges: two rows of hanging strips round the hips, breaking up into crystal below.
+	for row in range(2):
+		for k in range(16):
+			var a := TAU * (k + row * 0.5) / 16.0
+			var t := Vector3(sin(a) * 0.27, 1.2 - row * 0.08, cos(a) * 0.2)
+			var o := Vector3(sin(a), 0, cos(a))
+			bs.tube([t, t + o * 0.04 + Vector3(0, -0.15, 0), t + o * 0.06 + Vector3(0, -0.28, 0)], [0.055, 0.055, 0.05], leather, {"sides": 5, "per": 2, "flat": 0.2, "side": o, "cap1": false})
+	var deepc := bs.add_painter(func (p: Vector3, _n, v: float, _w) -> Color: return Color("#2a3a6a").lerp(Color("#d8f4ff"), clampf(v * 1.1 + Sculpt.noise(p * 8.0) * 0.2, 0.0, 1.0)))
+	cluster(bs, deepc, Vector3(0, 0.98, 0), Vector3(0, -1, 0), 13, 1.05, 0.13, 1.1, 0.6)
+	# Cracks of light running through the stone and splitting the bronze.
+	var glowc := lights.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
+	for k in range(4):
+		var side := -1.0 if k % 2 == 0 else 1.0
+		var a0 := Vector3(0.42 * side, 1.92, -0.06 + k * 0.03)
+		crack(lights, glowc, a0, a0 + Vector3(0.12 * side, -0.2, -0.1), Vector3(side, 0.5, -0.3).normalized(), 0.03, k)
+	for k in range(5):
+		var a0 := Vector3(0, 1.6, -0.24)
+		var dir := Vector3(cos(k * 1.26 + 0.3), sin(k * 1.26 + 0.3), 0)
+		crack(lights, glowc, a0 + dir * 0.06, a0 + dir * (0.2 + 0.08 * (k % 2)) + Vector3(0, 0, 0.06), Vector3(0, 0, -1), 0.03, k + 4)
 	part(root, "Torso", bs)
-	var head := joint(root, "Head", Vector3(0, 2.02, 0))
-	var hs := Sculpt.new(); var hp := hs.add_painter(granite); var hd := hs.add_painter(func (_p, _n, _v, _w): return Color("#0a0c12"))
-	var hc := hs.add_painter(quartz)
-	hs.blob(Vector3(0, 2.05, 0), Vector3(0.14, 0.17, 0.15), hp, {"lat": 10, "lon": 14})
-	# Hair as a cap of beaded braids falling behind, as on the kouroi.
-	for k in range(9):
-		var a := lerpf(-1.3, 1.3, k / 8.0)
-		var top := Vector3(sin(a) * 0.13, 2.12, cos(a) * 0.1 + 0.03)
-		hs.tube([top, top + Vector3(sin(a) * 0.03, -0.18, 0.06), top + Vector3(sin(a) * 0.04, -0.34, 0.05)], [0.03, 0.028, 0.02], hp, {"sides": 6, "per": 3, "bands": 6, "band": 0.25})
-	hs.tube([Vector3(-0.1, 2.1, -0.12), Vector3(0, 2.11, -0.145), Vector3(0.1, 2.1, -0.12)], [0.018, 0.02, 0.018], hp, {"sides": 6, "per": 2})
-	hs.tube([Vector3(0, 2.09, -0.14), Vector3(0, 2.02, -0.165)], [0.016, 0.024], hp, {"sides": 6, "per": 2})
-	# The archaic smile.
-	hs.tube([Vector3(-0.045, 1.965, -0.135), Vector3(0, 1.958, -0.148), Vector3(0.045, 1.965, -0.135)], [0.008, 0.009, 0.008], hd, {"sides": 4, "per": 2})
-	# A crystal set in the brow.
-	hs.crystal(Vector3(0, 2.14, -0.13), Vector3(0, 0.4, -1), 0.06, 0.018, hc, 6)
-	part(head, "Head", hs)
+	part(root, "Cracks", lights, glow).material_override = glow
+	# The head inside a Corinthian helmet.
+	var head := joint(root, "Head", Vector3(0, 2.1, -0.02))
+	var hs := Sculpt.new(); var hb := hs.add_painter(old_bronze); var hd := hs.add_painter(func (_p, _n, _v, _w): return Color("#050506"))
+	var crest := hs.add_painter(func (p: Vector3, _n, v: float, _w) -> Color: return Color("#5a7aa8").lerp(Color("#f0fbff"), v).lerp(Color("#b8f0ff"), Sculpt.noise(p * 9.0) * 0.3))
+	hs.blob(Vector3(0, 2.12, -0.02), Vector3(0.17, 0.2, 0.19), hb, {"lat": 12, "lon": 16})
+	hs.blob(Vector3(0, 2.11, -0.04), Vector3(0.16, 0.12, 0.17), hd, {"lat": 6, "lon": 10})
+	for side in [-1.0, 1.0]:
+		# Cheek-guards sweeping down to points beside the chin, leaving a slit between them.
+		hs.tube([Vector3(0.12 * side, 2.12, -0.15), Vector3(0.1 * side, 2.0, -0.18), Vector3(0.05 * side, 1.9, -0.19)], [0.06, 0.055, 0.03], hb, {"sides": 8, "per": 3, "flat": 0.45, "side": Vector3(0, 0, 1)})
+		# The almond eye-openings, cut in under a heavy brow ridge.
+		hs.blob(Vector3(0.06 * side, 2.15, -0.19), Vector3(0.05, 0.018, 0.02), hd, {"lat": 4, "lon": 8, "basis": Basis(Vector3.FORWARD, 0.28 * side)})
+		hs.tube([Vector3(0.0, 2.17, -0.21), Vector3(0.08 * side, 2.18, -0.2), Vector3(0.15 * side, 2.19, -0.14)], [0.024, 0.022, 0.016], hb, {"sides": 6, "per": 2})
+	# The long nose-guard.
+	hs.tube([Vector3(0, 2.2, -0.2), Vector3(0, 2.1, -0.215), Vector3(0, 2.03, -0.21)], [0.018, 0.02, 0.016], hb, {"sides": 6, "per": 2, "flat": 1.6})
+	# The crest: a tall fan of crystal blades on a bronze stand, running front to back.
+	hs.tube([Vector3(0, 2.3, -0.16), Vector3(0, 2.34, 0.0), Vector3(0, 2.3, 0.16)], [0.02, 0.025, 0.02], hb, {"sides": 6, "per": 3})
+	for k in range(13):
+		var t := k / 12.0
+		var base := Vector3(0, 2.31 + 0.03 * sin(PI * t), lerpf(-0.17, 0.2, t))
+		var dir := Vector3(0, 1.0, lerpf(-0.5, 1.2, t)).normalized()
+		hs.crystal(base, dir, 0.22 + 0.22 * sin(PI * clampf(t * 1.1, 0.0, 1.0)), 0.03, crest, 4, k * 0.3)
+	part(head, "Helmet", hs)
 	var es := Sculpt.new(); var ew := es.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
-	for side in [-1.0, 1.0]: es.blob(Vector3(0.05 * side, 2.065, -0.135), Vector3(0.028, 0.011, 0.01), ew, {"lat": 4, "lon": 7})
-	es.blob(Vector3(0, 1.6, -0.17), Vector3(0.06, 0.08, 0.035), ew, {"lat": 6, "lon": 8})
+	for side in [-1.0, 1.0]: es.blob(Vector3(0.058 * side, 2.152, -0.207), Vector3(0.034, 0.007, 0.006), ew, {"lat": 4, "lon": 7, "basis": Basis(Vector3.FORWARD, 0.28 * side)})
 	var core := glow_part(head, "Eyes", es)
-	launch(head, Vector3(0, 2.06, -0.5))
-	# Arms held out, forearms raised, palms open and turned up, a glass prism floating over each.
+	launch(head, Vector3(0, 2.15, -0.6))
 	var sway: Array = []
-	for side: float in [-1.0, 1.0]:
-		var sh := Vector3(0.38 * side, 1.74, 0)
-		var arm := joint(root, "%sArm" % ("Left" if side < 0 else "Right"), sh)
-		var el := sh + Vector3(0.22 * side, -0.28, -0.08)
-		var wr := el + Vector3(0.08 * side, 0.05, -0.32)
-		var as_ := Sculpt.new(); var ap := as_.add_painter(granite); var pr := as_.add_painter(func (p: Vector3, _n, v: float, _w) -> Color: return Color("#e8f4ff").lerp(Color.from_hsv(fposmod(p.x * 3.0 + v, 1.0), 0.5, 1.0), 0.35))
-		as_.tube([sh, sh.lerp(el, 0.5), el], [0.12, 0.1, 0.085], ap, {"sides": 10, "per": 2})
-		as_.blob(el, Vector3.ONE * 0.085, ap, {"lat": 6, "lon": 8})
-		as_.tube([el, wr], [0.08, 0.065], ap, {"sides": 10, "per": 2})
-		# An open hand, palm up: a flat palm and four fingers curled a little, thumb aside.
-		as_.blob(wr + Vector3(0, 0.0, -0.06), Vector3(0.07, 0.03, 0.08), ap, {"lat": 5, "lon": 8})
-		for f in range(4):
-			var f0 := wr + Vector3((0.045 - f * 0.03) * side * 0.9, 0.0, -0.13)
-			as_.tube([f0, f0 + Vector3(0, 0.01, -0.06), f0 + Vector3(0, 0.04, -0.09)], [0.017, 0.015, 0.012], ap, {"sides": 6, "per": 2})
-		as_.tube([wr + Vector3(0.06 * side, 0, -0.05), wr + Vector3(0.1 * side, 0.03, -0.1)], [0.018, 0.014], ap, {"sides": 6, "per": 2})
-		var pc := wr + Vector3(0, 0.2, -0.08)
-		prism(as_, pr, pc, Vector3(0.3 * side, 0.4, -1.0), 0.24, 0.07)
-		part(arm, "Arm", as_)
-		sway.append(arm)
-	# The armillary sphere: bronze rings for the meridian, the equator and the ecliptic, and
-	# a crystal-studded band for the zodiac.
-	var c := Vector3(0, 1.55, 0)
-	var defs := [[Basis(Vector3.UP, 0.2), 1.05, 0.035], [Basis(Vector3.RIGHT, PI * 0.5) * Basis(Vector3.FORWARD, 0.1), 1.0, 0.035], [Basis(Vector3.RIGHT, PI * 0.5 - 0.41) * Basis(Vector3.FORWARD, 0.3), 0.95, 0.07]]
+	# The spear arm: the dory held upright at its side, butt-spike down, its fist closed round
+	# the shaft with the index finger toward the head.
+	var rsh := Vector3(0.46, 1.8, 0)
+	var rarm := joint(root, "RightArm", rsh)
+	var ra := Sculpt.new(); var rap := ra.add_painter(dark_stone); var rbz := ra.add_painter(old_bronze)
+	var shaft := ra.add_painter(func (p: Vector3, _n, _v, _w) -> Color: return Color("#2a1c12").lerp(Color("#5a4028"), clampf(0.5 + Sculpt.noise(p * Vector3(4, 40, 4)) * 0.5, 0.0, 1.0)))
+	var blade_p := ra.add_painter(func (p: Vector3, _n, v: float, _w) -> Color: return Color("#5a8ad8").lerp(Color("#f0fbff"), v).lerp(Color("#c8f0ff"), Sculpt.noise(p * 12.0) * 0.3))
+	var rel := rsh + Vector3(0.14, -0.3, -0.04)
+	var rh := rel + Vector3(0.04, -0.06, -0.28)
+	ra.tube([rsh, rsh.lerp(rel, 0.5), rel], [0.14, 0.12, 0.1], rap, {"sides": 10, "per": 2, "lump": 0.04})
+	ra.blob(rel, Vector3.ONE * 0.1, rap, {"lat": 6, "lon": 8})
+	ra.tube([rel, rh], [0.095, 0.08], rap, {"sides": 10, "per": 2, "lump": 0.04})
+	ra.tube([rel.lerp(rh, 0.35), rel.lerp(rh, 0.75)], [0.1, 0.095], rbz, {"sides": 10, "per": 1})
+	var d := Vector3(0.02, 1.0, -0.12).normalized()
+	big_fist(ra, rap, rh, d, (rh - rel).normalized(), Vector3(1, 0, 0), 0.035, 2.1)
+	var butt := rh - d * 1.0; var top := rh + d * 1.05
+	ra.tube([butt, top], [0.032, 0.03], shaft, {"sides": 8, "per": 1})
+	ra.tube([butt, butt - d * 0.18], [0.034, 0.004], rbz, {"sides": 4, "per": 1, "cap1": false})
+	# The leaf-shaped head, here a blade of crystal, socketed on bronze.
+	ra.tube([top - d * 0.04, top + d * 0.06], [0.04, 0.035], rbz, {"sides": 8, "per": 1})
+	ra.tube([top + d * 0.05, top + d * 0.22, top + d * 0.42, top + d * 0.55], [0.035, 0.09, 0.06, 0.003], blade_p, {"sides": 4, "per": 3, "flat": 0.2, "side": Vector3(0, 0, 1), "cap1": false})
+	part(rarm, "Arm", ra)
+	sway.append(rarm)
+	# The shield arm: the aspis on the forearm, the arm through the central band and the hand
+	# gripping the cord near the rim.
+	var lsh := Vector3(-0.46, 1.8, 0)
+	var larm := joint(root, "LeftArm", lsh)
+	var la := Sculpt.new(); var lap := la.add_painter(dark_stone); var lbz := la.add_painter(old_bronze)
+	var lel := lsh + Vector3(-0.1, -0.3, -0.16)
+	var lh := lel + Vector3(0.16, 0.06, -0.3)
+	la.tube([lsh, lsh.lerp(lel, 0.5), lel], [0.14, 0.12, 0.1], lap, {"sides": 10, "per": 2, "lump": 0.04})
+	la.blob(lel, Vector3.ONE * 0.1, lap, {"lat": 6, "lon": 8})
+	la.tube([lel, lh], [0.095, 0.08], lap, {"sides": 10, "per": 2, "lump": 0.04})
+	var fdir := (lh - lel).normalized()
+	var out := Vector3(-1, 0, -0.35)
+	var nrm := (out - fdir * out.dot(fdir)).normalized()
+	big_fist(la, lap, lh, nrm.cross(fdir).normalized(), fdir, -nrm, 0.02, 2.1)
+	var sc := lel.lerp(lh, 0.3) + nrm * 0.12
+	var dish := [Vector2(0.0, 0.1), Vector2(0.18, 0.09), Vector2(0.32, 0.06), Vector2(0.44, 0.02), Vector2(0.49, 0.0), Vector2(0.5, -0.03), Vector2(0.44, -0.02), Vector2(0.26, 0.03), Vector2(0.0, 0.05)]
+	var face := la.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+		var c := old_bronze(p, n, v, w)
+		var r := (p - sc).length()
+		c = c.lerp(Color("#0a0806"), smoothstep(0.012, 0.0, absf(r - 0.38) - 0.02) * 0.9)
+		return c.lerp(Color("#140e0a"), smoothstep(0.012, 0.0, absf(r - 0.25) - 0.012) * 0.7))
+	la.lathe(sc, dish, face, {"sides": 28, "basis": Basis(Quaternion(Vector3.UP, nrm))})
+	# The porpax band round the forearm, and its emblem: a crystal eye radiating light.
+	la.tube([lel.lerp(lh, 0.15), lel.lerp(lh, 0.45)], [0.105, 0.1], lbz, {"sides": 10, "per": 1})
+	var emb := sc + nrm * 0.1
+	la.crystal(emb - nrm * 0.02, nrm, 0.1, 0.07, la.add_painter(quartz), 6)
+	var sl := Sculpt.new(); var slp := sl.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
+	for k in range(8):
+		var a := TAU * k / 8.0
+		var u := nrm.cross(Vector3.UP).normalized(); var v := nrm.cross(u)
+		var dir := (u * cos(a) + v * sin(a))
+		crack(sl, slp, emb + dir * 0.08 - nrm * 0.01, emb + dir * 0.34 - nrm * 0.06, nrm, 0.03, k)
+	part(larm, "Arm", la)
+	part(larm, "ShieldLight", sl, glow).material_override = glow
+	sway.append(larm)
+	# The armillary sphere: great bronze rings, the zodiac band set with glowing signs and crystal
+	# spikes, small prisms riding the rings.
+	var c := Vector3(0, 1.6, 0)
+	var defs := [[Basis(Vector3.UP, 0.3), 1.24, 0.05], [Basis(Vector3.RIGHT, PI * 0.5) * Basis(Vector3.FORWARD, 0.12), 1.18, 0.045], [Basis(Vector3.RIGHT, PI * 0.5 - 0.41) * Basis(Vector3.FORWARD, 0.4), 1.12, 0.09], [Basis(Vector3.UP, -0.9) * Basis(Vector3.RIGHT, 0.5), 1.06, 0.035]]
 	for k in range(defs.size()):
 		var j := joint(root, "Ring%d" % k, c)
-		var rs := Sculpt.new(); var rp := rs.add_painter(bronze_paint); var rc := rs.add_painter(quartz)
-		var b: Basis = defs[k][0]
-		ring(rs, rp, c, b, defs[k][1], defs[k][2], 0.35 if k == 2 else 1.0)
-		if k == 2:
-			for z in range(12):
-				var a := TAU * z / 12.0
-				rs.crystal(c + b * Vector3(cos(a), sin(a), 0) * float(defs[k][1]), b * Vector3(cos(a), sin(a), 0), 0.1, 0.025, rc, 6)
-		if k == 0:
+		var rs := Sculpt.new(); var rp := rs.add_painter(old_bronze); var rc := rs.add_painter(quartz)
+		var gl := Sculpt.new(); var glp := gl.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
+		var b: Basis = defs[k][0]; var r: float = defs[k][1]
+		ring(rs, rp, c, b, r, defs[k][2], 0.35 if k == 2 else 1.0)
+		var count := 12 if k == 2 else 6
+		for z in range(count):
+			var a := TAU * (z + 0.5) / count
+			var radial := b * Vector3(cos(a), sin(a), 0)
+			if k == 2:
+				rs.crystal(c + radial * r, radial, 0.18, 0.035, rc, 6, z)
+				gl.blob(c + radial * r - b.z * 0.03, Vector3.ONE * 0.025, glp, {"lat": 4, "lon": 6})
+			else:
+				rs.crystal(c + radial * r, radial, 0.1, 0.025, rc, 6, z)
+		if k == 1 or k == 3:
 			for z in range(2):
-				var a := PI * 0.5 + PI * z
-				rs.blob(c + b * Vector3(cos(a), sin(a), 0) * float(defs[k][1]), Vector3.ONE * 0.06, rp, {"lat": 5, "lon": 8})
+				var a := PI * (0.25 + z)
+				prism(rs, rs.add_painter(func (p: Vector3, _n, v: float, _w) -> Color: return Color("#e8f4ff").lerp(Color.from_hsv(fposmod(p.y * 2.0 + v, 1.0), 0.5, 1.0), 0.4)), c + b * Vector3(cos(a), sin(a), 0) * r, b * Vector3(-sin(a), cos(a), 0), 0.3, 0.08)
 		part(j, "Ring", rs, bronze)
+		if k == 2: part(j, "Signs", gl, glow).material_override = glow
 		sway.append(j)
-	var node := _finish({"head": head, "core": core, "arms": [], "forearms": [], "feet": [], "knees": [], "leaves": sway}, 1.6)
+	# Broken stones orbiting with it.
+	var dj := joint(root, "Debris", c)
+	var ds := Sculpt.new(); var dp := ds.add_painter(dark_stone)
+	for k in range(6):
+		var a := TAU * k / 6.0 + 0.3
+		ds.rock(c + Vector3(cos(a) * 1.0, -0.7 + 0.15 * sin(k * 2.0), sin(a) * 1.0), Vector3(0.1, 0.08, 0.09) * (0.8 + 0.4 * fposmod(k * 0.618, 1.0)), dp, {"seed": k})
+	part(dj, "Stones", ds)
+	sway.append(dj)
+	var node := _finish({"head": head, "core": core, "arms": [], "forearms": [], "feet": [], "knees": [], "leaves": sway}, 1.85)
 	return _sway_rig(node, head, sway)
 
 
