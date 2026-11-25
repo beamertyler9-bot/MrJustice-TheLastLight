@@ -72,6 +72,7 @@ const DESIGNS := {
 	"geode_mimic": ["res://tools/sculpt_geode_mimic.gd", "amethyst"],
 	"celestine_boxcrab": ["res://tools/sculpt_geode_mimic.gd", "boxcrab"],
 	"thunderegg_crab": ["res://tools/sculpt_geode_mimic.gd", "spider"],
+	"resonance_wyrm": ["res://tools/sculpt_resonance_wyrm.gd", "lamprey"],
 	"dust_devil": ["res://tools/sculpt_sandwraith.gd", "dustdevil"],
 	"linen_revenant": ["res://tools/sculpt_sandwraith.gd", "mummy"],
 }

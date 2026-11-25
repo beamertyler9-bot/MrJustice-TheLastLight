@@ -185,3 +185,20 @@ Built on the snow leopard (*Panthera uncia*): pale smoky-grey coat, paler undern
 - The gullet is a wet red pit with mouthparts around it.
 - Drool hangs from the lid's teeth.
 - Bones and a small skull lie among the crystals.
+
+## Resonance Wyrm (Prismere) — a lamprey made into a wyrm
+
+**The sea lamprey (*Petromyzon marinus*).**
+- It is an eel-shaped fish with no jaws.
+- Its mouth is a round sucking disc fringed with soft papillae, set with rings of horny teeth that rake inwards towards a rasping "tongue". The biggest teeth sit at the top of the disc.
+- Behind each eye is a row of seven round gill openings, and on top of the head is a single nostril.
+- It has two dorsal fins near the tail.
+
+**What makes it draconic.** I looked at how fantasy draws wyrms, including Elden Ring's Magma Wyrms (flightless, dragon-like beasts with torn, useless wings and broad heads) and its ancient dragons (grey, stone-like hides with gravelly scales). From that and the folklore lindworm (a great serpent with a single pair of forelegs) this wyrm takes:
+- clawed forelegs with elbow spurs
+- two great swept-back horns and a crown of smaller horns around the back of the disc
+- torn stone-grey wings with faint glowing veins
+- a gravelly hide
+- a glow deep in the throat
+
+**Prismere touches.** The rings of its body are mineral ribs, and its teeth are crystal.

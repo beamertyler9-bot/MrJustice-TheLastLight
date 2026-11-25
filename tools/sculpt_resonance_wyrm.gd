@@ -451,30 +451,58 @@ func _lamprey() -> Node3D:
 	var hs := Sculpt.new(); var hp := hs.add_painter(lamprey_skin)
 	var dark := hs.add_painter(func (_p, _n, _v, _w): return Color("#0c0a10"))
 	var fringe := hs.add_painter(func (p: Vector3, _n: Vector3, v: float, _w: float) -> Color: return Color("#6a5060").lerp(Color("#c8a0b0"), v))
-	var tooth := hs.add_painter(func (_p, _n, v: float, _w: float) -> Color: return Color("#7aa0d8").lerp(Color("#f0f8ff"), v))
+	var tooth := 0
 	var gullet := hs.add_painter(func (p: Vector3, _n, _v, _w) -> Color: return Color("#3a0e18").lerp(Color("#8a2a3a"), clampf(Sculpt.noise(p * 12.0) + 0.4, 0.0, 1.0)))
 	# The head: a tube flaring into the round oral disc that faces forward and down.
 	var disc := Vector3(0, 0.98, -0.88)
 	var axis := Vector3(0, -0.3, -1).normalized()
 	hs.tube([Vector3(0, 0.96, -0.4), Vector3(0, 0.99, -0.6), Vector3(0, 1.0, -0.76), disc - axis * 0.04], [0.25, 0.24, 0.25, 0.3], hp, {"sides": 18, "per": 3, "cap0": false, "cap1": false})
 	var right := axis.cross(Vector3.UP).normalized(); var upd := right.cross(axis).normalized()
-	# The disc face: a funnel of teeth in rings, sloping in to the throat.
+	# The oral disc: a thick fleshy lip all round, fringed with papillae, opening on a deep
+	# funnel lined with rings of crystal teeth that all rake inwards to a glowing throat.
 	var face := disc - axis * 0.02
-	hs.tube([face, face + axis * 0.1, face + axis * 0.22], [0.3, 0.17, 0.06], gullet, {"sides": 20, "per": 2, "cap0": false, "cap_len": 0.4})
-	for ringk in range(4):
-		var r := 0.27 - ringk * 0.055
-		var count := 22 - ringk * 4
+	var inward := -axis
+	var on_ring := func (a: float, r: float, depth: float) -> Vector3: return face + (right * cos(a) + upd * sin(a)) * r + inward * depth
+	var fs := Sculpt.new()
+	tooth = fs.add_painter(func (_p, _n, v: float, _w: float) -> Color: return Color("#5a7ac8").lerp(Color("#f4faff"), v))
+	var fp := fs.add_painter(func (p: Vector3, _n: Vector3, v: float, w: float) -> Color:
+		return Color("#7a2e3e").lerp(Color("#0a0408"), smoothstep(0.05, 0.85, v)).lightened(clampf(w, 0.0, 1.0) * 0.08 + Sculpt.noise(p * 18.0) * 0.05))
+	fs.tube([face - inward * 0.01, face + inward * 0.08, face + inward * 0.18, face + inward * 0.3], [0.27, 0.19, 0.1, 0.04], fp, {"sides": 24, "per": 2, "cap0": false, "cap_len": 0.4, "ridges": 12, "ridge": 0.07})
+	var funnel_r := func (d: float) -> float: return lerpf(0.27, 0.19, d / 0.09) if d < 0.09 else lerpf(0.19, 0.1, (d - 0.09) / 0.1)
+	# Teeth: biggest on the outer ring; two great hooked teeth at the top like a lamprey's.
+	var rings := [[0.01, 20, 0.085], [0.06, 16, 0.07], [0.11, 12, 0.055], [0.16, 9, 0.045]]
+	var lower_teeth: Array = []
+	for ri in range(rings.size()):
+		var depth: float = rings[ri][0]; var count: int = rings[ri][1]; var tl: float = rings[ri][2]
 		for k in range(count):
-			var a := TAU * (k + ringk * 0.5) / count
-			var radial := right * cos(a) + upd * sin(a)
-			var base := face + radial * r + axis * (0.02 + ringk * 0.03)
-			hs.crystal(base, -axis * 0.8 - radial * 0.45, 0.07 - ringk * 0.008, 0.013, tooth, 4)
-	# The rim: a fringe of soft papillae all round the disc.
-	for k in range(30):
-		var a := TAU * k / 30.0
-		var radial := right * cos(a) + upd * sin(a)
-		var base := face + radial * 0.3
-		hs.tube([base, base + radial * 0.05 - axis * 0.02], [0.014, 0.004], fringe, {"sides": 5, "per": 1, "cap1": false})
+			var a := TAU * (k + ri * 0.5) / count
+			var radial: Vector3 = right * cos(a) + upd * sin(a)
+			var base: Vector3 = on_ring.call(a, funnel_r.call(depth) - 0.008, depth)
+			var dir := -radial * 0.75 + inward * 0.55
+			if ri == 0 and sin(a) < -0.55: lower_teeth.append([base, dir, tl]); continue
+			fs.crystal(base, dir, tl * (0.85 + 0.3 * absf(sin(k * 2.7))), 0.016 - ri * 0.002, tooth, 4)
+	for side: float in [-1.0, 1.0]:
+		var a := PI * 0.5 + 0.22 * side
+		var radial: Vector3 = right * cos(a) + upd * sin(a)
+		fs.crystal(on_ring.call(a, 0.25, 0.02), -radial * 0.9 + inward * 0.35, 0.14, 0.026, tooth, 5)
+	part(head, "Funnel", fs, wing_mat)
+	# The lip: a thick ring round the disc. Its lower arc belongs to the jaw so it can gape.
+	var lip := func (p: Vector3, n: Vector3, _v: float, _w: float) -> Color:
+		return Color("#3a2a36").lerp(Color("#a07888"), clampf(0.4 + Sculpt.noise(p * 16.0) * 0.5 + n.dot(-axis) * 0.2, 0.0, 1.0))
+	var lp := hs.add_painter(lip)
+	var arc := func (sc: Sculpt, painter: int, fp2: int, a0: float, a1: float, n: int) -> void:
+		var pts: Array = []; var rr: Array = []
+		for k in range(n + 1):
+			var a := lerpf(a0, a1, k / float(n))
+			pts.append(on_ring.call(a, 0.3, -0.01)); rr.append(0.05 * (0.6 + 0.4 * sin(PI * k / float(n))) if n < 20 else 0.05)
+		sc.tube(pts, rr, painter, {"sides": 10, "per": 2, "cap_len": 0.5})
+		# The fringe of papillae round the outside of the lip.
+		for k in range(n):
+			var a := lerpf(a0, a1, (k + 0.5) / float(n))
+			var radial: Vector3 = right * cos(a) + upd * sin(a)
+			var b: Vector3 = on_ring.call(a, 0.34, -0.02)
+			sc.tube([b, b + radial * 0.05 + axis * 0.03], [0.016, 0.003], fp2, {"sides": 5, "per": 1, "cap1": false})
+	arc.call(hs, lp, fringe, -0.55, PI + 0.55, 28)
 	# One nostril on top of the head; seven gill pores behind each eye (glowing, below).
 	hs.blob(Vector3(0, 1.21, -0.62), Vector3(0.02, 0.012, 0.03), dark, {"lat": 4, "lon": 6})
 	part(head, "Head", hs)
@@ -487,12 +515,14 @@ func _lamprey() -> Node3D:
 	for side in [-1.0, 1.0]: es.blob(Vector3(0.2 * side, 1.08, -0.72), Vector3.ONE * 0.034, ew, {"lat": 5, "lon": 8})
 	var core := part(head, "GillsAndEyes", es, glow); core.material_override = glow
 	slit_pupils(head, [Vector3(-0.2, 1.08, -0.72), Vector3(0.2, 1.08, -0.72)], 0.034, [Vector3(-1, 0, -0.4).normalized(), Vector3(1, 0, -0.4).normalized()])
-	# The jaw: the lower lip of the disc, which gapes when it feeds.
-	var jaw := joint(head, "Jaw", face - upd * 0.12)
-	var js := Sculpt.new(); var jl := js.add_painter(lamprey_skin); var jt := js.add_painter(func (_p, _n, v: float, _w: float) -> Color: return Color("#7aa0d8").lerp(Color("#f0f8ff"), v))
-	js.tube([face - upd * 0.24 + axis * 0.06, face - upd * 0.3 - axis * 0.02], [0.08, 0.06], jl, {"sides": 10, "per": 2, "flat": 2.2, "side": right})
-	for k in range(5): js.crystal(face - upd * 0.26 + right * (k - 2) * 0.05, -axis + upd * 0.6, 0.06, 0.012, jt, 4)
+	# The jaw: the lower arc of the lip and its teeth, which gapes when it feeds.
+	var jaw := joint(head, "Jaw", face + inward * 0.04 - upd * 0.12)
+	var js := Sculpt.new(); var jl := js.add_painter(lip); var jf := js.add_painter(func (_p, _n, v: float, _w: float) -> Color: return Color("#6a5060").lerp(Color("#c8a0b0"), v))
+	var jt := js.add_painter(func (_p, _n, v: float, _w: float) -> Color: return Color("#5a7ac8").lerp(Color("#f4faff"), v))
+	arc.call(js, jl, jf, PI + 0.5, TAU - 0.5, 10)
+	for t: Array in lower_teeth: js.crystal(t[0], t[1], t[2], 0.016, jt, 4)
 	part(jaw, "Jaw", js)
+	throat_glow(head, face + inward * 0.27, Vector3(0.045, 0.045, 0.03))
 	# Draconic: two great horns and a crown of smaller ones round the back of the disc, a glow
 	# deep in the throat, torn stone-grey wings and one pair of clawed forelegs.
 	var hn := Sculpt.new(); var hornp := hn.add_painter(func (_p, _n, v: float, _w) -> Color: return Color("#1c2028").lerp(Color("#c8d8ec"), v))
@@ -504,7 +534,6 @@ func _lamprey() -> Node3D:
 		var hb := Vector3(0, 0.99, -0.74) + radial * 0.25
 		horn(hn, hornp, hb, radial * 0.7 + Vector3(0, 0, 1.0), 0.16 + 0.05 * sin(a), 0.022, radial.cross(Vector3(0, 0, 1)), -0.5)
 	part(head, "Horns", hn)
-	throat_glow(head, disc + axis * 0.16, Vector3(0.07, 0.07, 0.04))
 	var ws := Sculpt.new()
 	var wb := ws.add_painter(func (_p, _n, v: float, _w) -> Color: return Color("#3a4452").lerp(Color("#b8c8dc"), v * 0.6))
 	var wm := ws.add_painter(func (p: Vector3, _n, v: float, w: float) -> Color: return Color("#1a1e26").lerp(Color("#4a5668"), clampf(v * 0.6 + Sculpt.noise(p * 12.0) * 0.35, 0.0, 1.0)).lerp(Color("#3ac8d8"), smoothstep(0.93, 1.0, absf(sin(w * PI * 3.0))) * 0.45))

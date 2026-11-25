@@ -102,6 +102,7 @@ const SIZES = {"cocoa_knight": {"radius": 0.6, "height": 2.6, "reach": 2.6}, "fu
 	"geode_mimic": {"radius": 0.85, "height": 1.7, "reach": 2.6, "hp": 7, "front_max": 1.8},
 	"celestine_boxcrab": {"radius": 0.9, "height": 1.45, "reach": 2.6, "hp": 8, "front_max": 1.8},
 	"thunderegg_crab": {"radius": 1.0, "height": 2.0, "reach": 2.9, "hp": 6, "front_max": 1.9},
+	"resonance_wyrm": {"radius": 0.9, "height": 2.0, "reach": 2.9, "hp": 8, "front_max": 2.0},
 	"mourning_knight": {"radius": 0.65, "height": 2.9, "reach": 2.8, "hp": 8, "front_max": 1.6},
 	"wraithhart": {"radius": 0.7, "height": 2.6, "reach": 2.6, "hp": 7, "front_max": 2.0},
 	"cerberus": {"radius": 0.75, "height": 1.8, "hp": 10, "damage": 2, "front_max": 1.9},
