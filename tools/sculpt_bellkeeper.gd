@@ -35,6 +35,14 @@ extends "res://tools/sculpt_shard_sentinel.gd"
 ##               bell-ropes with their striped sallies at the belt; a midnight tabard embroidered
 ##               with the gold sun-and-bell; a funeral mantle; and the Oath-Bell Maul - a great
 ##               bell lying crosswise on an iron-banded haft with a spiked hammer-face opposite
+##   gilded     - the original Bellkeeper, remade in full: a great gilt bell for a helm sitting
+##               low between the shoulders, a bail handle over it hung with chimes, its face a
+##               tall arch filled with ghost-light in the shape of a hooded face with hollow eyes,
+##               a sun engraved above; a toothed collar like a jaw; filigreed gilt plate with
+##               teal glowing between the lames; huge four-lamed pauldrons with tall spikes and
+##               bells under their edges; a midnight tabard and mantle with the gold sun; and the
+##               bell-staff - a long iron-bound haft with the great bell on its foot, resting
+##               mouth-down on the ground
 
 var kindb := "bellknight"
 var bronze_mat: StandardMaterial3D
@@ -69,6 +77,7 @@ func build(variant: String) -> Node3D:
 		"belfry": return _keeper()
 		"tollkeeper": return _keeper()
 		"oathbound": return _grand()
+		"gilded": return _gilded()
 	return null
 
 
@@ -694,6 +703,260 @@ func _grand() -> Node3D:
 	for k in range(41):
 		var a := TAU * k / 40.0
 		ring_pts.append(Vector3(sin(a) * 0.6, 2.85, cos(a) * 0.6 + 0.2)); ring_r.append(0.012)
+	cr.tube(ring_pts, ring_r, crp, {"sides": 4, "per": 1})
+	var crown := part(root, "AwakenedDawnResonance", cr, crown_mat); crown.material_override = crown_mat
+	crown.visible = false
+
+	var giant := root
+	root = Node3D.new(); root.name = "TheBellkeeper"
+	root.add_child(giant); giant.scale = Vector3.ONE * 2.05
+	var node := _finish({"head": head, "core": core, "arms": arms, "forearms": forearms, "feet": feet, "knees": knees, "leaves": []}, 1.0)
+	var rig: Dictionary = node.get_meta("rig_bindings")
+	rig["boss_bells"] = bells.map(func (n): return node.get_path_to(n))
+	rig["boss_cloth"] = cloths.map(func (n): return node.get_path_to(n))
+	rig["phase_crown"] = node.get_path_to(crown)
+	rig["boss_jaw"] = null; rig["boss_tail"] = null
+	node.set_meta("rig_bindings", rig)
+	node.set_meta("actor_properties", {"rest_scale": Vector3.ONE, "normal_glow": glow, "attack_glow": attack_glow, "hurt_glow": hurt_glow, &"body_scale": 1.0})
+	return node
+
+
+# ------------------------------------------------------------------ the Gilded Bellkeeper
+
+## The undersuit and the bands between the plates: deep teal, faintly lit from within.
+static func teal_band(p: Vector3, n: Vector3, _v: float, _w: float) -> Color:
+	return Color("#0c3a40").lerp(Color("#2a8a8a"), clampf(n.y * 0.3 + 0.4 + Sculpt.noise(p * 14.0) * 0.3, 0.0, 1.0))
+
+
+## Gilt plate with raised filigree scrolls worked over it.
+static func filigree(p: Vector3, n: Vector3, v: float, w: float) -> Color:
+	var c := gilt_bronze(p, n, v, w)
+	var f := absf(sin(p.x * 38.0 + sin(p.y * 31.0) * 1.6) * sin(p.y * 34.0 + sin(p.z * 29.0) * 1.6))
+	return c.lerp(Color("#f8e098"), smoothstep(0.93, 0.99, f) * 0.6)
+
+
+func _gilded() -> Node3D:
+	var bells: Array = []; var cloths: Array = []
+	var teal_glow := StandardMaterial3D.new()
+	teal_glow.vertex_color_use_as_albedo = true; teal_glow.vertex_color_is_srgb = true
+	teal_glow.emission_enabled = true; teal_glow.emission = Color("#2ad8c8"); teal_glow.emission_energy_multiplier = 0.35
+	teal_glow.roughness = 0.5; teal_glow.metallic = 0.3
+
+	# ---- the body: a great gilt cuirass, teal between the plates, a toothed collar
+	var body := Sculpt.new(); var gb := body.add_painter(filigree); var gp := body.add_painter(gilt_bronze)
+	var bands := Sculpt.new(); var tb := bands.add_painter(teal_band)
+	body.tube([Vector3(0, 0.74, 0), Vector3(0, 0.95, -0.01), Vector3(0, 1.2, -0.02), Vector3(0, 1.45, 0)], [0.27, 0.3, 0.36, 0.33], gb, {"sides": 22, "per": 3, "side": Vector3.BACK, "flat": 0.78})
+	body.blob(Vector3(0, 1.22, -0.08), Vector3(0.3, 0.18, 0.16), gb, {"lat": 9, "lon": 14})
+	# A raised sun on the breast, its rays standing out in relief.
+	body.tube([Vector3(0, 1.22, -0.235), Vector3(0, 1.22, -0.25)], [0.065, 0.06], gp, {"sides": 16, "per": 1})
+	for k in range(12):
+		var a := TAU * k / 12.0
+		body.crystal(Vector3(cos(a) * 0.07, 1.22 + sin(a) * 0.07, -0.24), Vector3(cos(a), sin(a), -0.25), 0.05 + 0.025 * (k % 2), 0.012, gp, 3)
+	# Teal bands between the waist lames, gilt lames below.
+	for k in range(3):
+		var yy := 0.82 - k * 0.06
+		bands.tube([Vector3(0, yy + 0.008, 0), Vector3(0, yy - 0.008, 0)], [0.29 + k * 0.02, 0.29 + k * 0.02], tb, {"sides": 22, "per": 1, "side": Vector3.BACK, "flat": 0.8})
+		body.tube([Vector3(0, yy - 0.01, 0), Vector3(0, yy - 0.05, 0)], [0.29 + k * 0.022, 0.3 + k * 0.022], gp, {"sides": 22, "per": 1, "side": Vector3.BACK, "flat": 0.8})
+		rim(body, gp, Vector3(0, yy - 0.052, 0), Vector3.UP, 0.3 + k * 0.022, 16, 0.25)
+	# The collar: a wide gilt brim round the neck, its lower edge set with teeth like a jaw.
+	body.tube([Vector3(0, 1.43, 0), Vector3(0, 1.5, 0)], [0.36, 0.34], gp, {"sides": 22, "per": 1, "flat": 0.9, "side": Vector3.BACK})
+	rim(body, gp, Vector3(0, 1.43, 0), Vector3.UP, 0.36, 18, 0.15)
+	for k in range(14):
+		var a := TAU * (k + 0.5) / 14.0
+		if cos(a) > 0.7: continue
+		body.crystal(Vector3(sin(a) * 0.33, 1.44, cos(a) * 0.3), Vector3(sin(a) * 0.3, -1, cos(a) * 0.3), 0.09, 0.02, gp, 4)
+	# A belt with bronze plaques and a chain of small bells.
+	body.tube([Vector3(0, 0.9, 0), Vector3(0, 0.87, 0)], [0.31, 0.31], body.add_painter(black_iron), {"sides": 22, "per": 1, "flat": 0.8, "side": Vector3.BACK})
+	steel_part(root, "Body", body)
+	part(root, "Bands", bands, teal_glow)
+
+	# ---- the helm: a great bell sitting low between the shoulders, its face a deep arch full
+	# of ghost-light, a sun over it, a bail handle on top hung with chimes
+	var head := joint(root, "EngravedBellHelmet", Vector3(0, 1.5, 0))
+	var hs := Sculpt.new(); var hg := hs.add_painter(filigree); var hp := hs.add_painter(gilt_bronze); var hd := hs.add_painter(func (_p, _n, _v, _w): return Color("#04060a"))
+	var core_s := Sculpt.new(); var cw := core_s.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
+	var prof: Array = []
+	for q: Vector2 in [Vector2(0.0, 1.0), Vector2(0.4, 0.97), Vector2(0.58, 0.86), Vector2(0.62, 0.68), Vector2(0.66, 0.45), Vector2(0.76, 0.24), Vector2(0.92, 0.08), Vector2(1.0, 0.0), Vector2(0.9, 0.0), Vector2(0.8, 0.06), Vector2(0.6, 0.3), Vector2(0.5, 0.7), Vector2(0.0, 0.85)]:
+		prof.append(Vector2(q.x * 0.32, q.y * 0.5))
+	hs.lathe(Vector3(0, 1.5, 0), prof, hg, {"sides": 22})
+	rim(hs, hp, Vector3(0, 1.52, 0), Vector3.UP, 0.32, 16, 0.12)
+	# The face: a tall rounded arch opening, dark round its edge, the ghost-light filling it in
+	# the shape of a hooded face with two hollow eyes.
+	hs.blob(Vector3(0, 1.66, -0.12), Vector3(0.19, 0.2, 0.1), hd, {"lat": 8, "lon": 12})
+	var rim_pts: Array = []; var rim_r: Array = []
+	for k in range(15):
+		var a := PI * k / 14.0
+		var rx := cos(a) * 0.2; var ry := sin(a) * 0.26
+		rim_pts.append(Vector3(rx, 1.52 + ry, -0.27 + absf(rx) * 0.25)); rim_r.append(0.024)
+	hs.tube(rim_pts, rim_r, hp, {"sides": 6, "per": 1})
+	# The ghost-light: a tall pointed hood of light with a darker face hollow in it.
+	# A pointed dome of light set back in the dark, like a flame in a lantern.
+	var dome: Array = []
+	for q: Vector2 in [Vector2(0.0, 0.26), Vector2(0.05, 0.22), Vector2(0.1, 0.13), Vector2(0.125, 0.04), Vector2(0.125, 0.0), Vector2(0.0, 0.0)]: dome.append(q)
+	core_s.lathe(Vector3(0, 1.54, -0.245), dome, cw, {"sides": 14, "basis": Basis.from_scale(Vector3(1, 1, 0.45))})
+	# The sun engraved over the face.
+	hs.tube([Vector3(0, 1.88, -0.19), Vector3(0, 1.88, -0.205)], [0.035, 0.032], hp, {"sides": 12, "per": 1})
+	for k in range(7):
+		var a := PI * (0.05 + 0.9 * k / 6.0)
+		hs.crystal(Vector3(cos(a) * 0.04, 1.88 + sin(a) * 0.04, -0.2), Vector3(cos(a), sin(a), -0.3), 0.04, 0.008, hp, 3)
+	# Finial spike and the bail: an arched handle from side to side over the crown.
+	hs.crystal(Vector3(0, 1.99, 0), Vector3.UP, 0.12, 0.035, hp, 6)
+	var bail: Array = []; var br: Array = []
+	for k in range(13):
+		var a := PI * k / 12.0
+		bail.append(Vector3(cos(a) * 0.27, 1.82 + sin(a) * 0.26, 0.0)); br.append(0.02)
+	hs.tube(bail, br, hp, {"sides": 7, "per": 1})
+	steel_part(head, "Helm", hs)
+	var core := part(head, "DawnLitBellInterior", core_s, glow); core.material_override = glow
+	for side in [-1.0, 1.0]:
+		var ch := joint(head, ("LeftCrownChime" if side < 0 else "RightCrownChime"), Vector3(0.28 * side, 1.82, 0))
+		var cs := Sculpt.new(); var cp := cs.add_painter(gilt_bronze)
+		church_bell(cs, cp, Vector3(0.28 * side, 1.8, 0), Vector3.DOWN, 0.045)
+		part(ch, "Chime", cs, bronze_mat)
+		bells.append(ch)
+
+	# ---- legs: short, massive, gilt with teal bands, broad sabatons
+	var feet: Array = []; var knees: Array = []
+	for side: float in [-1.0, 1.0]:
+		var h := Vector3(0.19 * side, 0.72, 0.02)
+		var hip := joint(root, "%sArmoredHip" % ("Left" if side < 0 else "Right"), h)
+		var kn := h + Vector3(0.02 * side, -0.32, -0.04)
+		var ft := kn + Vector3(0.0, -0.33, 0.04)
+		var ls := Sculpt.new(); var lg := ls.add_painter(filigree)
+		var lb := Sculpt.new(); var lt := lb.add_painter(teal_band)
+		ls.tube([h, h.lerp(kn, 0.5), kn], [0.16, 0.15, 0.12], lg, {"sides": 14, "per": 2, "flat": 0.9})
+		lb.tube([h.lerp(kn, 0.62), h.lerp(kn, 0.72)], [0.155, 0.15], lt, {"sides": 14, "per": 1})
+		part(hip, "Cuisse", ls)
+		part(hip, "Band", lb, teal_glow)
+		var knee := joint(hip, "%sGreave" % ("Left" if side < 0 else "Right"), kn)
+		var ss := Sculpt.new(); var sg := ss.add_painter(filigree); var sp := ss.add_painter(gilt_bronze)
+		var sb := Sculpt.new(); var st := sb.add_painter(teal_band)
+		ss.blob(kn + Vector3(0, 0, -0.04), Vector3(0.12, 0.1, 0.11), sp, {"lat": 6, "lon": 9})
+		rim(ss, sp, kn + Vector3(0, 0, -0.1), Vector3(0, 0, -1), 0.08, 6, 0.3)
+		ss.tube([kn, kn.lerp(ft, 0.5), ft + Vector3(0, 0.09, 0)], [0.13, 0.12, 0.11], sg, {"sides": 14, "per": 2})
+		sb.tube([ft + Vector3(0, 0.1, 0), ft + Vector3(0, 0.13, 0)], [0.12, 0.12], st, {"sides": 14, "per": 1})
+		# Broad sabatons in overlapping lames, the toe turned up.
+		ss.tube([ft + Vector3(0, 0.05, 0.08), ft + Vector3(0, 0.045, -0.1), ft + Vector3(0, 0.04, -0.24), ft + Vector3(0, 0.07, -0.3)], [0.1, 0.1, 0.075, 0.03], sp, {"sides": 12, "per": 2, "flat": 1.35, "bands": 6, "band": 0.12})
+		part(knee, "Greave", ss)
+		part(knee, "Band", sb, teal_glow)
+		feet.append(hip); knees.append(knee)
+
+	# ---- arms: great layered spiked pauldrons hung with bells, banded arms, the bell-staff
+	var arms: Array = []; var forearms: Array = []
+	var staff_x := 0.62
+	for side: float in [-1.0, 1.0]:
+		var sh := Vector3(0.4 * side, 1.4, 0.0)
+		var arm := joint(root, ("LeftPauldron" if side < 0 else "MaulShoulder"), sh)
+		var el := sh + Vector3(0.08 * side, -0.3, 0.0)
+		var hand := el + Vector3(0.03 * side, -0.26, -0.12) if side < 0 else Vector3(staff_x, 0.92, -0.18)
+		var us := Sculpt.new(); var ug := us.add_painter(filigree); var up := us.add_painter(gilt_bronze)
+		var ub := Sculpt.new(); var ut := ub.add_painter(teal_band)
+		ub.tube([sh, sh.lerp(el, 0.5), el], [0.12, 0.11, 0.1], ut, {"sides": 12, "per": 2})
+		for k in range(3):
+			us.tube([sh.lerp(el, 0.35 + k * 0.2) + Vector3(0, 0.02, 0), sh.lerp(el, 0.35 + k * 0.2) - Vector3(0, 0.03, 0)], [0.125, 0.12], up, {"sides": 12, "per": 1})
+		# Four broad lames, each edged with a curling gilt trim, teal showing between.
+		for k in range(4):
+			var lc := sh + Vector3((0.05 + k * 0.03) * side, 0.12 - k * 0.075, 0)
+			us.blob(lc, Vector3(0.24 - k * 0.012, 0.06, 0.2 - k * 0.008), ug, {"lat": 6, "lon": 14, "basis": Basis(Vector3.BACK, -0.3 * side)})
+			rim(us, up, lc + Vector3(0.04 * side, -0.045, 0), Vector3(0.3 * side, 1, 0).normalized(), 0.225 - k * 0.012, 10, 0.3)
+			rim(ub, ut, lc + Vector3(0.035 * side, -0.065, 0), Vector3(0.3 * side, 1, 0).normalized(), 0.205 - k * 0.012, 10, 0.2)
+		for k in range(3):
+			us.crystal(sh + Vector3((0.04 + k * 0.08) * side, 0.17, -0.1 + k * 0.1), Vector3(0.2 * side, 1, 0), 0.2 - k * 0.025, 0.035, up, 6)
+		part(arm, "Pauldron", us)
+		part(arm, "Bands", ub, teal_glow)
+		# Bells hanging under the pauldron's edge.
+		for k in range(2):
+			var bj := joint(arm, "PauldronChime" if k == 0 else "PauldronChime2", sh + Vector3(0.3 * side, -0.12, -0.1 + k * 0.2))
+			var bs := Sculpt.new(); var bp2 := bs.add_painter(gilt_bronze)
+			bs.tube([sh + Vector3(0.3 * side, -0.12, -0.1 + k * 0.2), sh + Vector3(0.3 * side, -0.17, -0.1 + k * 0.2)], [0.008, 0.008], bp2, {"sides": 4, "per": 1})
+			church_bell(bs, bp2, sh + Vector3(0.3 * side, -0.17, -0.1 + k * 0.2), Vector3.DOWN, 0.055)
+			part(bj, "Bell", bs, bronze_mat)
+			bells.append(bj)
+		var fore := joint(arm, ("LeftElbow" if side < 0 else "MaulElbow"), el)
+		var fs := Sculpt.new(); var fg := fs.add_painter(filigree); var fp := fs.add_painter(gilt_bronze)
+		var fb := Sculpt.new(); var ft2 := fb.add_painter(teal_band)
+		var a := (hand - el).normalized()
+		fs.blob(el, Vector3.ONE * 0.1, fp, {"lat": 6, "lon": 9})
+		rim(fs, fp, el + Vector3(0.05 * side, 0, 0), Vector3(side, 0, 0), 0.08, 6, 0.3)
+		fb.tube([el, hand - a * 0.08], [0.09, 0.08], ft2, {"sides": 12, "per": 1})
+		for k in range(3): fs.tube([el.lerp(hand, 0.2 + k * 0.22), el.lerp(hand, 0.32 + k * 0.22)], [0.1 - k * 0.005, 0.098 - k * 0.005], fg, {"sides": 12, "per": 1})
+		fs.tube([hand - a * 0.16, hand - a * 0.05], [0.09, 0.105], fp, {"sides": 12, "per": 1, "cap1": false})
+		if side > 0:
+			# The bell-staff: a long iron-bound haft held upright in the fist, the great bell on
+			# its foot resting mouth-down on the ground; the index finger toward the bell.
+			var dn := Vector3.DOWN
+			grip(fs, fp, hand, dn, a, Vector3(1, 0, -0.3).normalized(), 0.036)
+			var mo := fs.add_painter(oak); var mi := fs.add_painter(black_iron)
+			var top := hand + Vector3(0, 0.42, 0); var bell_top := Vector3(staff_x, 0.42, -0.18)
+			fs.tube([top, bell_top], [0.034, 0.036], mo, {"sides": 8, "per": 1})
+			for k in range(5): fs.tube([top.lerp(bell_top, 0.06 + k * 0.2), top.lerp(bell_top, 0.1 + k * 0.2)], [0.042, 0.042], fp if k % 2 == 0 else mi, {"sides": 8, "per": 1})
+			fs.blob(top + Vector3(0, 0.03, 0), Vector3.ONE * 0.055, fp, {"lat": 5, "lon": 8})
+			fs.crystal(top + Vector3(0, 0.07, 0), Vector3.UP, 0.12, 0.03, fp, 6)
+			church_bell(fs, fg, bell_top, Vector3.DOWN, 0.24, true)
+			for k in range(10):
+				var ang := TAU * k / 10.0
+				fs.crystal(bell_top + Vector3(cos(ang) * 0.235, -0.29, sin(ang) * 0.235), Vector3(cos(ang), -0.3, sin(ang)), 0.07, 0.016, fp, 4)
+			var mj := Node3D.new(); mj.name = "OathBellMaul"; fore.add_child(mj); mj.position = bell_top - _world(fore)
+		else:
+			# The open left hand, fingers loosely curled.
+			fs.blob(hand + Vector3(0, -0.03, -0.02), Vector3(0.06, 0.07, 0.04), fp, {"lat": 5, "lon": 8})
+			for k in range(4):
+				var f0 := hand + Vector3((-0.03 + k * 0.022) * -side, -0.09, -0.04)
+				fs.tube([f0, f0 + Vector3(0, -0.05, -0.02), f0 + Vector3(0, -0.08, 0.01)], [0.016, 0.014, 0.012], fp, {"sides": 6, "per": 2})
+		part(fore, "Vambrace", fs)
+		part(fore, "Bands", fb, teal_glow)
+		arms.append(arm); forearms.append(fore)
+
+	# ---- cloth: the long tabard with the gold sun, side cloths, the funeral mantle
+	var sunbell := func (p: Vector3, n: Vector3, v: float, w: float) -> Color:
+		var c := midnight(p, n, v, w)
+		var q := Vector2(p.x, p.y - 0.95)
+		var r := q.length()
+		var ring := smoothstep(0.01, 0.0, absf(r - 0.07))
+		var rays := smoothstep(0.08, 0.095, r) * smoothstep(0.14, 0.11, r) * smoothstep(0.6, 0.95, cos(atan2(q.y, q.x) * 10.0)) * (1.0 if q.y > -0.02 else 0.0)
+		var staff := smoothstep(0.008, 0.0, absf(q.x)) * (1.0 if q.y < -0.07 and q.y > -0.3 else 0.0)
+		var border := smoothstep(0.82, 0.9, absf(p.x) / 0.17) * smoothstep(0.98, 0.92, absf(p.x) / 0.17)
+		return c.lerp(Color("#d8a848"), clampf(ring + rays + staff + border, 0.0, 1.0))
+	var front := joint(root, "EmbroideredMidnightTabard", Vector3(0, 1.3, -0.26))
+	var fcs := Sculpt.new(); var fcp := fcs.add_painter(sunbell)
+	var tops: Array = []; var outs: Array = []; var lens: Array = []
+	for k in range(41):
+		var t := k / 40.0
+		tops.append(Vector3(lerpf(-0.17, 0.17, t), 1.36, -0.33 - 0.02 * sin(PI * t))); outs.append(Vector3(0, 0, -1))
+		lens.append(1.02 - (0.05 if (k / 4) % 2 == 1 else 0.0))
+	cloth_sheet(fcs, fcp, tops, outs, lens, func (i: int, t: float, yy: float) -> float: return 0.02 + 0.03 * t - 0.06 * sin(PI * minf(t * 2.2, 1.0)) * (1.0 - t), 60)
+	part(front, "Tabard", fcs, cloth_mat)
+	cloths.append(front)
+	for side in [-1.0, 1.0]:
+		var sj := joint(root, ("LeftSplitCloth" if side < 0 else "RightSplitCloth"), Vector3(0.3 * side, 0.9, 0.0))
+		var scs := Sculpt.new(); var scp := scs.add_painter(midnight)
+		drape(scs, scp, [Vector3(0.29 * side, 0.9, -0.12), Vector3(0.32 * side, 0.9, 0.0), Vector3(0.3 * side, 0.9, 0.12)], 0.55, Vector3(0.06 * side, 0, 0), 0.065, side, 0.2)
+		part(sj, "SideCloth", scs, cloth_mat)
+		cloths.append(sj)
+	var back := joint(root, "WovenFuneralMantle", Vector3(0, 1.44, 0.26))
+	var bcs := Sculpt.new(); var bcp := bcs.add_painter(sunbell)
+	var mt: Array = []; var mo: Array = []; var ml: Array = []
+	for k in range(41):
+		var t := k / 40.0
+		var a := lerpf(-1.0, 1.0, t)
+		mt.append(Vector3(sin(a) * 0.36, 1.44, 0.2 + cos(a) * 0.1)); mo.append(Vector3(sin(a) * 0.5, 0, 1).normalized())
+		ml.append(1.34 - (0.06 if (k / 4) % 2 == 1 else 0.0))
+	cloth_sheet(bcs, bcp, mt, mo, ml, func (i: int, t: float, yy: float) -> float: return 0.02 + 0.12 * t * t, 60)
+	part(back, "Mantle", bcs, cloth_mat)
+	cloths.append(back)
+	for k in range(4):
+		var a := lerpf(-1.0, 1.0, k / 3.0) + PI
+		swinging_bell(root, Vector3(sin(a) * 0.3, 0.86, -cos(a) * 0.24), 0.045, 0.06 + 0.04 * (k % 2), bells)
+
+	# ---- the awakened crown: a turning ring of spectral bells over the helm
+	var cr := Sculpt.new(); var crp := cr.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
+	for k in range(10):
+		var a := TAU * k / 10.0
+		church_bell(cr, crp, Vector3(sin(a) * 0.48, 2.2, cos(a) * 0.48), Vector3.DOWN, 0.06, false)
+	var ring_pts: Array = []; var ring_r: Array = []
+	for k in range(41):
+		var a := TAU * k / 40.0
+		ring_pts.append(Vector3(sin(a) * 0.48, 2.2, cos(a) * 0.48)); ring_r.append(0.01)
 	cr.tube(ring_pts, ring_r, crp, {"sides": 4, "per": 1})
 	var crown := part(root, "AwakenedDawnResonance", cr, crown_mat); crown.material_override = crown_mat
 	crown.visible = false
