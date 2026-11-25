@@ -372,14 +372,15 @@ static func along_line(pts: Array, t: float) -> Vector3:
 ## The drake's horns, spines and torn wings.
 func _drake_extras(spine: Array, rads: Array, head: Node3D, head_at: Vector3, jaw: Node3D, jaw_at: Vector3) -> void:
 	var hs := Sculpt.new(); var hh := hs.add_painter(horn); var hb := hs.add_painter(basalt)
+	var hl := Sculpt.new(); var hlp := hl.add_painter(molten)
+	var hl_seams: Array = []
 	for side: float in [-1.0, 1.0]:
-		# Two great horns sweeping back from the brow and curling down, a smaller pair below.
-		var pts: Array = [head_at + Vector3(0.15 * side, 0.22, -0.1)]; var rr: Array = [0.075]
-		var d := Vector3(0.35 * side, 1.0, 0.45).normalized()
-		for k in range(1, 9):
-			d = d.rotated(Vector3.RIGHT, 0.2); pts.append((pts[k - 1] as Vector3) + d * 0.11); rr.append(lerpf(0.075, 0.006, k / 8.0))
-		hs.tube(pts, rr, hh, {"sides": 8, "per": 2, "bands": 6, "band": 0.12, "cap1": false})
-		hs.crystal(head_at + Vector3(0.24 * side, 0.06, -0.05), Vector3(side, 0.1, 0.8), 0.22, 0.04, hh, 5)
+		# No horns: a jagged crest of cooled-lava plates runs back along each side of the skull,
+		# split by glowing seams, like the crust breaking on a lava flow.
+		for k in range(5):
+			var at := head_at + Vector3(0.13 * side, 0.2 - k * 0.01, -0.3 + k * 0.11)
+			beam(hs, hb, at, Vector3(0.45 * side, 1.0, 0.55 + k * 0.1), 0.12 + 0.05 * sin(PI * k / 4.0), 0.07, 0.04, k * 0.9 + side)
+			hl_seams.append(at)
 		# Heavy brow ridge with short spikes.
 		hs.tube([head_at + Vector3(0.07 * side, 0.2, -0.42), head_at + Vector3(0.17 * side, 0.2, -0.28), head_at + Vector3(0.2 * side, 0.17, -0.12)], [0.04, 0.055, 0.04], hb, {"sides": 7, "per": 2})
 		for k in range(3): hs.crystal(head_at + Vector3((0.1 + k * 0.04) * side, 0.24, -0.36 + k * 0.1), Vector3(0.5 * side, 1, 0.5), 0.08, 0.02, hh, 4)
@@ -390,7 +391,13 @@ func _drake_extras(spine: Array, rads: Array, head: Node3D, head_at: Vector3, ja
 		var at := along_line(spine, 0.02 + k * 0.05)
 		var nk := head_at.lerp(spine[1], 0.15 + k * 0.15)
 		hs.crystal(nk + Vector3(0, 0.26 - k * 0.01, 0), Vector3(0, 1, 0.9), 0.3 - k * 0.02, 0.05, hh, 5, k)
-	part(head, "Horns", hs)
+	for at: Vector3 in hl_seams: hl.blob(at + Vector3(0, 0.005, 0), Vector3(0.05, 0.015, 0.06), hlp, {"lat": 3, "lon": 6})
+	# Molten rock dripping from the corners of the mouth.
+	for side: float in [-1.0, 1.0]:
+		var c0 := head_at + Vector3(0.12 * side, -0.1, -0.35)
+		hl.tube([c0, c0 + Vector3(0.01 * side, -0.1, 0.0), c0 + Vector3(0.0, -0.2, 0.01)], [0.025, 0.018, 0.026], hlp, {"sides": 5, "per": 2})
+	part(head, "Crest", hs)
+	part(head, "CrestLava", hl, lava_mat)
 	var cs := Sculpt.new(); var ch := cs.add_painter(horn)
 	for side: float in [-1.0, 1.0]:
 		for k in range(3): cs.crystal(jaw_at + Vector3((0.15 - k * 0.04) * side, -0.12, -0.15 - k * 0.15), Vector3(0.3 * side, -1, 0.4), 0.12, 0.03, ch, 4)
