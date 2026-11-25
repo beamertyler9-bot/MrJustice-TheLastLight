@@ -44,6 +44,7 @@ func build(variant: String) -> Node3D:
 	attack_glow = glow.duplicate(); attack_glow.emission = Color("#fff0a0"); attack_glow.emission_energy_multiplier = 4.5
 	hurt_glow = glow.duplicate(); hurt_glow.emission = Color("#ff2a10"); hurt_glow.albedo_color = Color("#a8200c")
 	crown_mat = lava_mat.duplicate(); crown_mat.emission_energy_multiplier = 3.0
+	if variant == "spino": drake = true; return _spino()
 	if not variant in ["monitor", "ankylos", "thornback", "drake"]: return null
 	if variant == "drake": kinde = "monitor"; drake = true; hide_paint = crust; res = 1
 	return _beast()
@@ -509,3 +510,249 @@ func _drake_extras(spine: Array, rads: Array, head: Node3D, head_at: Vector3, ja
 	var wmat := material.duplicate() as StandardMaterial3D
 	wmat.cull_mode = BaseMaterial3D.CULL_DISABLED; wmat.albedo_texture = null; wmat.vertex_color_is_srgb = true
 	part(root, "TornWings", ws, wmat)
+
+
+# ------------------------------------------------------------------ the magma spinosaurus
+
+## Embermaw as a spinosaur of the deep fire, built on Spinosaurus aegyptiacus: a long, narrow,
+## crocodile-like snout with conical interlocking teeth and a rosette of longer teeth at the
+## tip, nostrils set far back up the snout, a small crest between the eyes; a long S-curved
+## neck; a great sail along the back held up by elongated neural spines; strong forelimbs with
+## a hooked thumb claw; short hind legs with broad flat feet; and a long tail flattened side to
+## side into a paddle, finned with tall spines. Here it is made of the volcano: a hide of
+## cooled-lava crust split by glowing seams, the sail's spines columns of basalt with molten
+## rock showing through the cracked crust between them, magma dripping from its jaws, and a
+## furnace burning in its throat.
+func _spino() -> Node3D:
+	var lava := Sculpt.new(); var lp := lava.add_painter(molten)
+	var bs := Sculpt.new(); var sp := bs.add_painter(crust); var hp := bs.add_painter(horn)
+	var col := bs.add_painter(func (p: Vector3, n: Vector3, v: float, w: float) -> Color: return basalt(p, n, v, w).lerp(Color("#ff5a10"), smoothstep(0.25, 0.0, v) * 0.6))
+	# ---- body: a deep chest, narrow from side to side, the back rising to the shoulders
+	var spine := [Vector3(0, 1.22, 0.78), Vector3(0, 1.3, 0.38), Vector3(0, 1.38, -0.05), Vector3(0, 1.46, -0.45)]
+	var rads := [0.32, 0.43, 0.48, 0.4]
+	bs.tube(spine, rads, sp, {"sides": 22, "per": 5, "flat": 0.72, "side": Vector3.RIGHT, "lump": 0.05, "cap0": false, "cap1": false})
+	bs.blob(Vector3(0, 1.2, -0.12), Vector3(0.33, 0.37, 0.48), sp, {"lat": 10, "lon": 14, "lump": 0.05})
+	# ---- neck: a long S-curve rising forward to the head
+	var neck := [Vector3(0, 1.48, -0.5), Vector3(0, 1.72, -0.78), Vector3(0, 1.97, -0.92), Vector3(0, 2.08, -1.06)]
+	bs.tube(neck, [0.34, 0.25, 0.19, 0.16], sp, {"sides": 18, "per": 4, "flat": 0.85, "side": Vector3.RIGHT, "lump": 0.05, "cap0": false, "bands": 8, "band": 0.04})
+	for k in range(8):
+		var at := along_line(neck, 0.08 + k * 0.12)
+		bs.crystal(at + Vector3(0, 0.15 - k * 0.012, 0.04), Vector3(0, 1, 0.6), 0.1, 0.03, hp, 4, k)
+	# ---- the sail: basalt columns rising from the spine, highest over the middle of the back
+	# in a gentle double arch; cracked crust plates between them with lava glowing through.
+	var sail_base: Array = []; var sail_top: Array = []
+	var n := 17
+	var sail_line := [Vector3(0, 1.62, -0.62), Vector3(0, 1.72, -0.3), Vector3(0, 1.72, 0.1), Vector3(0, 1.64, 0.5), Vector3(0, 1.5, 0.9), Vector3(0, 1.32, 1.25)]
+	for k in range(n):
+		var t := k / float(n - 1)
+		var base := along_line(sail_line, t)
+		# The classic spinosaur sail: low at each end, rising to a broad crest with a shallow dip
+		# in the middle.
+		var hh := 0.12 + 0.78 * pow(sin(PI * t), 0.7) * (1.0 - 0.14 * pow(sin(PI * t * 2.0), 2.0))
+		var top := base + Vector3(0, hh, 0.18 * (t - 0.5))
+		var h := hh
+		sail_base.append(base); sail_top.append(top)
+		beam(bs, col, base - Vector3(0, 0.08, 0), (top - base).normalized(), h + 0.12, 0.055, 0.045, k * 0.6)
+		bs.crystal(top, (top - base).normalized() + Vector3(0, 0, 0.3), 0.08 + 0.06 * sin(PI * t), 0.03, hp, 4, k)
+	# The molten membrane, set inside the columns.
+	var mem := lava.add_painter(func (p: Vector3, _n, v: float, _w) -> Color: return Color("#ff3a06").lerp(Color("#ffc040"), clampf(Sculpt.noise(p * 8.0) * 0.5 + 0.5 - v * 0.5, 0.0, 1.0)))
+	for layer in [0, 1]:
+		var base_i := lava._v.size()
+		for k in range(n):
+			for j in range(5):
+				var t := j / 4.0
+				var q: Vector3 = (sail_base[k] as Vector3).lerp(sail_top[k], t * 0.94) + Vector3(0.006 if layer == 0 else -0.006, 0, 0)
+				lava._v.append(q); lava._along.append(t); lava._ridge.append(k / float(n)); lava._painter.append(mem)
+		for k in range(n - 1):
+			for j in range(4):
+				var a := base_i + k * 5 + j; var b := a + 5
+				if layer == 0: lava._i.append_array(PackedInt32Array([a, a + 1, b, a + 1, b + 1, b]))
+				else: lava._i.append_array(PackedInt32Array([a, b, a + 1, a + 1, b, b + 1]))
+	# Crust plates over both faces of the sail, gaps between them showing the lava.
+	var rng := RandomNumberGenerator.new(); rng.seed = 404
+	for k in range(n - 1):
+		for j in range(6):
+			var t := (j + 0.5) / 6.0
+			var c: Vector3 = (sail_base[k] as Vector3).lerp(sail_top[k], t * 0.9).lerp((sail_base[k + 1] as Vector3).lerp(sail_top[k + 1], t * 0.9), 0.5)
+			if (j + k) % 4 == 3: continue
+			for side: float in [-1.0, 1.0]:
+				var sz := 0.065 * (1.0 - t * 0.3) * rng.randf_range(0.85, 1.15)
+				bs.rock(c + Vector3(side * 0.025, rng.randf_range(-0.02, 0.02), rng.randf_range(-0.02, 0.02)), Vector3(sz * 0.35, sz * 1.1, sz * 0.95), sp, {"seed": k * 9 + j * 3 + int(side), "lat": 3, "lon": 5})
+	# Glowing seams down the flanks and under the belly.
+	for side: float in [-1.0, 1.0]:
+		for k in range(5):
+			var at := along_line(spine, 0.12 + k * 0.18)
+			vein(lava, lp, at + Vector3(side * 0.33, 0.16, -0.08), at + Vector3(side * 0.29, -0.3, 0.1), Vector3(side, 0, 0), 0.02, k + side, 0.022)
+	# Magma dripping from the belly.
+	for k in range(4):
+		var at := along_line(spine, 0.25 + k * 0.18) + Vector3(0.05 * (k % 2 * 2 - 1), -0.43, 0)
+		lava.tube([at, at + Vector3(0, -0.1 - 0.06 * (k % 2), 0), at + Vector3(0, -0.18 - 0.08 * (k % 2), 0)], [0.025, 0.018, 0.028], lp, {"sides": 5, "per": 2})
+	part(root, "Body", bs)
+	part(root, "BodyLava", lava, lava_mat)
+
+	# ---- the awakened furnace: lava bursting from the tips of the sail, shown when enraged
+	var cr := Sculpt.new(); var crp := cr.add_painter(molten)
+	for k in range(n):
+		var top: Vector3 = sail_top[k]
+		cr.crystal(top + Vector3(0, 0.05, 0), Vector3(0, 1, 0.2), 0.22 + 0.1 * sin(PI * k / float(n - 1)), 0.05, crp, 5, k)
+	var crown := part(root, "AwakenedDorsalFurnace", cr, crown_mat); crown.material_override = crown_mat
+	crown.visible = false
+
+	# ---- the head
+	var head_at: Vector3 = neck[3]
+	var head := joint(root, "FurnaceSkull", head_at)
+	var hs := Sculpt.new(); var hb := hs.add_painter(crust); var hh := hs.add_painter(horn); var hd := hs.add_painter(func (_p, _n, _v, _w): return Color("#060404"))
+	var hl := Sculpt.new(); var hlp := hl.add_painter(molten)
+	var tip := head_at + Vector3(0, -0.14, -0.95)
+	# The skull, deep at the back, and the long narrow snout, flared a little at the tip.
+	hs.blob(head_at + Vector3(0, 0.03, -0.12), Vector3(0.13, 0.15, 0.2), hb, {"lat": 9, "lon": 12, "lump": 0.04})
+	hs.tube([head_at + Vector3(0, 0.05, -0.08), head_at + Vector3(0, 0.03, -0.3), head_at + Vector3(0, -0.03, -0.55), tip + Vector3(0, 0.02, 0.08), tip], [0.15, 0.105, 0.075, 0.08, 0.065], hb, {"sides": 14, "per": 3, "flat": 0.8, "side": Vector3.RIGHT, "lump": 0.03, "cap_len": 0.5})
+	# The crest between the eyes and a ridge of small spines down the snout.
+	hs.tube([head_at + Vector3(0, 0.17, -0.06), head_at + Vector3(0, 0.2, -0.2), head_at + Vector3(0, 0.12, -0.38)], [0.03, 0.05, 0.02], hb, {"sides": 8, "per": 2, "flat": 0.4, "side": Vector3.RIGHT})
+	for k in range(6): hs.crystal(head_at + Vector3(0, 0.1 - k * 0.025, -0.4 - k * 0.07), Vector3(0, 1, 0.4), 0.05, 0.015, hh, 4, k)
+	var eyes: Array = []
+	for side: float in [-1.0, 1.0]:
+		# Heavy brow over a deep-set eye.
+		hs.tube([head_at + Vector3(0.05 * side, 0.15, -0.2), head_at + Vector3(0.11 * side, 0.14, -0.1), head_at + Vector3(0.13 * side, 0.1, 0.02)], [0.025, 0.035, 0.025], hb, {"sides": 7, "per": 2})
+		hs.blob(head_at + Vector3(0.11 * side, 0.09, -0.12), Vector3(0.035, 0.03, 0.045), hd, {"lat": 5, "lon": 7})
+		eyes.append(head_at + Vector3(0.125 * side, 0.09, -0.12))
+		# Nostrils set far back on the snout.
+		hs.blob(head_at + Vector3(0.035 * side, 0.08, -0.38), Vector3(0.012, 0.008, 0.03), hd, {"lat": 3, "lon": 5})
+		# Spines along the cheek and the back of the skull.
+		for k in range(3): hs.crystal(head_at + Vector3(0.13 * side, 0.0 - k * 0.03, 0.02 + k * 0.03), Vector3(side, -0.1 - k * 0.2, 0.9), 0.09 - k * 0.015, 0.02, hh, 4)
+	# Upper teeth: conical, set along the jaw edge, the longest in the rosette at the tip.
+	var tl := Sculpt.new(); var tlp := tl.add_painter(func (_p, _n, v: float, _w) -> Color: return Color("#2a1c18").lerp(Color("#f0d8b0"), v).lerp(Color("#ffb040"), smoothstep(0.85, 1.0, v) * 0.5))
+	for side: float in [-1.0, 1.0]:
+		for k in range(10):
+			var t := k / 9.0
+			var at := (head_at + Vector3(0, -0.05, -0.18)).lerp(tip + Vector3(0, -0.04, 0.02), t) + Vector3(side * lerpf(0.075, 0.055, t), 0, 0)
+			var ln := 0.045 + (0.05 if k >= 8 else 0.0) + 0.012 * (k % 2)
+			tl.crystal(at, Vector3(side * 0.15, -1, -0.12 if k >= 8 else 0.05), ln, 0.012, tlp, 4)
+	part(head, "Teeth", tl)
+	# Magma drooling from the upper jaw.
+	for k in range(3):
+		var at := (head_at + Vector3(0, -0.06, -0.3)).lerp(tip, 0.25 + k * 0.25) + Vector3(0.06 * (k % 2 * 2 - 1), 0, 0)
+		hl.tube([at, at + Vector3(0, -0.06, 0), at + Vector3(0, -0.1 - 0.03 * k, 0.01)], [0.012, 0.008, 0.014], hlp, {"sides": 5, "per": 2})
+	part(head, "Skull", hs)
+	part(head, "SkullLava", hl, lava_mat)
+	var es := Sculpt.new(); var ew := es.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
+	for e: Vector3 in eyes:
+		var eb := Basis(Vector3.UP, -0.3 * signf(e.x)) * Basis(Vector3.FORWARD, 0.25 * signf(e.x))
+		es.blob(e, Vector3(0.016, 0.018, 0.034), ew, {"lat": 5, "lon": 8, "basis": eb})
+		hs.blob(e + Vector3(signf(e.x) * 0.014, 0, -0.003), Vector3(0.003, 0.016, 0.006), hd, {"lat": 3, "lon": 5})
+	part(head, "Eyes", es, glow).material_override = glow
+	# The furnace in the throat: the boss's glowing core.
+	var ts := Sculpt.new(); var tw := ts.add_painter(func (_p, _n, _v, _w): return Color.WHITE)
+	ts.blob(head_at + Vector3(0, -0.07, -0.25), Vector3(0.07, 0.04, 0.2), tw, {"lat": 5, "lon": 8})
+	var core := part(head, "FurnaceThroat", ts, glow); core.material_override = glow
+	# The lower jaw, hinged at the back of the skull, gaping.
+	var jaw_at := head_at + Vector3(0, -0.06, 0.02)
+	var jaw := joint(head, "HingedBasaltJaw", jaw_at)
+	var js := Sculpt.new(); var jp := js.add_painter(crust); var jt := js.add_painter(func (_p, _n, v: float, _w) -> Color: return Color("#2a1c18").lerp(Color("#f0d8b0"), v))
+	var jl := Sculpt.new(); var jlp := jl.add_painter(molten)
+	var jtip := tip + Vector3(0, -0.07, 0.03)
+	js.tube([jaw_at + Vector3(0, -0.04, 0.0), jaw_at.lerp(jtip, 0.4) + Vector3(0, -0.06, 0), jtip + Vector3(0, -0.01, 0.06), jtip], [0.1, 0.07, 0.055, 0.045], jp, {"sides": 12, "per": 3, "flat": 0.85, "side": Vector3.RIGHT, "lump": 0.03, "cap_len": 0.5})
+	jl.blob(jaw_at.lerp(jtip, 0.45) + Vector3(0, 0.01, 0), Vector3(0.045, 0.012, 0.36), jlp, {"lat": 4, "lon": 8})
+	for side: float in [-1.0, 1.0]:
+		for k in range(9):
+			var t := k / 8.0
+			var at := (jaw_at + Vector3(0, -0.01, -0.2)).lerp(jtip + Vector3(0, 0.03, 0.02), t) + Vector3(side * lerpf(0.06, 0.045, t), 0, 0)
+			js.crystal(at, Vector3(side * 0.15, 1, 0.05), 0.04 + (0.045 if k >= 7 else 0.0), 0.011, jt, 4)
+		# A dewlap of crust plates along the throat.
+		for k in range(3): plate(js, jp, jl, jlp, jaw_at.lerp(jtip, 0.1 + k * 0.15) + Vector3(0.06 * side, -0.09, 0), Vector3(side, -0.6, 0), 0.05, 90 + k, 0.0)
+	# Magma pouring over the lip of the lower jaw.
+	jl.tube([jtip + Vector3(0, 0.02, 0.05), jtip + Vector3(0, -0.07, 0.04), jtip + Vector3(0, -0.14, 0.05)], [0.014, 0.01, 0.018], jlp, {"sides": 5, "per": 2})
+	part(jaw, "Jaw", js).rotation.x = -0.32
+	part(jaw, "MoltenMouthFloor", jl, lava_mat).rotation.x = -0.32
+
+	# ---- the tail: long, flattened side to side into a paddle, finned with tall spines
+	var tail_at: Vector3 = spine[0]
+	var tail := joint(root, "ArticulatedFurnaceTail", tail_at)
+	var tls := Sculpt.new(); var tlb := tls.add_painter(crust); var tcol := tls.add_painter(func (p: Vector3, nn: Vector3, v: float, w: float) -> Color: return basalt(p, nn, v, w).lerp(Color("#ff5a10"), smoothstep(0.25, 0.0, v) * 0.6))
+	var tlv := Sculpt.new(); var tlvp := tlv.add_painter(molten)
+	var tpts: Array = []; var trr: Array = []
+	for k in range(9):
+		var t := k / 8.0
+		tpts.append(tail_at + Vector3(0.22 * sin(t * 2.6), -0.75 * t * t - 0.05 * t, 2.1 * t)); trr.append(lerpf(0.27, 0.06, pow(t, 0.8)))
+	tls.tube(tpts, trr, tlb, {"sides": 16, "per": 3, "lump": 0.04, "flat": 0.6, "side": Vector3.RIGHT})
+	for k in range(1, 9):
+		var at: Vector3 = tpts[k]; var r: float = trr[k]
+		var t := k / 8.0
+		var h := 0.12 + 0.3 * sin(PI * clampf(t * 1.1, 0.0, 1.0))
+		beam(tls, tcol, at + Vector3(0, r * 0.5, 0), Vector3(0, 1, 0.5).normalized(), h, 0.05, 0.035, k * 0.7)
+		if t > 0.3: beam(tls, tcol, at - Vector3(0, r * 0.5, 0), Vector3(0, -1, 0.4).normalized(), h * 0.55, 0.045, 0.03, k * 0.9)
+		vein(tlv, tlvp, at + Vector3(0.12 * r, r * 0.45, -0.06), at + Vector3(0.1 * r, -r * 0.45, 0.06), Vector3(1, 0, 0), 0.03, k, 0.02)
+		vein(tlv, tlvp, at + Vector3(-0.12 * r, r * 0.45, -0.06), at + Vector3(-0.1 * r, -r * 0.45, 0.06), Vector3(-1, 0, 0), 0.03, k + 2.0, 0.02)
+	part(tail, "Tail", tls)
+	part(tail, "TailLava", tlv, lava_mat)
+
+	# ---- hind legs: short and massive, broad flat feet with three forward toes
+	var feet: Array = []; var knees: Array = []
+	for side: float in [-1.0, 1.0]:
+		var h := Vector3(0.26 * side, 1.16, 0.4)
+		var hip := joint(root, ("LeftHindHip" if side < 0 else "RightHindHip"), h)
+		var kn := h + Vector3(0.05 * side, -0.46, -0.24)
+		var an := kn + Vector3(0.0, -0.36, 0.26)
+		var ft := Vector3(an.x, 0.0, an.z - 0.05)
+		var us := Sculpt.new(); var up := us.add_painter(crust); var lv := Sculpt.new(); var lvp := lv.add_painter(molten)
+		us.blob(h + Vector3(0, -0.06, -0.02), Vector3(0.24, 0.33, 0.32), up, {"lat": 9, "lon": 12, "lump": 0.05})
+		us.tube([h, h.lerp(kn, 0.5) + Vector3(0, 0, -0.04), kn], [0.22, 0.19, 0.13], up, {"sides": 14, "per": 2, "lump": 0.05})
+		vein(lv, lvp, h + Vector3(0.18 * side, 0.1, -0.05), kn + Vector3(0.08 * side, 0.05, 0.0), Vector3(side, 0, 0), 0.05, side, 0.03)
+		part(hip, "Thigh", us)
+		part(hip, "ThighLava", lv, lava_mat)
+		var knee := joint(hip, ("LeftHindKnee" if side < 0 else "RightHindKnee"), kn)
+		var ls := Sculpt.new(); var lpp := ls.add_painter(crust); var cl := ls.add_painter(horn); var lv2 := Sculpt.new(); var lp2 := lv2.add_painter(molten)
+		ls.blob(kn, Vector3.ONE * 0.13, lpp, {"lat": 6, "lon": 8})
+		ls.tube([kn, kn.lerp(an, 0.5), an], [0.13, 0.11, 0.085], lpp, {"sides": 12, "per": 2, "lump": 0.05})
+		ls.tube([an, ft + Vector3(0, 0.07, 0)], [0.085, 0.08], lpp, {"sides": 12, "per": 2})
+		vein(lv2, lp2, kn + Vector3(0, -0.02, -0.09), an + Vector3(0, 0.02, -0.07), Vector3(0, 0, -1), 0.03, side + 1.0, 0.02)
+		for k in range(3):
+			var dir := Vector3((k - 1) * 0.42, 0, -1).normalized()
+			var t0 := ft + Vector3(0, 0.05, 0)
+			var t1 := t0 + dir * 0.2 + Vector3(0, -0.02, 0)
+			ls.tube([t0, t0.lerp(t1, 0.5) + Vector3(0, 0.01, 0), t1], [0.05, 0.045, 0.038], lpp, {"sides": 8, "per": 2})
+			ls.tube([t1, t1 + dir * 0.06 + Vector3(0, -0.01, 0), t1 + dir * 0.09 + Vector3(0, -0.05, 0)], [0.03, 0.02, 0.003], cl, {"sides": 6, "per": 2, "cap1": false})
+		ls.tube([ft + Vector3(0, 0.08, 0.06), ft + Vector3(0, 0.03, 0.14)], [0.03, 0.004], cl, {"sides": 5, "per": 2, "cap1": false})
+		part(knee, "Shin", ls)
+		part(knee, "ShinLava", lv2, lava_mat)
+		feet.append(hip); knees.append(knee)
+
+	# ---- forelimbs: strong arms held forward, a great hooked thumb claw and three fingers
+	var arms: Array = []; var forearms: Array = []
+	for side: float in [-1.0, 1.0]:
+		var sh := Vector3(0.28 * side, 1.28, -0.5)
+		var arm := joint(root, ("LeftShovelShoulder" if side < 0 else "RightShovelShoulder"), sh)
+		var el := sh + Vector3(0.07 * side, -0.26, 0.02)
+		var wr := el + Vector3(-0.02 * side, -0.12, -0.25)
+		var us := Sculpt.new(); var up := us.add_painter(crust)
+		us.blob(sh, Vector3(0.11, 0.12, 0.12), up, {"lat": 7, "lon": 9, "lump": 0.05})
+		us.tube([sh, sh.lerp(el, 0.5), el], [0.12, 0.1, 0.08], up, {"sides": 12, "per": 2, "lump": 0.05})
+		part(arm, "UpperArm", us)
+		var fore := joint(arm, ("LeftShovelElbow" if side < 0 else "RightShovelElbow"), el)
+		var fs := Sculpt.new(); var fp := fs.add_painter(crust); var fc := fs.add_painter(horn); var flv := Sculpt.new(); var flp := flv.add_painter(molten)
+		fs.blob(el, Vector3.ONE * 0.07, fp, {"lat": 6, "lon": 8})
+		fs.tube([el, el.lerp(wr, 0.5), wr], [0.08, 0.07, 0.06], fp, {"sides": 12, "per": 2, "lump": 0.05})
+		vein(flv, flp, el + Vector3(0, -0.02, -0.06), wr + Vector3(0, 0.02, -0.04), Vector3(0, -0.3, -1).normalized(), 0.02, side, 0.015)
+		fs.blob(wr + Vector3(0, -0.03, -0.04), Vector3(0.06, 0.05, 0.07), fp, {"lat": 6, "lon": 8})
+		# The thumb: a great hooked claw on the inner side.
+		var th0 := wr + Vector3(-0.04 * side, -0.02, -0.05)
+		fs.tube([th0, th0 + Vector3(-0.03 * side, -0.02, -0.06), th0 + Vector3(-0.03 * side, -0.1, -0.12), th0 + Vector3(-0.02 * side, -0.17, -0.09)], [0.035, 0.03, 0.018, 0.003], fc, {"sides": 7, "per": 2, "cap1": false})
+		for k in range(3):
+			var f0 := wr + Vector3((0.0 + k * 0.03) * side, -0.05, -0.08)
+			fs.tube([f0, f0 + Vector3(0.01 * side, -0.05, -0.05), f0 + Vector3(0.01 * side, -0.1, -0.06)], [0.022, 0.018, 0.014], fp, {"sides": 6, "per": 2})
+			fs.tube([f0 + Vector3(0.01 * side, -0.1, -0.06), f0 + Vector3(0.01 * side, -0.14, -0.04)], [0.015, 0.002], fc, {"sides": 5, "per": 1, "cap1": false})
+		part(fore, "Forearm", fs)
+		part(fore, "ForearmLava", flv, lava_mat)
+		arms.append(arm); forearms.append(fore)
+
+	var giant := root
+	root = Node3D.new(); root.name = "Embermaw"
+	root.add_child(giant); giant.name = "Giant"; giant.scale = Vector3.ONE * 1.75
+	var node := _finish({"head": head, "core": core, "arms": arms, "forearms": forearms, "feet": feet, "knees": knees, "leaves": []}, 1.0)
+	var rig: Dictionary = node.get_meta("rig_bindings")
+	rig["boss_jaw"] = node.get_path_to(jaw); rig["boss_tail"] = node.get_path_to(tail)
+	rig["phase_crown"] = node.get_path_to(crown)
+	rig["boss_bells"] = []; rig["boss_cloth"] = []
+	node.set_meta("rig_bindings", rig)
+	node.set_meta("actor_properties", {"rest_scale": Vector3.ONE, "normal_glow": glow, "attack_glow": attack_glow, "hurt_glow": hurt_glow, &"body_scale": 1.0})
+	return node
