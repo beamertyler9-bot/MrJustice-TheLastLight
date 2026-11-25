@@ -52,10 +52,9 @@ func build(variant: String) -> Node3D:
 ## A wing as a thin two-sided blade from `root_at`, its leading edge running out along angle `a`
 ## (0 straight out to the side, positive swept back). `shape(t)` gives [leading-edge offset,
 ## chord] at each point t along the span. The painter gets v = along the span, w = across it.
-func blade(s: Sculpt, painter: int, root_at: Vector3, side: float, a: float, length: float, shape: Callable, lift: float) -> Array:
+func blade(s: Sculpt, painter: int, root_at: Vector3, side: float, a: float, length: float, shape: Callable, lift: float, nt := 26, nc := 7) -> Array:
 	var d := Vector3(cos(a) * side, 0.0, sin(a))
 	var back := Vector3(-sin(a) * side, 0.0, cos(a)) * side * side
-	var nt := 26; var nc := 7
 	var grid: Array = []
 	for layer in [0, 1]:
 		var base := s._v.size()
