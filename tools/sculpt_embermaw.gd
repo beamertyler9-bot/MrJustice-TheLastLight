@@ -116,7 +116,7 @@ func vein(s: Sculpt, p: int, a: Vector3, b: Vector3, out: Vector3, jag: float, s
 		var t := k / 6.0
 		pts.append(a.lerp(b, t) + side * jag * sin(seed + k * 2.7) * (1.0 - absf(t - 0.5) * 1.4) + out * 0.01)
 		rr.append(w * (1.0 - absf(t - 0.4) * 1.2) + 0.004)
-	s.tube(pts, rr, p, {"sides": 5, "per": 1})
+	s.tube(pts, rr, p, {"sides": 4, "per": 1, "cap_rings": 1})
 
 ## A basalt plate (an osteoderm or a clinker): a low faceted rock lying on the surface at `at`
 ## facing `up`, with a seam of lava round its foot.
@@ -530,7 +530,7 @@ static func scorched_bone(p: Vector3, n: Vector3, v: float, _w: float) -> Color:
 	# Charred black in broad patches and in the creases.
 	c = c.lerp(Color("#0e0908"), smoothstep(-0.12, 0.25, Sculpt.noise(p * 5.0 + Vector3(3, 0, 0))) * 0.9)
 	# Hairline cracks glowing with the fire inside.
-	c = c.lerp(Color("#ff6a14"), smoothstep(0.035, 0.0, absf(Sculpt.noise(p * 11.0))) * 0.9)
+	c = c.lerp(Color("#ff6a14"), maxf(smoothstep(0.04, 0.0, absf(Sculpt.noise(p * 11.0))), smoothstep(0.03, 0.0, absf(Sculpt.noise(p * 23.0 + Vector3(7, 0, 0))))) * 0.95)
 	return c.lerp(Color("#ff7a20"), smoothstep(-0.2, -0.8, n.y) * 0.3)
 
 
@@ -553,7 +553,7 @@ func flame(s: Sculpt, painter: int, base: Vector3, dir: Vector3, length: float, 
 		var t := k / 5.0
 		pts.append(base + d * length * t + sweep * length * t * t + Vector3(sin(seed + t * 5.0), 0, cos(seed * 1.3 + t * 4.0)) * width * 0.5 * t)
 		rr.append(width * (1.0 - t) * (0.6 + 0.4 * sin(PI * clampf(t * 1.6 + 0.2, 0.0, 1.0))) + 0.003)
-	s.tube(pts, rr, painter, {"sides": 6, "per": 2, "cap1": false})
+	s.tube(pts, rr, painter, {"sides": 5, "per": 1, "cap1": false, "cap_rings": 1})
 
 
 static func fire_paint(_p: Vector3, _n: Vector3, v: float, _w: float) -> Color:
@@ -677,15 +677,29 @@ func _spino() -> Node3D:
 		hs.tube([head_at + Vector3(0.12 * side, 0.01, 0.04), head_at + Vector3(0.13 * side, 0.0, -0.12), head_at + Vector3(0.1 * side, -0.02, -0.28)], [0.025, 0.028, 0.02], hb, {"sides": 7, "per": 2})
 		hs.blob(head_at + Vector3(0.09 * side, 0.03, -0.27), Vector3(0.028, 0.035, 0.07), hd, {"lat": 5, "lon": 8})
 		hs.blob(head_at + Vector3(0.04 * side, 0.075, -0.42), Vector3(0.014, 0.012, 0.045), hd, {"lat": 4, "lon": 6})
+		# Ridged nasal bones along the top of the snout, and a jutting brow knob over the orbit.
+		hs.tube([head_at + Vector3(0.03 * side, 0.1, -0.2), head_at + Vector3(0.035 * side, 0.08, -0.5), head_at + Vector3(0.03 * side, 0.03, -0.8)], [0.016, 0.014, 0.01], hb, {"sides": 6, "per": 3})
+		hs.crystal(head_at + Vector3(0.1 * side, 0.17, -0.12), Vector3(0.4 * side, 1, 0.5), 0.09, 0.03, hb, 5)
+		# Cheek spikes jutting from the jugal, sweeping back.
+		for k in range(3): hs.crystal(head_at + Vector3(0.14 * side, -0.01 - k * 0.025, -0.02 + k * 0.05), Vector3(side, -0.15 - k * 0.15, 0.9), 0.12 - k * 0.02, 0.022, hb, 4)
 		eyes.append(head_at + Vector3(0.14 * side, 0.08, -0.115))
 		# Flames pouring out of each eye socket, swept back.
-		for k in range(3): flame(fs_head, hfp, head_at + Vector3(0.12 * side, 0.1, -0.1 + k * 0.03), Vector3(0.3 * side, 1, 0.6), 0.2 + 0.05 * k, 0.03, Vector3(0, 0.3, 1.2), k + side)
+		for k in range(5): flame(fs_head, hfp, head_at + Vector3(0.13 * side, 0.1, -0.13 + k * 0.025), Vector3(0.4 * side, 1, 0.5), 0.26 + 0.06 * k, 0.035, Vector3(0, 0.3, 1.3), k + side)
 	# The skull wreathed in fire: tongues of flame rising off the crown, the crest and the back
 	# of the skull, streaming back over the neck.
-	for k in range(16):
-		var t := k / 15.0
-		var at := (head_at + Vector3(0, 0.12, -0.42)).lerp(head_at + Vector3(0, 0.14, 0.08), t) + Vector3(0.07 * sin(k * 2.4), 0.02 * sin(k * 1.7), 0)
-		flame(fs_head, hfp, at, Vector3(0.25 * sin(k * 2.4), 1, 0.35), 0.3 + 0.25 * sin(PI * t) + 0.05 * (k % 3), 0.04 + 0.015 * sin(PI * t), Vector3(0, 0.2, 1.4), k * 0.7)
+	for k in range(30):
+		var t := k / 29.0
+		var at := (head_at + Vector3(0, 0.1, -0.72)).lerp(head_at + Vector3(0, 0.14, 0.12), t) + Vector3(0.08 * sin(k * 2.4), 0.02 * sin(k * 1.7), 0)
+		flame(fs_head, hfp, at, Vector3(0.3 * sin(k * 2.4), 1, 0.3), 0.3 + 0.45 * sin(PI * clampf(t * 1.2, 0.0, 1.0)) + 0.08 * (k % 3), 0.045 + 0.025 * sin(PI * t), Vector3(0, 0.25, 1.5), k * 0.7)
+	# A great plume of fire streaming back off the skull like a mane.
+	for k in range(8):
+		var at := head_at + Vector3(0.05 * sin(k * 1.9), 0.2, -0.05 + k * 0.03)
+		flame(fs_head, hfp, at, Vector3(0.2 * sin(k * 1.9), 1, 0.7), 0.75 + 0.15 * (k % 3), 0.07, Vector3(0, 0.1, 1.2), k * 1.7)
+	# Fire licking from the corners of the mouth, the nostrils and along the jaws.
+	for side: float in [-1.0, 1.0]:
+		for k in range(3): flame(fs_head, hfp, head_at + Vector3(0.1 * side, -0.07, -0.05 - k * 0.04), Vector3(side * 0.6, 0.7, 0.6), 0.22, 0.04, Vector3(0, 0.3, 1.0), k + side * 3.0)
+		flame(fs_head, hfp, head_at + Vector3(0.04 * side, 0.09, -0.42), Vector3(side * 0.3, 1, 0.4), 0.18, 0.025, Vector3(0, 0.3, 1.0), side)
+		for k in range(5): flame(fs_head, hfp, head_at + Vector3(0.075 * side, -0.02, -0.25 - k * 0.12), Vector3(side * 0.7, 0.6, 0.4), 0.12, 0.022, Vector3(0, 0.3, 0.8), k * 2.0 + side)
 	for side: float in [-1.0, 1.0]:
 		for k in range(4): flame(fs_head, hfp, head_at + Vector3(0.13 * side, 0.06 - k * 0.03, 0.0 + k * 0.03), Vector3(side, 0.6, 0.5), 0.2, 0.04, Vector3(0, 0.4, 1.0), k * 1.3 + side)
 	# Upper teeth: conical, set along the jaw edge, the longest in the rosette at the tip.

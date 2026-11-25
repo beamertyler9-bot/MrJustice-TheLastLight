@@ -260,3 +260,23 @@ The user preferred the original gilded design, and the new model keeps its silho
 **How it holds the bell-staff.** The great bell sits on the foot of a long iron-banded haft. The staff is gripped upright in a closed fist, index finger toward the bell, so at rest the bell stands mouth-down on the ground.
 
 **Other designs explored.** A Bell Knight, a Living Belfry, a Toll-Keeper and an Oathbound blend were also built in `tools/sculpt_bellkeeper.gd`.
+
+## Embermaw (Embervein mine boss): the magma spinosaur
+
+The user asked for a giant volcanic *Spinosaurus* with a flaming skull for a head. The design is original, built from the real animal and not copied from any artwork.
+
+**Spinosaurus aegyptiacus.**
+- **Skull:** long and narrow like a crocodile's, with conical, interlocking, unserrated teeth and a rosette of longer teeth at the tip of the jaws. The nostrils are set far back up the snout, with a small crest between the eyes.
+- **Neck and sail:** a long S-curved neck, and a sail along the back held up by neural spines over 1.5 m tall. The sail is low at each end, rises to a broad crest, and dips shallowly in the middle (Ibrahim et al. 2014).
+- **Limbs:** robust forelimbs with a large hooked thumb claw, and short hind legs with broad, flat feet.
+- **Tail:** a long tail flattened side to side into a paddle and finned with tall spines (Ibrahim et al. 2020).
+
+**The skull.** Built from the bare skull's real openings: the orbit, the antorbital opening in front of it, the temporal opening behind it, the nostril far up the snout, and the cheekbone (jugal) below. The bone is scorched, charred black in patches and cracked with fire. Flames pour from the crown, the crest, the eye sockets, the nostrils and the corners of the jaws, and stream back over the neck like a mane.
+
+**Volcanic touches.**
+- A hide of cooled lava crust split by glowing seams.
+- Sail spines that are basalt columns, with molten rock glowing between cracked crust plates and fire along the top.
+- Magma dripping from the jaws, belly and flanks, and flames on the tail fin.
+- In its enraged phase, lava bursts from the tip of every sail spine.
+
+**Earlier designs.** A lava monitor, an ankylosaur, a horned lizard and a winged fire drake were also built and are kept in `tools/sculpt_embermaw.gd`.

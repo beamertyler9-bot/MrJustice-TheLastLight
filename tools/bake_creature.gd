@@ -76,6 +76,7 @@ const DESIGNS := {
 	"glasswing_reaver": ["res://tools/sculpt_glasswing_beasts.gd", "wyvern"],
 	"aurora_custodian": ["res://tools/sculpt_aurora_custodian.gd", "armillary"],
 	"dungeon": ["res://tools/sculpt_bellkeeper.gd", "gilded", "boss"],
+	"mine": ["res://tools/sculpt_embermaw.gd", "spino", "boss"],
 	"dust_devil": ["res://tools/sculpt_sandwraith.gd", "dustdevil"],
 	"linen_revenant": ["res://tools/sculpt_sandwraith.gd", "mummy"],
 }
